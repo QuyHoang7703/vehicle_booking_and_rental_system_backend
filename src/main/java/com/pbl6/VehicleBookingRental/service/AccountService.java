@@ -52,4 +52,7 @@ public class AccountService {
         this.accountRepository.deleteById(id);
     }
     
+    public Account handleGetAccountByUsername(String username) {
+       return this.accountRepository.findByUsername(username);
+    }
 }

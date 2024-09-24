@@ -7,6 +7,6 @@ import com.pbl6.VehicleBookingRental.domain.Account;
 
 @Repository
 public interface AccountRepository  extends JpaRepository<Account, Long>{
-    
+    Account findByUsername(String username);
     
 }

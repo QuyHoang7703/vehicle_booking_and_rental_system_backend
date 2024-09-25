@@ -5,7 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ResLoginDTO {
-    private String accessToken;
+public class ResultPaginationDTO {
+    private Meta meta;
+    private Object result;
 
 }

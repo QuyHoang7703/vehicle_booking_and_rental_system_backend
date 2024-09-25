@@ -1,5 +1,7 @@
 package com.pbl6.VehicleBookingRental.controller;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pbl6.VehicleBookingRental.domain.Account;
+import com.pbl6.VehicleBookingRental.domain.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.service.AccountService;
 import com.pbl6.VehicleBookingRental.util.annotation.ApiMessage;
+import com.turkraft.springfilter.boot.Filter;
 
 import java.util.List;
 @RestController
@@ -37,8 +41,8 @@ public class AccountController {
 
     @GetMapping("/accounts")
     @ApiMessage("fetch all account success")
-    public ResponseEntity<List<Account>> getAllAccounts() {
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts());
+    public ResponseEntity<ResultPaginationDTO> getAllAccounts(@Filter Specification<Account> spec, Pageable pageable) {
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts(spec, pageable));
     }
 
     @PutMapping("/accounts")
@@ -51,6 +55,8 @@ public class AccountController {
         this.accountService.handleDeleteAccount(id);
         return ResponseEntity.status(HttpStatus.OK).body("Đã xóa account");
     }
+
+
 
     
 }

@@ -22,7 +22,7 @@ public class UserDetailCustom implements UserDetailsService{
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Account account = this.accountService.handleGetAccountByUsername(username);
         if(account==null) {
-            throw new UsernameNotFoundException("Username/password khong hop le");
+            throw new UsernameNotFoundException("Username/Password is invalid");
         }
         return new User(
                 account.getEmail(),

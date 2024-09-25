@@ -1,5 +1,10 @@
 package com.pbl6.VehicleBookingRental.domain;
 
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pbl6.VehicleBookingRental.util.constant.AccountEnum;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,9 +25,12 @@ public class Account {
     private String password;
     private String name;
     private String phoneNumber;
-    private String gender;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private LocalDate birthDay;
+    private boolean male;
     private String email;
     private String avatar;
-    private boolean isActive;
+    private boolean active;
     private String lockReason;
+    private AccountEnum accountType;
 }

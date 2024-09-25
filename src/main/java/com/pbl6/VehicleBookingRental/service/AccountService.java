@@ -1,8 +1,13 @@
 package com.pbl6.VehicleBookingRental.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.pbl6.VehicleBookingRental.domain.Account;
+import com.pbl6.VehicleBookingRental.domain.dto.Meta;
+import com.pbl6.VehicleBookingRental.domain.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.repository.AccountRepository;
 import java.util.List;
 import java.util.Optional;
@@ -19,9 +24,18 @@ public class AccountService {
         return this.accountRepository.save(account);
     }
     
-    public List<Account> fetchAllAccounts() {
-        List<Account> accounts = this.accountRepository.findAll();
-        return accounts;
+    public ResultPaginationDTO fetchAllAccounts(Specification<Account> spec, Pageable pageable) {
+        Page<Account> pageAccount = this.accountRepository.findAll(spec, pageable);
+        ResultPaginationDTO res = new ResultPaginationDTO();
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber());
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(pageAccount.getTotalPages());
+        meta.setTotal(pageAccount.getTotalElements());
+        res.setMeta(meta);
+        res.setResult(pageAccount.getContent());
+
+        return res;
     }
 
     public Account fetchAccountById(long id) {
@@ -38,7 +52,7 @@ public class AccountService {
         if(accountUpdate != null) {
             accountUpdate.setPassword(reqAccount.getPassword());
             accountUpdate.setPhoneNumber(reqAccount.getPhoneNumber());
-            accountUpdate.setGender(reqAccount.getGender());
+            accountUpdate.setMale(reqAccount.isMale());
             accountUpdate.setEmail(reqAccount.getEmail());
             accountUpdate.setAvatar(reqAccount.getAvatar());
             accountUpdate.setActive(reqAccount.isActive());

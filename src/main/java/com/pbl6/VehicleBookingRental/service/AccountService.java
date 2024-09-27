@@ -105,4 +105,6 @@ public class AccountService {
     public boolean checkAvailableUsername(String username) {
         return accountRepository.existsByEmail(username) || accountRepository.existsByPhoneNumber(username);
     }
+
+    
 }

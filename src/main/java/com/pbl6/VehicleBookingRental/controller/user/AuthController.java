@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.pbl6.VehicleBookingRental.domain.Account;
 import com.pbl6.VehicleBookingRental.domain.dto.LoginDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.ResLoginDTO;
+import com.pbl6.VehicleBookingRental.service.AccountService;
 import com.pbl6.VehicleBookingRental.service.SecurityUtil;
 
 import jakarta.validation.Valid;
@@ -22,10 +24,12 @@ import jakarta.validation.Valid;
 public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
+    private final AccountService accountService;
     
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, AccountService accountService) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
+        this.accountService = accountService;
     }
 
 
@@ -38,11 +42,17 @@ public class AuthController {
 
         // Create token when authentication is successful
         String accessToken = this.securityUtil.createToken(authentication);
-        
+        Account account = this.accountService.handleGetAccountByUsername(loginDTO.getUsername());
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         ResLoginDTO res = new ResLoginDTO();
         res.setAccessToken(accessToken);
+        
+        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin(account.getId(), account.getPhoneNumber(), account.getName());
+        res.setAccountLogin(accountLogin);
+
+        
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 }

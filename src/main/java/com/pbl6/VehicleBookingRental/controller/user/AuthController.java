@@ -15,6 +15,8 @@ import com.pbl6.VehicleBookingRental.domain.dto.LoginDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.service.SecurityUtil;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("api/v1")
 public class AuthController {
@@ -28,7 +30,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<ResLoginDTO> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
         //Load username and password into Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword());
         //User Authentication => overwrite LoadUserByUsername in UserDetailService

@@ -1,36 +1,25 @@
-package com.pbl6.VehicleBookingRental.domain;
-
-import java.time.LocalDate;
+package com.pbl6.VehicleBookingRental.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pbl6.VehicleBookingRental.util.constant.AccountEnum;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
-@Table(name="Accounts")
+import java.time.LocalDate;
 @Getter
 @Setter
-public class Account {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@AllArgsConstructor
+@NoArgsConstructor
+public class ResAccountDTO {
     private long id;
 
-    @Column(unique = true)
     private String email;
-
-    private String password;
 
     private String name;
 
-    @Column(unique = true)
     private String phoneNumber;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
@@ -45,5 +34,4 @@ public class Account {
     private String lockReason;
     
     private AccountEnum accountType;
-
 }

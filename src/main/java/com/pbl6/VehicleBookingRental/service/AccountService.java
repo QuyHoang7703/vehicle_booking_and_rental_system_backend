@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 
 import com.pbl6.VehicleBookingRental.domain.Account;
 import com.pbl6.VehicleBookingRental.domain.dto.Meta;
+import com.pbl6.VehicleBookingRental.domain.dto.ResAccountDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.repository.AccountRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service    
 public class AccountService {
@@ -33,8 +35,20 @@ public class AccountService {
         meta.setPages(pageAccount.getTotalPages());
         meta.setTotal(pageAccount.getTotalElements());
         res.setMeta(meta);
-        res.setResult(pageAccount.getContent());
+        List<ResAccountDTO> list = pageAccount.getContent().stream().map(item -> new ResAccountDTO(
+                                            item.getId(),
+                                            item.getEmail(),
+                                            item.getName(),
+                                            item.getPhoneNumber(),
+                                            item.getBirthDay(),
+                                            item.isMale(),
+                                            item.getAvatar(),
+                                            item.isActive(),
+                                            item.getLockReason(),
+                                            item.getAccountType()))
+                                        .collect(Collectors.toList());    
 
+        res.setResult(list);
         return res;
     }
 
@@ -50,13 +64,13 @@ public class AccountService {
         long id = reqAccount.getId();
         Account accountUpdate = this.fetchAccountById(id);
         if(accountUpdate != null) {
-            accountUpdate.setPassword(reqAccount.getPassword());
-            accountUpdate.setPhoneNumber(reqAccount.getPhoneNumber());
+            // accountUpdate.setPassword(reqAccount.getPassword());
             accountUpdate.setMale(reqAccount.isMale());
-            accountUpdate.setEmail(reqAccount.getEmail());
             accountUpdate.setAvatar(reqAccount.getAvatar());
             accountUpdate.setActive(reqAccount.isActive());
-            accountUpdate.setLockReason(reqAccount.getLockReason());
+            accountUpdate.setBirthDay(reqAccount.getBirthDay());
+            // accountUpdate.setLockReason(reqAccount.getLockReason());
+            accountUpdate.setAccountType(reqAccount.getAccountType());
         }
         return this.accountRepository.save(accountUpdate);
        
@@ -67,6 +81,28 @@ public class AccountService {
     }
     
     public Account handleGetAccountByUsername(String username) {
-       return this.accountRepository.findByUsername(username);
+        return this.accountRepository.findByEmail(username)
+                .or(() -> this.accountRepository.findByPhoneNumber(username))
+                .orElse(null);
+    }
+
+    public ResAccountDTO convertToResAccount(Account account){
+        ResAccountDTO resAccount = new ResAccountDTO();
+        resAccount.setId(account.getId());
+        resAccount.setEmail(account.getEmail());
+        resAccount.setName(account.getName());
+        resAccount.setPhoneNumber(account.getPhoneNumber());
+        resAccount.setMale(account.isMale());
+        resAccount.setAvatar(account.getAvatar());
+        resAccount.setActive(account.isActive());
+        // resAccount.setLockReason(account.getLockReason());
+        resAccount.setBirthDay(account.getBirthDay());
+        resAccount.setAccountType(account.getAccountType());
+
+        return resAccount;
+    }
+
+    public boolean checkAvailableUsername(String username) {
+        return accountRepository.existsByEmail(username) || accountRepository.existsByPhoneNumber(username);
     }
 }

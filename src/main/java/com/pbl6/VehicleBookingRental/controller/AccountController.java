@@ -11,16 +11,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pbl6.VehicleBookingRental.domain.Account;
+import com.pbl6.VehicleBookingRental.domain.dto.ResAccountDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.service.AccountService;
 import com.pbl6.VehicleBookingRental.util.annotation.ApiMessage;
+import com.pbl6.VehicleBookingRental.util.error.IdInValidException;
 import com.turkraft.springfilter.boot.Filter;
 
-import java.util.List;
 @RestController
+@RequestMapping("api/v1")
 public class AccountController {
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
@@ -31,11 +34,15 @@ public class AccountController {
     }
 
     @PostMapping("/accounts")
-    public ResponseEntity<Account> createAccount(@RequestBody Account reqAccount){
+    @ApiMessage("Create a new account")
+    public ResponseEntity<ResAccountDTO> createAccount(@RequestBody Account reqAccount) throws IdInValidException{
+        if(this.accountService.checkAvailableUsername(reqAccount.getEmail()) || this.accountService.checkAvailableUsername(reqAccount.getPhoneNumber())){
+            throw new IdInValidException("Email or Phone Number already exist, please use another one");
+        }
         String hashPassword = this.passwordEncoder.encode(reqAccount.getPassword());
         reqAccount.setPassword(hashPassword);
         Account account = this.accountService.handleCreateAccount(reqAccount);
-        return ResponseEntity.status(HttpStatus.CREATED).body(account);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.convertToResAccount(account));
 
     }
 
@@ -46,15 +53,35 @@ public class AccountController {
     }
 
     @PutMapping("/accounts")
-    public ResponseEntity<Account> updateAccount(@RequestBody Account account) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.handleUpdateAccount(account));
+    public ResponseEntity<ResAccountDTO> updateAccount(@RequestBody Account account) throws IdInValidException {
+        if(this.accountService.fetchAccountById(account.getId()) ==null) {
+            throw new IdInValidException("Account with id = " + account.getId() + " is not exist");
+        }
+        Account updateAccount = this.accountService.handleUpdateAccount(account);
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccount(updateAccount));
     }
 
     @DeleteMapping("/accounts/{id}")
-    public ResponseEntity<String> deleteAccount(@PathVariable("id") long id){
+    @ApiMessage("Deleted a account")
+    public ResponseEntity<Void> deleteAccount(@PathVariable("id") long id) throws IdInValidException{
+        Account account = this.accountService.fetchAccountById(id);
+        if(account==null) {
+            throw new IdInValidException("Account with id = " + id + " is not exist");
+        }
         this.accountService.handleDeleteAccount(id);
-        return ResponseEntity.status(HttpStatus.OK).body("Đã xóa account");
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
+
+    @GetMapping("/accounts/{id}")
+    @ApiMessage("Deleted a account")
+    public ResponseEntity<ResAccountDTO> fetchAccountById(@PathVariable("id") long id) throws IdInValidException{
+        Account account = this.accountService.fetchAccountById(id);
+        if(account==null) {
+            throw new IdInValidException("Account with id = " + id + " is not exist");
+        }
+       
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccount(account));
+    } 
 
 
 

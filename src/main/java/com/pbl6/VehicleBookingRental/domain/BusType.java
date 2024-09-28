@@ -23,6 +23,6 @@ public class BusType {
     private int numberOfSeat;
     private String chairType;
 
-    @OneToMany(mappedBy = "bus", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "busType", fetch = FetchType.LAZY)
     private List<Bus> buses;
 }

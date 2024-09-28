@@ -11,7 +11,7 @@ import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name="bus_types")
+@Table(name="utilities")
 @Getter 
 @Setter
 public class Utility {

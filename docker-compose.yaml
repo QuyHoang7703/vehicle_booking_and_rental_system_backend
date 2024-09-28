@@ -11,7 +11,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      - MYSQL_URL=jdbc:mysql://db:3306/bookingcar
+      - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
     develop:
       watch:
         - action: rebuild
@@ -23,13 +23,13 @@ services:
       - mysql-db-data:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=admin123
-      - MYSQL_DATABASE=bookingcar
-      - MYSQL_USER=bookingcar
-      - MYSQL_PASSWORD=bookingcar
+      - MYSQL_DATABASE=vehicle_booking_rental
+      - MYSQL_USER=vehicle_booking_rental
+      - MYSQL_PASSWORD=vehicle_booking_rental
     ports:
-      - 3306:3306
+      - 3308:3306
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "bookingcar", "--password=bookingcar"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "vehicle_booking_rental", "--password=vehicle_booking_rental"]
       interval: 10s
       timeout: 5s
       retries: 5

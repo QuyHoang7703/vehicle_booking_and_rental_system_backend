@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 public class GlobalException {
     @ExceptionHandler(value = {
         UsernameNotFoundException.class,
-        BadCredentialsException.class
+        BadCredentialsException.class,
+        IdInValidException.class
     })
     public ResponseEntity<RestResponse<Object>> handleException(Exception ex) {
         RestResponse<Object> restResponse = new RestResponse<Object>();

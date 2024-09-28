@@ -16,7 +16,7 @@ import java.util.List;
 import java.time.Instant;
 
 @Entity
-@Table(name="bus_types")
+@Table(name="buses")
 @Getter
 @Setter
 public class Bus {

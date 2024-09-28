@@ -73,7 +73,7 @@ public class AccountController {
     }
 
     @GetMapping("/accounts/{id}")
-    @ApiMessage("Deleted a account")
+    @ApiMessage("Updated a account")
     public ResponseEntity<ResAccountDTO> fetchAccountById(@PathVariable("id") long id) throws IdInValidException{
         Account account = this.accountService.fetchAccountById(id);
         if(account==null) {

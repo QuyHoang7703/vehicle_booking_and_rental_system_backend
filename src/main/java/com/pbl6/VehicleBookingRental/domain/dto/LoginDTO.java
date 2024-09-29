@@ -11,4 +11,6 @@ public class LoginDTO {
     private String username;
     @NotBlank(message = "Password cannot be left blank")
     private String password;
+    // @NotBlank(message = "Confirm password cannot be left blank")
+    // private String confirmPassword;
 }

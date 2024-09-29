@@ -19,4 +19,13 @@ public class ResLoginDTO {
         private String username;
         private String name;
     }
+
+    // public static class 
+    // @Getter
+    // @Setter
+    // @AllArgsConstructor
+    // @NoArgsConstructor
+    // public static class UserGetAccount {
+    //     private UserLogin user;
+    // }
 }

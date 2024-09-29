@@ -12,4 +12,7 @@ public interface AccountRepository  extends JpaRepository<Account, Long>, JpaSpe
     Optional<Account> findByPhoneNumber(String phoneNumber);
     boolean existsByEmail(String email);
     boolean existsByPhoneNumber(String phoneNumber);
+
+    Optional<Account> findByRefreshTokenAndEmail(String refreshToken, String email);
+    Optional<Account> findByRefreshTokenAndPhoneNumber(String refreshToken, String phoneNumber);
 }

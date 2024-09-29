@@ -43,6 +43,8 @@ public class Account {
     private boolean active;
 
     private String lockReason;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String refreshToken;
     
     private AccountEnum accountType;
 

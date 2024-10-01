@@ -27,7 +27,7 @@ services:
       - MYSQL_USER=vehicle_booking_rental
       - MYSQL_PASSWORD=vehicle_booking_rental
     ports:
-      - 3306:3306
+      - 3308:3306
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "vehicle_booking_rental", "--password=vehicle_booking_rental"]
       interval: 10s

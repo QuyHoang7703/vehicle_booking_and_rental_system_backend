@@ -1,8 +1,10 @@
 package com.pbl6.VehicleBookingRental.user.domain.account;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
@@ -11,6 +13,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Booking;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.domain.notification.NotificationAccount;
 
+import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -24,21 +27,32 @@ import lombok.Setter;
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    private String username;
-    private String password;
-    @Column(name = "phone_number")
-    private String phoneNumber;
-    private String name;
-    @Column(name = "birth_day")
-    private Date birthDay;
-    @Column(name = "gender")
-    private String male;
+    private long id;
+
+    @Column(unique = true)
     private String email;
-    @Column(name = "is_active")
+
+    private String password;
+
+    private String name;
+
+    @Column(unique = true)
+    private String phoneNumber;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    private LocalDate birthDay;
+
+    private boolean male;
+
+    private String avatar;
+
     private boolean active;
-    @Column(name = "reason")
+
     private String lockReason;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String refreshToken;
+
+    private AccountEnum accountType;
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     @JsonIgnore
@@ -64,4 +78,5 @@ public class Account {
     @OneToOne( mappedBy = "account",cascade = CascadeType.ALL)
     @JsonIgnore
     private Driver driver;
+
 }

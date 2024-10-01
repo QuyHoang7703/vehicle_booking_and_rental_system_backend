@@ -27,7 +27,7 @@ import lombok.Setter;
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
 
     @Column(unique = true)
     private String email;

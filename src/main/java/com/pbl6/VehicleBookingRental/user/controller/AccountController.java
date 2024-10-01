@@ -31,8 +31,6 @@ public class AccountController {
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
 
-  
-
     public AccountController(AccountService accountService, PasswordEncoder passwordEncoder) {
         this.accountService = accountService;
         this.passwordEncoder = passwordEncoder;

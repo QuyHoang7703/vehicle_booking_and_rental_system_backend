@@ -1,28 +1,28 @@
-package com.pbl6.VehicleBookingRental.user.domain;
+package com.pbl6.VehicleBookingRental.user.domain.bus_service;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
 
 @Entity
-@Table(name="bus_types")
+@Table(name="utilities")
 @Getter
 @Setter
-public class BusType {
+public class Utility {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String name;
-    private int numberOfSeat;
-    private String chairType;
+    private String description;
+    private String image;
 
-    @OneToMany(mappedBy = "busType", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "utilities", fetch = FetchType.LAZY)
     private List<Bus> buses;
+
 }

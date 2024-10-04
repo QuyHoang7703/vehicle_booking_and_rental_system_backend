@@ -1,37 +1,26 @@
 package com.pbl6.VehicleBookingRental.domain.dto;
 
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pbl6.VehicleBookingRental.util.constant.GenderEnum;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDate;
+import java.time.Instant;
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class ResAccountDTO {
-    private long id;
-
-    private String email;
-
+@Builder
+public class AccountInfoDTO {
+    private String username;
     private String name;
-
-    private String phoneNumber;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate birthDay;
-
-    private  GenderEnum gender;
-
+    private String phoneNumber;
+    
+    private GenderEnum gender;
     private String avatar;
 
-    private boolean active;
-
-    private String lockReason;
-    
-    
 }

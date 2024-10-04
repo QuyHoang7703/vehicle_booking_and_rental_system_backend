@@ -12,20 +12,28 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pbl6.VehicleBookingRental.domain.Account;
+import com.pbl6.VehicleBookingRental.domain.dto.AccountInfoDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.LoginDTO;
+import com.pbl6.VehicleBookingRental.domain.dto.RegisterDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.ResLoginDTO;
+import com.pbl6.VehicleBookingRental.domain.dto.ResRegisterDTO;
+import com.pbl6.VehicleBookingRental.domain.dto.ResponseInfo;
+import com.pbl6.VehicleBookingRental.domain.dto.VerifyDTO;
 import com.pbl6.VehicleBookingRental.service.AccountService;
 import com.pbl6.VehicleBookingRental.service.SecurityUtil;
 import com.pbl6.VehicleBookingRental.util.annotation.ApiMessage;
+import com.pbl6.VehicleBookingRental.util.constant.GenderEnum;
 import com.pbl6.VehicleBookingRental.util.error.IdInValidException;
 
 import jakarta.validation.Valid;
@@ -36,19 +44,76 @@ public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final SecurityUtil securityUtil;
     private final AccountService accountService;
+    private final PasswordEncoder passwordEncoder;
     @Value("${pbl6.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
     
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil, AccountService accountService) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil
+                            , AccountService accountService, PasswordEncoder passwordEncoder) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.accountService = accountService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @PostMapping("auth/register")
+    @ApiMessage("Register a new user")
+    public ResponseEntity<ResponseInfo> createUser(@RequestBody RegisterDTO registerDTO) throws IdInValidException{
+        // if(this.accountService.checkAvailableEmail(registerDTO.getEmail())){
+        //     throw new IdInValidException("Email already exist, please use another one");
+        // }
+        if(!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())){
+            throw new IdInValidException("Password and Confirm Password do not match");
+        }
+        String hashPassword = this.passwordEncoder.encode(registerDTO.getPassword());
+        registerDTO.setPassword(hashPassword);
+        Account newAccount = this.accountService.handleRegisterUser(registerDTO);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseInfo("Check email to get OTP"));
+        // return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.convertToResUserRegister(newAccount));
+    }
+
+    @PostMapping("auth/register-info")
+    @ApiMessage("Register a new user")
+    public ResponseEntity<ResRegisterDTO> addInfoUser(@RequestBody AccountInfoDTO accountInfoDTO) {
+        Account account = this.accountService.handleGetAccountByUsername(accountInfoDTO.getUsername());
+        account.setName(accountInfoDTO.getName());
+        account.setBirthDay(accountInfoDTO.getBirthDay());
+        account.setGender(accountInfoDTO.getGender());
+        account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
+        account.setAvatar(accountInfoDTO.getAvatar());
+        this.accountService.handleUpdateAccount(account);
+        
+        return ResponseEntity.ok(this.accountService.convertToResRegisterDTO(account));
+    }
+
+    @PostMapping("/auth/verify")
+    public ResponseEntity<ResponseInfo> verify(@RequestBody VerifyDTO verifyDTO) throws IdInValidException{
+        if(!this.accountService.checkAvailableUsername(verifyDTO.getEmail())){
+            throw new IdInValidException("Email not found");
+        }
+        this.accountService.verify(verifyDTO.getEmail(), verifyDTO.getOtp());
+        
+        return ResponseEntity.ok(new ResponseInfo("Verified successful"));
+    }
+
+    @PostMapping("/auth/resend_otp")
+    public ResponseEntity<ResponseInfo> resendOTP(@RequestParam String email) throws IdInValidException{
+        // if(this.userService.checkAvailableEmail(email)){
+        //     throw new IdInValidException("Email not found");
+        // }
+        this.accountService.resendOtp(email);
+        return ResponseEntity.ok(new ResponseInfo("Resend OTP"));
+
     }
 
 
     @PostMapping("/auth/login")
     @ApiMessage("Login successfully")
-    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) throws IdInValidException {
+        if(!this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified()){
+            throw new IdInValidException("Account not found or not verified !!!");
+        }
         //Load username and password into Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword());
         //User Authentication => overwrite LoadUserByUsername in UserDetailService

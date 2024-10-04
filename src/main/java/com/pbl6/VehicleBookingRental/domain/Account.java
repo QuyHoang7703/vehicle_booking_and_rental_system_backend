@@ -13,7 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-
+import java.time.Instant;
 @Entity
 @Table(name="Accounts")
 @Getter
@@ -47,5 +47,10 @@ public class Account {
     private String refreshToken;
     
     private AccountEnum accountType;
+
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String otp;
+    private Instant otpExpirationTime;
+    private boolean verified;
 
 }

@@ -32,9 +32,10 @@ public class VehicleRegister {
     private String policy;
     private double ratingTotal;
     private double amount;
+
+
     @OneToMany(mappedBy = "vehicleRegister", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<CarRentalService> typeOfRentalServiceList = new ArrayList<>() ;
+    private List<CarRentalService> typeOfRentalServiceList;
 
     @ManyToOne
     @JsonIgnore
@@ -45,4 +46,6 @@ public class VehicleRegister {
     @JsonIgnore
     @JoinColumn(name = "car_rental_partner_id")
     private CarRentalPartner carRentalPartner;
+
+
 }

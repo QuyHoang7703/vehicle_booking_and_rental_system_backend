@@ -19,9 +19,9 @@ public class CarRentalService {
     private int id;
     private double price;
     private int type;
+
     @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "service_id")
+    @JoinColumn(name = "vehicle_register_id")
     private VehicleRegister vehicleRegister;
 
     @OneToMany(mappedBy = "carRentalService",cascade = CascadeType.ALL)

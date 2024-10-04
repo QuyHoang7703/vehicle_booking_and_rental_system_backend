@@ -1,4 +1,6 @@
 package com.pbl6.VehicleBookingRental.domain.dto;
+import com.pbl6.VehicleBookingRental.util.constant.GenderEnum;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +21,7 @@ public class ResRegisterDTO {
 
     private String phoneNumber;
 
-    private boolean male;
+    private GenderEnum gender;
 
     private String avatar;
     

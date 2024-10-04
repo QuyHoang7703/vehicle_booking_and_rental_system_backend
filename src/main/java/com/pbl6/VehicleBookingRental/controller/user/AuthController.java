@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.pbl6.VehicleBookingRental.domain.Account;
+import com.pbl6.VehicleBookingRental.domain.dto.AccountInfoDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.LoginDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.RegisterDTO;
 import com.pbl6.VehicleBookingRental.domain.dto.ResLoginDTO;
@@ -32,6 +33,7 @@ import com.pbl6.VehicleBookingRental.domain.dto.VerifyDTO;
 import com.pbl6.VehicleBookingRental.service.AccountService;
 import com.pbl6.VehicleBookingRental.service.SecurityUtil;
 import com.pbl6.VehicleBookingRental.util.annotation.ApiMessage;
+import com.pbl6.VehicleBookingRental.util.constant.GenderEnum;
 import com.pbl6.VehicleBookingRental.util.error.IdInValidException;
 
 import jakarta.validation.Valid;
@@ -56,7 +58,7 @@ public class AuthController {
 
     @PostMapping("auth/register")
     @ApiMessage("Register a new user")
-    public ResponseEntity<ResRegisterDTO> createUser(@RequestBody RegisterDTO registerDTO) throws IdInValidException{
+    public ResponseEntity<ResponseInfo> createUser(@RequestBody RegisterDTO registerDTO) throws IdInValidException{
         // if(this.accountService.checkAvailableEmail(registerDTO.getEmail())){
         //     throw new IdInValidException("Email already exist, please use another one");
         // }
@@ -66,7 +68,23 @@ public class AuthController {
         String hashPassword = this.passwordEncoder.encode(registerDTO.getPassword());
         registerDTO.setPassword(hashPassword);
         Account newAccount = this.accountService.handleRegisterUser(registerDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.convertToResUserRegister(newAccount));
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseInfo("Check email to get OTP"));
+        // return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.convertToResUserRegister(newAccount));
+    }
+
+    @PostMapping("auth/register-info")
+    @ApiMessage("Register a new user")
+    public ResponseEntity<ResRegisterDTO> addInfoUser(@RequestBody AccountInfoDTO accountInfoDTO) {
+        Account account = this.accountService.handleGetAccountByUsername(accountInfoDTO.getUsername());
+        account.setName(accountInfoDTO.getName());
+        account.setBirthDay(accountInfoDTO.getBirthDay());
+        account.setGender(accountInfoDTO.getGender());
+        account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
+        account.setAvatar(accountInfoDTO.getAvatar());
+        this.accountService.handleUpdateAccount(account);
+        
+        return ResponseEntity.ok(this.accountService.convertToResRegisterDTO(account));
     }
 
     @PostMapping("/auth/verify")

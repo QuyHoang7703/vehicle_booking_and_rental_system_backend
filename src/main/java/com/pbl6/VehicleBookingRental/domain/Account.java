@@ -3,13 +3,14 @@ package com.pbl6.VehicleBookingRental.domain;
 import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.pbl6.VehicleBookingRental.util.constant.AccountEnum;
+import com.pbl6.VehicleBookingRental.util.constant.GenderEnum;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,7 +37,7 @@ public class Account {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate birthDay;
 
-    private boolean male;
+    private GenderEnum gender;
 
     private String avatar;
 
@@ -46,11 +47,15 @@ public class Account {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
     
-    private AccountEnum accountType;
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String otp;
     private Instant otpExpirationTime;
     private boolean verified;
+
+    @PrePersist
+    public void onCreate() {
+        this.active = true;  
+    }
 
 }

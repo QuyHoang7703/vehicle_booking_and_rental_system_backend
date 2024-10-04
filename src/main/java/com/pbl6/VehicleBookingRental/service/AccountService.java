@@ -60,13 +60,13 @@ public class AccountService {
 
     }
 
-    public ResRegisterDTO convertToResUserRegister(Account account){
+    public ResRegisterDTO convertToResRegisterDTO(Account account){
         ResRegisterDTO resRegisterDTO = new ResRegisterDTO();
         resRegisterDTO.setId(account.getId());
         resRegisterDTO.setEmail(account.getEmail());
         resRegisterDTO.setName(account.getName());
         resRegisterDTO.setPhoneNumber(account.getPhoneNumber());
-        resRegisterDTO.setMale(account.isMale());
+        resRegisterDTO.setGender(account.getGender());
         resRegisterDTO.setAvatar(account.getAvatar());
     
         return resRegisterDTO;
@@ -87,11 +87,10 @@ public class AccountService {
                                             item.getName(),
                                             item.getPhoneNumber(),
                                             item.getBirthDay(),
-                                            item.isMale(),
+                                            item.getGender(),
                                             item.getAvatar(),
                                             item.isActive(),
-                                            item.getLockReason(),
-                                            item.getAccountType()))
+                                            item.getLockReason()))
                                         .collect(Collectors.toList());    
 
         res.setResult(list);
@@ -112,12 +111,11 @@ public class AccountService {
         if(accountUpdate != null) {
             // accountUpdate.setPassword(reqAccount.getPassword());
             accountUpdate.setName(reqAccount.getName());
-            accountUpdate.setMale(reqAccount.isMale());
+            accountUpdate.setPhoneNumber(reqAccount.getPhoneNumber());
+            accountUpdate.setGender(reqAccount.getGender());
             accountUpdate.setAvatar(reqAccount.getAvatar());
-            accountUpdate.setActive(reqAccount.isActive());
             accountUpdate.setBirthDay(reqAccount.getBirthDay());
             // accountUpdate.setLockReason(reqAccount.getLockReason());
-            accountUpdate.setAccountType(reqAccount.getAccountType());
         }
         return this.accountRepository.save(accountUpdate);
        
@@ -139,12 +137,11 @@ public class AccountService {
         resAccount.setEmail(account.getEmail());
         resAccount.setName(account.getName());
         resAccount.setPhoneNumber(account.getPhoneNumber());
-        resAccount.setMale(account.isMale());
+        resAccount.setGender(account.getGender());
         resAccount.setAvatar(account.getAvatar());
         resAccount.setActive(account.isActive());
         // resAccount.setLockReason(account.getLockReason());
         resAccount.setBirthDay(account.getBirthDay());
-        resAccount.setAccountType(account.getAccountType());
 
         return resAccount;
     }

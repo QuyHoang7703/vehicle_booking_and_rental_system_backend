@@ -1,5 +1,5 @@
 package com.pbl6.VehicleBookingRental.util.constant;
 
-public enum AccountEnum {
-    ADMIN, USER
+public enum GenderEnum {
+    FEMALE, MALE, OTHER
 }

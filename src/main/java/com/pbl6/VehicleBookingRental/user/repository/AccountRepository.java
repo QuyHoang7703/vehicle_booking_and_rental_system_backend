@@ -11,7 +11,7 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import java.util.Optional;
 
 @Repository
-public interface AccountRepository  extends JpaRepository<Account, Long>, JpaSpecificationExecutor<Account>{
+public interface AccountRepository  extends JpaRepository<Account, Integer>, JpaSpecificationExecutor<Account>{
     Optional<Account> findByEmail(String email);
     Optional<Account> findByPhoneNumber(String phoneNumber);
     boolean existsByEmail(String email);

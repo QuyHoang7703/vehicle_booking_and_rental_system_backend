@@ -93,7 +93,7 @@ public class AccountService {
         return res;
     }
 
-    public Account fetchAccountById(long id) {
+    public Account fetchAccountById(int id) {
         Optional<Account> optionalAccount =  this.accountRepository.findById(id);
         if(optionalAccount.isPresent()){
             return optionalAccount.get();
@@ -102,7 +102,7 @@ public class AccountService {
     }
 
     public Account handleUpdateAccount(Account reqAccount) {
-        long id = reqAccount.getId();
+        int id = reqAccount.getId();
         Account accountUpdate = this.fetchAccountById(id);
         if(accountUpdate != null) {
             // accountUpdate.setPassword(reqAccount.getPassword());
@@ -117,7 +117,7 @@ public class AccountService {
        
     }
 
-    public void handleDeleteAccount(long id) {
+    public void handleDeleteAccount(int id) {
         this.accountRepository.deleteById(id);
     }
     

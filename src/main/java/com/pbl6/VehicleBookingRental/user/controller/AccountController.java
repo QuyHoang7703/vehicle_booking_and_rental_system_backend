@@ -66,7 +66,7 @@ public class AccountController {
 
     @DeleteMapping("/accounts/{id}")
     @ApiMessage("Deleted a account")
-    public ResponseEntity<Void> deleteAccount(@PathVariable("id") long id) throws IdInValidException{
+    public ResponseEntity<Void> deleteAccount(@PathVariable("id") int id) throws IdInValidException{
         Account account = this.accountService.fetchAccountById(id);
         if(account==null) {
             throw new IdInValidException("Account with id = " + id + " is not exist");
@@ -77,7 +77,7 @@ public class AccountController {
 
     @GetMapping("/accounts/{id}")
     @ApiMessage("Updated a account")
-    public ResponseEntity<ResAccountDTO> fetchAccountById(@PathVariable("id") long id) throws IdInValidException{
+    public ResponseEntity<ResAccountDTO> fetchAccountById(@PathVariable("id") int id) throws IdInValidException{
         Account account = this.accountService.fetchAccountById(id);
         if(account==null) {
             throw new IdInValidException("Account with id = " + id + " is not exist");

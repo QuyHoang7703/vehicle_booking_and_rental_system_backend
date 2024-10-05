@@ -12,11 +12,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.pbl6.VehicleBookingRental.domain.RestResponse;
+
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalException {
     @ExceptionHandler(value = {
+        SQLIntegrityConstraintViolationException.class,
         UsernameNotFoundException.class,
         BadCredentialsException.class,
         IdInValidException.class

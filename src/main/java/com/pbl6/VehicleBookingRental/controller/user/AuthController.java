@@ -33,7 +33,6 @@ import com.pbl6.VehicleBookingRental.domain.dto.VerifyDTO;
 import com.pbl6.VehicleBookingRental.service.AccountService;
 import com.pbl6.VehicleBookingRental.service.SecurityUtil;
 import com.pbl6.VehicleBookingRental.util.annotation.ApiMessage;
-import com.pbl6.VehicleBookingRental.util.constant.GenderEnum;
 import com.pbl6.VehicleBookingRental.util.error.IdInValidException;
 
 import jakarta.validation.Valid;
@@ -59,9 +58,14 @@ public class AuthController {
     @PostMapping("auth/register")
     @ApiMessage("Register a new user")
     public ResponseEntity<ResponseInfo> createUser(@RequestBody RegisterDTO registerDTO) throws IdInValidException{
-        // if(this.accountService.checkAvailableEmail(registerDTO.getEmail())){
-        //     throw new IdInValidException("Email already exist, please use another one");
-        // }
+        if(this.accountService.checkAvailableUsername(registerDTO.getEmail())){
+            Account account = this.accountService.handleGetAccountByUsername(registerDTO.getEmail());
+            if(!account.isVerified()) {
+                throw new IdInValidException("Email already register, please verify");
+            }
+            throw new IdInValidException("Email already register");
+            
+        }
         if(!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())){
             throw new IdInValidException("Password and Confirm Password do not match");
         }

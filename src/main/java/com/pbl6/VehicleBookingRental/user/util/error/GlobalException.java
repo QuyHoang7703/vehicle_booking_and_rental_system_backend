@@ -14,15 +14,18 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 
 import com.pbl6.VehicleBookingRental.user.domain.RestResponse;
+
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalException {
     @ExceptionHandler(value = {
-        UsernameNotFoundException.class,
-        BadCredentialsException.class,
-        IdInValidException.class
+            SQLIntegrityConstraintViolationException.class,
+            UsernameNotFoundException.class,
+            BadCredentialsException.class,
+            IdInValidException.class
     })
     public ResponseEntity<RestResponse<Object>> handleException(Exception ex) {
         RestResponse<Object> restResponse = new RestResponse<Object>();

@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.domain.account;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -8,12 +9,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
+import com.pbl6.VehicleBookingRental.user.domain.Rating;
 import com.pbl6.VehicleBookingRental.user.domain.Voucher.VoucherAccount;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Booking;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.domain.notification.NotificationAccount;
 
 import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.GenderEnum;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -42,7 +45,8 @@ public class Account {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate birthDay;
 
-    private boolean male;
+    @Enumerated(EnumType.STRING)
+    private GenderEnum gender;
 
     private String avatar;
 
@@ -52,7 +56,16 @@ public class Account {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
 
-    private AccountEnum accountType;
+
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String otp;
+    private Instant otpExpirationTime;
+    private boolean verified;
+
+    @PrePersist
+    public void onCreate() {
+        this.active = true;
+    }
 
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     @JsonIgnore
@@ -79,4 +92,6 @@ public class Account {
     @JsonIgnore
     private Driver driver;
 
+    @OneToMany(mappedBy = "account",cascade = CascadeType.ALL)
+    private List<Rating> rating;
 }

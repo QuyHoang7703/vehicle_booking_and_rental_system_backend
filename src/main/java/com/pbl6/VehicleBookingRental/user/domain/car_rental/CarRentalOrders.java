@@ -1,0 +1,42 @@
+package com.pbl6.VehicleBookingRental.user.domain.car_rental;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.pbl6.VehicleBookingRental.user.domain.Orders;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Date;
+@Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name="car_rental_orders")
+public class CarRentalOrders {
+    @Id
+    @Column(name = "order_id")
+    private int id;
+    private Date start_rental_time;
+    private Date end_rental_time;
+    private String pickup_location;
+    private double total;
+    private Date created_at;
+    private String status;
+    private double voucher_value;
+    private double voucher_percentage;
+    private double amount;
+    private double car_deposit;
+    private double reservation_fee;
+    private double price;
+
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "car_rental_service_id")
+    private CarRentalService carRentalService;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "order_id")
+    private Orders order;
+}

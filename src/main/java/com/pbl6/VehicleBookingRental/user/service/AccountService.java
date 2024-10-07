@@ -217,4 +217,8 @@ public class AccountService {
         this.sendVerificationEmail(email, otp);
     }
     
+    public void handleLoginWithGoogle(Account account) {
+     
+         this.accountRepository.save(account);
+    }
 }

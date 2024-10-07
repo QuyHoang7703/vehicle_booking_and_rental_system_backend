@@ -87,7 +87,7 @@ public class AuthController {
         registerDTO.setPassword(hashPassword);
         Account newAccount = this.accountService.handleRegisterUser(registerDTO);
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseInfo("Check email to get OTP"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseInfo("Kiểm tra email để lấy OTP"));
         // return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.convertToResUserRegister(newAccount));
     }
 

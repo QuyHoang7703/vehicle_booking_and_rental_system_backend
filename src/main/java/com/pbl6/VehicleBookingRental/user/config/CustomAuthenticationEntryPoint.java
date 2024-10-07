@@ -30,6 +30,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint{
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException authException) throws IOException, ServletException {
+                System.out.println("Unauthorized request: " + request.getRequestURI());
         this.delegate.commence(request, response, authException);
         response.setContentType("application/json;charset=UTF-8");
 

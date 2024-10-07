@@ -3,7 +3,10 @@
 package com.pbl6.VehicleBookingRental.user.controller.user;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+
+// import org.hibernate.mapping.Map;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.web.exchanges.HttpExchange.Principal;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.http.HttpStatus;
@@ -14,6 +17,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,11 +37,14 @@ import com.pbl6.VehicleBookingRental.user.domain.dto.ResRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.domain.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.domain.dto.VerifyDTO;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
-import com.pbl6.VehicleBookingRental.user.service.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.service.CustomOAuth2UserService;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 
+import java.util.Map;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 
@@ -48,15 +55,18 @@ public class AuthController {
     private final SecurityUtil securityUtil;
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
+    private final CustomOAuth2UserService customOAuth2UserService;
     @Value("${pbl6.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
     
     public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil
-                            , AccountService accountService, PasswordEncoder passwordEncoder) {
+                            , AccountService accountService, PasswordEncoder passwordEncoder, 
+                            CustomOAuth2UserService customOAuth2UserService) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.securityUtil = securityUtil;
         this.accountService = accountService;
         this.passwordEncoder = passwordEncoder;
+        this.customOAuth2UserService = customOAuth2UserService;
     }
 
     @PostMapping("auth/register")
@@ -65,9 +75,9 @@ public class AuthController {
         if(this.accountService.checkAvailableUsername(registerDTO.getEmail())){
             Account account = this.accountService.handleGetAccountByUsername(registerDTO.getEmail());
             if(!account.isVerified()) {
-                throw new IdInValidException("Email already register, please verify");
+                throw new IdInValidException("Email này đã được đăng ký nhưng chưa xác nhận. Vui lòng xác nhận");
             }
-            throw new IdInValidException("Email already register");
+            throw new IdInValidException("Email này đã được đăng ký rồi");
             
         }
         if(!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())){
@@ -130,12 +140,13 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         
         Account account = this.accountService.handleGetAccountByUsername(loginDTO.getUsername());
-        ResLoginDTO res = new ResLoginDTO();
-        if(account != null){
-            ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin(account.getId(), account.getEmail(), account.getName());
-            res.setAccountLogin(accountLogin);
+        if(account == null){
+            throw new IdInValidException("Account not found  !!!");
         }
-    
+
+        ResLoginDTO res = new ResLoginDTO();
+        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin(account.getId(), account.getEmail(), account.getName());
+        res.setAccountLogin(accountLogin);
         // Create token when authentication is successful
         // String u = authentication.getName();
         String accessToken = this.securityUtil.createAccessToken(authentication.getName(), res);
@@ -189,13 +200,15 @@ public class AuthController {
         } else{
             account = this.accountService.fetchAccountByRefreshTokenAndPhoneNumber(refreshToken, username);
         }
-        ResLoginDTO res = new ResLoginDTO();
+        
         if(account==null) {
             throw new IdInValidException("Refresh Token is invalid");
-        }else{
-            ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin(account.getId(), account.getEmail(), account.getName());
-            res.setAccountLogin(accountLogin);
         }
+        
+        ResLoginDTO res = new ResLoginDTO();
+        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin(account.getId(), account.getEmail(), account.getName());
+        res.setAccountLogin(accountLogin);
+        
   
         String accessToken = this.securityUtil.createAccessToken(username, res);
         res.setAccessToken(accessToken);
@@ -238,5 +251,10 @@ public class AuthController {
         System.out.println(">>>>> Logout account username: " + username);
         return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, resCookies.toString()).body(null);
     }
+
+
+  
+
+  
 
 }

@@ -63,14 +63,14 @@ public class SecurityConfiguration {
                                                 "/api/v1/auth/resend_otp", "/api/v1/auth/register-info", "/api/v1/auth/google-login").permitAll()
                                 .anyRequest().authenticated()
                                 )
-                // .oauth2Login(oauth2 -> oauth2
-                //     .loginPage("/api/v1/auth/google-login")  // Chỉ định trang login cho OAuth2
-                //     .authorizationEndpoint(authorization -> authorization
-                //         .baseUri("/api/v1/auth/google-login")  // Đường dẫn cho OAuth2 login
-                //     )
-                //     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // Xử lý thông tin người dùng
-                //     .successHandler(customAuthenticationSuccessHandler)  // Xử lý khi đăng nhập thành công
-                // )
+                .oauth2Login(oauth2 -> oauth2
+                    .loginPage("/api/v1/auth/google-login")  // Chỉ định trang login cho OAuth2
+                    .authorizationEndpoint(authorization -> authorization
+                        .baseUri("/api/v1/auth/google-login")  // Đường dẫn cho OAuth2 login
+                    )
+                    .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // Xử lý thông tin người dùng
+                    .successHandler(customAuthenticationSuccessHandler)  // Xử lý khi đăng nhập thành công
+                )
                                 
                                 
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

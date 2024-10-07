@@ -108,11 +108,11 @@ public class AuthController {
     @PostMapping("/auth/verify")
     public ResponseEntity<ResponseInfo> verify(@RequestBody VerifyDTO verifyDTO) throws IdInValidException{
         if(!this.accountService.checkAvailableUsername(verifyDTO.getEmail())){
-            throw new IdInValidException("Email not found");
+            throw new IdInValidException("Email không tồn tại");
         }
         this.accountService.verify(verifyDTO.getEmail(), verifyDTO.getOtp());
         
-        return ResponseEntity.ok(new ResponseInfo("Verified successful"));
+        return ResponseEntity.ok(new ResponseInfo("Xác thực thành công"));
     }
 
     @PostMapping("/auth/resend_otp")
@@ -121,7 +121,7 @@ public class AuthController {
         //     throw new IdInValidException("Email not found");
         // }
         this.accountService.resendOtp(email);
-        return ResponseEntity.ok(new ResponseInfo("Resend OTP"));
+        return ResponseEntity.ok(new ResponseInfo("Gửi lại OTP"));
 
     }
 
@@ -130,7 +130,7 @@ public class AuthController {
     @ApiMessage("Login successfully")
     public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) throws IdInValidException {
         if(!this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified()){
-            throw new IdInValidException("Account not found or not verified !!!");
+            throw new IdInValidException("Tài khoản không tồn tại hoặc chưa được xác thực");
         }
         //Load username and password into Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword());
@@ -141,7 +141,7 @@ public class AuthController {
         
         Account account = this.accountService.handleGetAccountByUsername(loginDTO.getUsername());
         if(account == null){
-            throw new IdInValidException("Account not found  !!!");
+            throw new IdInValidException("Tài khoản không tồn tại");
         }
 
         ResLoginDTO res = new ResLoginDTO();

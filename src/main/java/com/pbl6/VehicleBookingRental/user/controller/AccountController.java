@@ -3,7 +3,7 @@ package com.pbl6.VehicleBookingRental.user.controller;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -44,7 +44,7 @@ public class AccountController {
     }
 
     @PutMapping("/accounts")
-    public ResponseEntity<ResAccountDTO> updateAccount(@RequestBody Account account) throws IdInValidException {
+    public ResponseEntity<ResAccountInfoDTO> updateAccount(@RequestBody Account account) throws IdInValidException {
         if(this.accountService.fetchAccountById(account.getId()) ==null) {
             throw new IdInValidException("Account with id = " + account.getId() + " is not exist");
         }
@@ -65,7 +65,7 @@ public class AccountController {
 
     @GetMapping("/accounts/{id}")
     @ApiMessage("Updated a account")
-    public ResponseEntity<ResAccountDTO> fetchAccountById(@PathVariable("id") int id) throws IdInValidException{
+    public ResponseEntity<ResAccountInfoDTO> fetchAccountById(@PathVariable("id") int id) throws IdInValidException{
         Account account = this.accountService.fetchAccountById(id);
         if(account==null) {
             throw new IdInValidException("Account with id = " + id + " is not exist");

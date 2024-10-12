@@ -8,7 +8,7 @@ import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.login.ReqLoginDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqVerifyDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 
 // import org.hibernate.mapping.Map;
@@ -32,9 +32,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.CustomOAuth2UserService;
+import com.pbl6.VehicleBookingRental.user.service.S3Service;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
@@ -52,6 +54,7 @@ public class AuthController {
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final S3Service s3Service;
     @Value("${pbl6.jwt.access-token-validity-in-seconds}")
     private long accessTokenExpiration;
     @Value("${pbl6.jwt.refresh-token-validity-in-seconds}")
@@ -83,16 +86,24 @@ public class AuthController {
 
     @PostMapping("auth/register-info")
     @ApiMessage("Register a new user")
-    public ResponseEntity<ResAccountDTO> addInfoUser(@RequestPart("account_info") ReqAccountInfoDTO accountInfoDTO) {
+    public ResponseEntity<ResAccountInfoDTO> addInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file,
+                                                        @RequestPart("account_info") ReqAccountInfoDTO accountInfoDTO) throws IdInValidException {
         Account account = this.accountService.handleGetAccountByUsername(accountInfoDTO.getUsername());
+        if(account == null ){
+            throw new IdInValidException("Email chưa được đăng ký");
+        }
+
         account.setName(accountInfoDTO.getName());
         account.setBirthDay(accountInfoDTO.getBirthDay());          
         account.setGender(accountInfoDTO.getGender());
         account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
-        account.setAvatar(accountInfoDTO.getAvatar());
+        if(file != null) {
+            String avatar = this.s3Service.uploadFile(file, "avatars");
+            account.setAvatar(avatar);
+        }
         this.accountService.handleUpdateAccount(account);
         
-        return ResponseEntity.ok(this.accountService.convertToResAccountDTO(account));
+        return ResponseEntity.ok(this.accountService.convertToResAccountInfoDTO(account));
     }
 
     @PostMapping("/auth/verify")
@@ -121,6 +132,9 @@ public class AuthController {
     public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDTO) throws IdInValidException {
         if(!this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified()){
             throw new IdInValidException("Tài khoản không tồn tại hoặc chưa được xác thực");
+        }
+        if(!this.accountService.isActiveAccount(loginDTO.getUsername())){
+            throw new IdInValidException("Tài khoản này đã bị khóa");
         }
         //Load username and password into Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword());
@@ -238,7 +252,6 @@ public class AuthController {
                                                 .maxAge(refreshTokenExpiration)
                                                 // .domain("example.com")
                                                 .build();
-        
         
         return ResponseEntity
                             .status(HttpStatus.OK)

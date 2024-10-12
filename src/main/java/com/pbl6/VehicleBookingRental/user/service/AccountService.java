@@ -1,7 +1,9 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
-import com.pbl6.VehicleBookingRental.user.domain.dto.*;
+import com.pbl6.VehicleBookingRental.user.dto.*;
+import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountDTO;
 import com.pbl6.VehicleBookingRental.user.repository.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import org.springframework.data.domain.Page;
@@ -33,7 +35,7 @@ public class AccountService {
         this.emailService = emailService;
     }
 
-    public Account handleRegisterUser(RegisterDTO registerDTO) throws IdInValidException {
+    public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInValidException {
         // Optional<Role> optionalRole = this.roleRepository.findById(registerDTO.getRoleId());
         // if(!optionalRole.isPresent()) {
         //     throw new IdInValidException("Role is invalid");
@@ -56,16 +58,16 @@ public class AccountService {
 
     }
 
-    public ResRegisterDTO convertToResRegisterDTO(Account account){
-        ResRegisterDTO resRegisterDTO = new ResRegisterDTO();
-        resRegisterDTO.setId(account.getId());
-        resRegisterDTO.setEmail(account.getEmail());
-        resRegisterDTO.setName(account.getName());
-        resRegisterDTO.setPhoneNumber(account.getPhoneNumber());
-        resRegisterDTO.setGender(account.getGender());
-        resRegisterDTO.setAvatar(account.getAvatar());
+    public ResAccountDTO convertToResAccountDTO(Account account){
+        ResAccountDTO resAccountDTO = new ResAccountDTO();
+        resAccountDTO.setId(account.getId());
+        resAccountDTO.setEmail(account.getEmail());
+        resAccountDTO.setName(account.getName());
+        resAccountDTO.setPhoneNumber(account.getPhoneNumber());
+        resAccountDTO.setGender(account.getGender());
+        resAccountDTO.setAvatar(account.getAvatar());
     
-        return resRegisterDTO;
+        return resAccountDTO;
     }
     
     public ResultPaginationDTO fetchAllAccounts(Specification<Account> spec, Pageable pageable) {
@@ -105,7 +107,6 @@ public class AccountService {
         int id = reqAccount.getId();
         Account accountUpdate = this.fetchAccountById(id);
         if(accountUpdate != null) {
-            // accountUpdate.setPassword(reqAccount.getPassword());
             accountUpdate.setName(reqAccount.getName());
             accountUpdate.setPhoneNumber(reqAccount.getPhoneNumber());
             accountUpdate.setGender(reqAccount.getGender());

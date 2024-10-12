@@ -18,7 +18,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.util.Base64;
-import com.pbl6.VehicleBookingRental.user.domain.dto.ResLoginDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
+
 import java.util.Optional;
 
 import javax.crypto.SecretKey;
@@ -82,7 +83,7 @@ public class SecurityUtil {
 
     public String createRefreshToken(String username, ResLoginDTO loginDTO) {
         Instant now = Instant.now();
-        Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
+        Instant validity = now.plus(this.refreshTokenExpiration, ChronoUnit.SECONDS);
 
         //Create header
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();

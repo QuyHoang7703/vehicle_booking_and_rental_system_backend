@@ -2,7 +2,7 @@ package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
-import com.pbl6.VehicleBookingRental.user.domain.dto.car_rental_DTO.VehicleRentalServiceDTO;
+import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServiceDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRegisterRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;

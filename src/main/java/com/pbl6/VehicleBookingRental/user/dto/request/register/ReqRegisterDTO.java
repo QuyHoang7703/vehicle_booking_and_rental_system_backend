@@ -1,11 +1,11 @@
-package com.pbl6.VehicleBookingRental.user.domain.dto;
+package com.pbl6.VehicleBookingRental.user.dto.request.register;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 @Getter
 @Setter
-public class RegisterDTO {
+public class ReqRegisterDTO {
     @NotBlank(message = "Email cannot be left blank")
     private String email;
     @NotBlank(message = "Password cannot be left blank")

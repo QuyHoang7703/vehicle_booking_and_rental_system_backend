@@ -1,4 +1,4 @@
-package com.pbl6.VehicleBookingRental.user.domain.dto.car_rental_DTO;
+package com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO;
 
 import lombok.Data;
 

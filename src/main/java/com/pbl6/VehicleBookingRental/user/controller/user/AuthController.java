@@ -3,10 +3,16 @@
 package com.pbl6.VehicleBookingRental.user.controller.user;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.login.ReqLoginDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqVerifyDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 
 // import org.hibernate.mapping.Map;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.web.exchanges.HttpExchange.Principal;
 import org.springframework.http.HttpHeaders;
 
 import org.springframework.http.HttpStatus;
@@ -17,7 +23,6 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,30 +30,21 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
-
-
-import com.pbl6.VehicleBookingRental.user.domain.dto.AccountInfoDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.LoginDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.RegisterDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.ResLoginDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.ResRegisterDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.ResponseInfo;
-import com.pbl6.VehicleBookingRental.user.domain.dto.VerifyDTO;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.CustomOAuth2UserService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 
-import java.util.Map;
-
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("api/v1")
 public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -56,22 +52,16 @@ public class AuthController {
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
     private final CustomOAuth2UserService customOAuth2UserService;
+    @Value("${pbl6.jwt.access-token-validity-in-seconds}")
+    private long accessTokenExpiration;
     @Value("${pbl6.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
     
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, SecurityUtil securityUtil
-                            , AccountService accountService, PasswordEncoder passwordEncoder, 
-                            CustomOAuth2UserService customOAuth2UserService) {
-        this.authenticationManagerBuilder = authenticationManagerBuilder;
-        this.securityUtil = securityUtil;
-        this.accountService = accountService;
-        this.passwordEncoder = passwordEncoder;
-        this.customOAuth2UserService = customOAuth2UserService;
-    }
+
 
     @PostMapping("auth/register")
     @ApiMessage("Register a new user")
-    public ResponseEntity<ResponseInfo> createUser(@RequestBody RegisterDTO registerDTO) throws IdInValidException{
+    public ResponseEntity<ResponseInfo> createUser(@RequestBody ReqRegisterDTO registerDTO) throws IdInValidException{
         if(this.accountService.checkAvailableUsername(registerDTO.getEmail())){
             Account account = this.accountService.handleGetAccountByUsername(registerDTO.getEmail());
             if(!account.isVerified()) {
@@ -81,7 +71,7 @@ public class AuthController {
             
         }
         if(!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())){
-            throw new IdInValidException("Password and Confirm Password do not match");
+            throw new IdInValidException("Mật khẩu và xác nhận mật khẩu không trùng khớp");
         }
         String hashPassword = this.passwordEncoder.encode(registerDTO.getPassword());
         registerDTO.setPassword(hashPassword);
@@ -93,20 +83,20 @@ public class AuthController {
 
     @PostMapping("auth/register-info")
     @ApiMessage("Register a new user")
-    public ResponseEntity<ResRegisterDTO> addInfoUser(@RequestBody AccountInfoDTO accountInfoDTO) {
+    public ResponseEntity<ResAccountDTO> addInfoUser(@RequestPart("account_info") ReqAccountInfoDTO accountInfoDTO) {
         Account account = this.accountService.handleGetAccountByUsername(accountInfoDTO.getUsername());
         account.setName(accountInfoDTO.getName());
-        account.setBirthDay(accountInfoDTO.getBirthDay());
+        account.setBirthDay(accountInfoDTO.getBirthDay());          
         account.setGender(accountInfoDTO.getGender());
         account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
         account.setAvatar(accountInfoDTO.getAvatar());
         this.accountService.handleUpdateAccount(account);
         
-        return ResponseEntity.ok(this.accountService.convertToResRegisterDTO(account));
+        return ResponseEntity.ok(this.accountService.convertToResAccountDTO(account));
     }
 
     @PostMapping("/auth/verify")
-    public ResponseEntity<ResponseInfo> verify(@RequestBody VerifyDTO verifyDTO) throws IdInValidException{
+    public ResponseEntity<ResponseInfo> verify(@RequestBody ReqVerifyDTO verifyDTO) throws IdInValidException{
         if(!this.accountService.checkAvailableUsername(verifyDTO.getEmail())){
             throw new IdInValidException("Email không tồn tại");
         }
@@ -128,7 +118,7 @@ public class AuthController {
 
     @PostMapping("/auth/login")
     @ApiMessage("Login successfully")
-    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) throws IdInValidException {
+    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDTO) throws IdInValidException {
         if(!this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified()){
             throw new IdInValidException("Tài khoản không tồn tại hoặc chưa được xác thực");
         }
@@ -151,9 +141,19 @@ public class AuthController {
         // String u = authentication.getName();
         String accessToken = this.securityUtil.createAccessToken(authentication.getName(), res);
         res.setAccessToken(accessToken);
+
+        //Save access token into Cookie
+        ResponseCookie accCookies = ResponseCookie
+                                                .from("access_token", accessToken)
+                                                // .httpOnly(true)
+                                                .secure(true)
+                                                .path("/")
+                                                .maxAge(accessTokenExpiration)
+                                                // .domain("example.com")
+                                                .build();
         
 
-        // Create refresh token 
+        // Create refresh token
         String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
         this.accountService.updateRefreshToken(refresh_token, loginDTO.getUsername());
         ResponseCookie resCookies = ResponseCookie
@@ -166,7 +166,11 @@ public class AuthController {
                                                 .build();
         
         
-        return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, resCookies.toString()).body(res);
+        return ResponseEntity
+                            .status(HttpStatus.OK)
+                            .header(HttpHeaders.SET_COOKIE, accCookies.toString())
+                            .header(HttpHeaders.SET_COOKIE, resCookies.toString())
+                            .body(res);
     }
 
     @GetMapping("/auth/account")
@@ -212,7 +216,16 @@ public class AuthController {
   
         String accessToken = this.securityUtil.createAccessToken(username, res);
         res.setAccessToken(accessToken);
-        
+
+        //Save access token into Cookie
+        ResponseCookie accCookies = ResponseCookie
+                                                .from("access_token", accessToken)
+                                                // .httpOnly(true)
+                                                .secure(true)
+                                                .path("/")
+                                                .maxAge(accessTokenExpiration)
+                                                // .domain("example.com")
+                                                .build();
 
         // Create refresh token 
         String refresh_token = this.securityUtil.createRefreshToken(username, res);
@@ -227,7 +240,11 @@ public class AuthController {
                                                 .build();
         
         
-        return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, resCookies.toString()).body(res);
+        return ResponseEntity
+                            .status(HttpStatus.OK)
+                            .header(HttpHeaders.SET_COOKIE, accCookies.toString())
+                            .header(HttpHeaders.SET_COOKIE, resCookies.toString())
+                            .body(res);
      
     }
 

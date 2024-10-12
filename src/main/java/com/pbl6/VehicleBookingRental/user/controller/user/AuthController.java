@@ -3,6 +3,13 @@
 package com.pbl6.VehicleBookingRental.user.controller.user;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.dto.AccountInfoDTO;
+import com.pbl6.VehicleBookingRental.user.dto.RegisterDTO;
+import com.pbl6.VehicleBookingRental.user.dto.ResRegisterDTO;
+import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
+import com.pbl6.VehicleBookingRental.user.dto.VerifyDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.login.ReqLoginDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 
 // import org.hibernate.mapping.Map;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,15 +34,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
-
-import com.pbl6.VehicleBookingRental.user.domain.dto.AccountInfoDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.LoginDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.RegisterDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.ResLoginDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.ResRegisterDTO;
-import com.pbl6.VehicleBookingRental.user.domain.dto.ResponseInfo;
-import com.pbl6.VehicleBookingRental.user.domain.dto.VerifyDTO;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.CustomOAuth2UserService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
@@ -128,7 +126,7 @@ public class AuthController {
 
     @PostMapping("/auth/login")
     @ApiMessage("Login successfully")
-    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) throws IdInValidException {
+    public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDTO) throws IdInValidException {
         if(!this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified()){
             throw new IdInValidException("Tài khoản không tồn tại hoặc chưa được xác thực");
         }

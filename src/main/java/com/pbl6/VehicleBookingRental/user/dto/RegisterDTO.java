@@ -1,4 +1,4 @@
-package com.pbl6.VehicleBookingRental.user.domain.dto;
+package com.pbl6.VehicleBookingRental.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

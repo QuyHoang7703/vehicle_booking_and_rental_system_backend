@@ -1,4 +1,4 @@
-package com.pbl6.VehicleBookingRental.user.domain.dto;
+package com.pbl6.VehicleBookingRental.user.dto.response.login;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,7 +23,7 @@ public class ResLoginDTO {
         private String name;
     }
 
-    // public static class 
+  
     // @Getter
     // @Setter
     // @AllArgsConstructor

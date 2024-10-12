@@ -18,7 +18,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.stereotype.Service;
 
 import com.nimbusds.jose.util.Base64;
-import com.pbl6.VehicleBookingRental.user.domain.dto.ResLoginDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
+
 import java.util.Optional;
 
 import javax.crypto.SecretKey;

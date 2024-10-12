@@ -1,7 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
-import com.pbl6.VehicleBookingRental.user.domain.dto.*;
+import com.pbl6.VehicleBookingRental.user.dto.*;
 import com.pbl6.VehicleBookingRental.user.repository.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import org.springframework.data.domain.Page;

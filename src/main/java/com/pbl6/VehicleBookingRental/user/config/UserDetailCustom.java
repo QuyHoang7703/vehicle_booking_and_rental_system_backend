@@ -1,4 +1,4 @@
-package com.pbl6.VehicleBookingRental.user.service;
+package com.pbl6.VehicleBookingRental.user.config;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.service.AccountService;
+
 import java.util.Collections;
 
 @Component("userDetailsService")

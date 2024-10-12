@@ -81,7 +81,7 @@ public class AuthController {
             
         }
         if(!registerDTO.getPassword().equals(registerDTO.getConfirmPassword())){
-            throw new IdInValidException("Password and Confirm Password do not match");
+            throw new IdInValidException("Mật khẩu và xác nhận mật khẩu không trùng khớp");
         }
         String hashPassword = this.passwordEncoder.encode(registerDTO.getPassword());
         registerDTO.setPassword(hashPassword);
@@ -96,7 +96,7 @@ public class AuthController {
     public ResponseEntity<ResRegisterDTO> addInfoUser(@RequestBody AccountInfoDTO accountInfoDTO) {
         Account account = this.accountService.handleGetAccountByUsername(accountInfoDTO.getUsername());
         account.setName(accountInfoDTO.getName());
-        account.setBirthDay(accountInfoDTO.getBirthDay());
+        account.setBirthDay(accountInfoDTO.getBirthDay());          
         account.setGender(accountInfoDTO.getGender());
         account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
         account.setAvatar(accountInfoDTO.getAvatar());

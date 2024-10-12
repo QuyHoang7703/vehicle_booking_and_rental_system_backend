@@ -1,4 +1,4 @@
-package com.pbl6.VehicleBookingRental.user.dto;
+package com.pbl6.VehicleBookingRental.user.dto.response.account;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;

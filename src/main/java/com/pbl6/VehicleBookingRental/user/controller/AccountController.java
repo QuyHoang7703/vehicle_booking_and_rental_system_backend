@@ -2,8 +2,8 @@ package com.pbl6.VehicleBookingRental.user.controller;
 
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
-import com.pbl6.VehicleBookingRental.user.dto.ResAccountDTO;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountDTO;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,18 +36,6 @@ public class AccountController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // @PostMapping("/accounts")
-    // @ApiMessage("Create a new account")
-    // public ResponseEntity<ResAccountDTO> createAccount(@RequestBody Account reqAccount) throws IdInValidException{
-    //     if(this.accountService.checkAvailableUsername(reqAccount.getEmail()) || this.accountService.checkAvailableUsername(reqAccount.getPhoneNumber())){
-    //         throw new IdInValidException("Email or Phone Number already exist, please use another one");
-    //     }
-    //     String hashPassword = this.passwordEncoder.encode(reqAccount.getPassword());
-    //     reqAccount.setPassword(hashPassword);
-    //     Account account = this.accountService.handleCreateAccount(reqAccount);
-    //     return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.convertToResAccount(account));
-
-    // }
 
     @GetMapping("/accounts")
     @ApiMessage("fetch all account success")

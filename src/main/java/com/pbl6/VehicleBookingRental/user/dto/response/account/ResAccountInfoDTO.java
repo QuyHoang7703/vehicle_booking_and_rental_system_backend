@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResAccountDTO {
+public class ResAccountInfoDTO {
     private long id;
 
     private String email;
@@ -33,7 +33,7 @@ public class ResAccountDTO {
 
     private boolean active;
 
-    private String lockReason;
+    // private String lockReason;
 
 
 }

@@ -3,7 +3,7 @@ package com.pbl6.VehicleBookingRental.user.service;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.dto.*;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.repository.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import org.springframework.data.domain.Page;
@@ -58,14 +58,16 @@ public class AccountService {
 
     }
 
-    public ResAccountDTO convertToResAccountDTO(Account account){
-        ResAccountDTO resAccountDTO = new ResAccountDTO();
+    public ResAccountInfoDTO convertToResAccountInfoDTO(Account account){
+        ResAccountInfoDTO resAccountDTO = new ResAccountInfoDTO();
         resAccountDTO.setId(account.getId());
         resAccountDTO.setEmail(account.getEmail());
         resAccountDTO.setName(account.getName());
+        resAccountDTO.setBirthDay(account.getBirthDay());
         resAccountDTO.setPhoneNumber(account.getPhoneNumber());
         resAccountDTO.setGender(account.getGender());
         resAccountDTO.setAvatar(account.getAvatar());
+        resAccountDTO.setActive(true);
     
         return resAccountDTO;
     }
@@ -79,7 +81,7 @@ public class AccountService {
         meta.setPages(pageAccount.getTotalPages());
         meta.setTotal(pageAccount.getTotalElements());
         res.setMeta(meta);
-        List<ResAccountDTO> list = pageAccount.getContent().stream().map(item -> new ResAccountDTO (
+        List<ResAccountInfoDTO> list = pageAccount.getContent().stream().map(item -> new ResAccountInfoDTO (
                                             item.getId(),
                                             item.getEmail(),
                                             item.getName(),
@@ -87,8 +89,8 @@ public class AccountService {
                                             item.getBirthDay(),
                                             item.getGender(),
                                             item.getAvatar(),
-                                            item.isActive(),
-                                            item.getLockReason()))
+                                            item.isActive()))
+                                            // item.getLockReason()))
                                         .collect(Collectors.toList());
 
         res.setResult(list);
@@ -124,19 +126,21 @@ public class AccountService {
     
     public Account handleGetAccountByUsername(String username) {
         return this.accountRepository.findByEmail(username)
-                .or(() -> this.accountRepository.findByPhoneNumber(username))
-                .orElse(null);
+                    .or(() -> this.accountRepository.findByPhoneNumber(username))
+                    .orElse(null);
+      
     }
 
-    public ResAccountDTO convertToResAccount(Account account){
-        ResAccountDTO resAccount = new ResAccountDTO();
+    public ResAccountInfoDTO convertToResAccount(Account account){
+        Account currentAccount = this.handleGetAccountByUsername(account.getEmail());
+        ResAccountInfoDTO resAccount = new ResAccountInfoDTO();
         resAccount.setId(account.getId());
         resAccount.setEmail(account.getEmail());
         resAccount.setName(account.getName());
         resAccount.setPhoneNumber(account.getPhoneNumber());
         resAccount.setGender(account.getGender());
         resAccount.setAvatar(account.getAvatar());
-        resAccount.setActive(account.isActive());
+        resAccount.setActive(currentAccount.isActive());
         // resAccount.setLockReason(account.getLockReason());
         resAccount.setBirthDay(account.getBirthDay());
 
@@ -221,5 +225,11 @@ public class AccountService {
     public void handleLoginWithGoogle(Account account) {
      
          this.accountRepository.save(account);
+    }
+
+    public boolean isActiveAccount(String email) {
+        Account account = this.handleGetAccountByUsername(email);
+
+        return account.isActive();
     }
 }

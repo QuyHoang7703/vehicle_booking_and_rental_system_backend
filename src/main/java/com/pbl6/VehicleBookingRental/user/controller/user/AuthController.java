@@ -101,7 +101,13 @@ public class AuthController {
         account.setGender(accountInfoDTO.getGender());
         account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
         if(file != null) {
-            String avatar = this.s3Service.uploadFile(file, "avatars");
+            // String avatar = this.s3Service.saveFile(file);
+            // String avatar = this.s3Service.saveFile2(file);
+            String avatar = this.s3Service.uploadFile(file, "avatar");
+
+
+        
+            // this.s3Service.sa
             account.setAvatar(avatar);
         }
         this.accountService.handleUpdateAccount(account);

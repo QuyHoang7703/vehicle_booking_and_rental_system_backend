@@ -32,7 +32,7 @@ public class TokenServiceImpl implements TokenService{
       
             String token = UUID.randomUUID().toString();
             account.setToken(token);
-            account.setExpirationTime(Instant.now().plus(1, ChronoUnit.MINUTES));
+            account.setExpirationTime(Instant.now().plus(3, ChronoUnit.MINUTES));
             
 
             this.accountRepository.save(account);

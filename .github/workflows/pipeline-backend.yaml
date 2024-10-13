@@ -76,6 +76,9 @@ jobs:
           distribution: 'corretto'
       - name: Run Unit Test
         run: mvn clean compile
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET: ${{ secrets.AWS_SECRET }}
 
   build-image:
     name: Build Docker image

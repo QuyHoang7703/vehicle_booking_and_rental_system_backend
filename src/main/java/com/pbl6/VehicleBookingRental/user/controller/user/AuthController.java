@@ -67,7 +67,7 @@ public class AuthController {
 
     @PostMapping("auth/register")
     @ApiMessage("Register a new user")
-    public ResponseEntity<ResponseInfo> createUser(@RequestBody ReqRegisterDTO registerDTO) throws IdInValidException{
+    public ResponseEntity<ResponseInfo<String>> createUser(@RequestBody ReqRegisterDTO registerDTO) throws IdInValidException{
         if(this.accountService.checkAvailableUsername(registerDTO.getEmail())){
             Account account = this.accountService.handleGetAccountByUsername(registerDTO.getEmail());
             if(!account.isVerified()) {
@@ -83,7 +83,7 @@ public class AuthController {
         registerDTO.setPassword(hashPassword);
         Account newAccount = this.accountService.handleRegisterUser(registerDTO);
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseInfo("Kiểm tra email để lấy OTP"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseInfo<>("Kiểm tra email để lấy OTP"));
         // return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.convertToResUserRegister(newAccount));
     }
 
@@ -116,22 +116,22 @@ public class AuthController {
     }
 
     @PostMapping("/auth/verify")
-    public ResponseEntity<ResponseInfo> verify(@RequestBody ReqVerifyDTO verifyDTO) throws IdInValidException{
+    public ResponseEntity<ResponseInfo<String>> verify(@RequestBody ReqVerifyDTO verifyDTO) throws IdInValidException{
         if(!this.accountService.checkAvailableUsername(verifyDTO.getEmail())){
             throw new IdInValidException("Email không tồn tại");
         }
         this.accountService.verify(verifyDTO.getEmail(), verifyDTO.getOtp());
         
-        return ResponseEntity.ok(new ResponseInfo("Xác thực thành công"));
+        return ResponseEntity.ok(new ResponseInfo<>("Xác thực thành công"));
     }
 
     @PostMapping("/auth/resend_otp")
-    public ResponseEntity<ResponseInfo> resendOTP(@RequestParam String email) throws IdInValidException{
+    public ResponseEntity<ResponseInfo<String>> resendOTP(@RequestParam String email) throws IdInValidException{
         // if(this.userService.checkAvailableEmail(email)){
         //     throw new IdInValidException("Email not found");
         // }
         this.accountService.resendOtp(email);
-        return ResponseEntity.ok(new ResponseInfo("Gửi lại OTP"));
+        return ResponseEntity.ok(new ResponseInfo<>("Gửi lại OTP"));
 
     }
 
@@ -139,13 +139,13 @@ public class AuthController {
     @PostMapping("/auth/login")
     @ApiMessage("Login successfully")
     public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDTO) throws IdInValidException {
-        boolean check = this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified();
-        if(!this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified()){
-            throw new IdInValidException("Tài khoản không tồn tại hoặc chưa được xác thực");
-        }
-        if(!this.accountService.isActiveAccount(loginDTO.getUsername())){
-            throw new IdInValidException("Tài khoản này đã bị khóa");
-        }
+//        boolean check = this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified();
+//        if(!this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified()){
+//            throw new IdInValidException("Tài khoản không tồn tại hoặc chưa được xác thực");
+//        }
+//        if(!this.accountService.isActiveAccount(loginDTO.getUsername())){
+//            throw new IdInValidException("Tài khoản này đã bị khóa");
+//        }
         //Load username and password into Security
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDTO.getUsername(), loginDTO.getPassword());
         //User Authentication => overwrite LoadUserByUsername in UserDetailService
@@ -276,7 +276,7 @@ public class AuthController {
     public ResponseEntity<Void> logout() throws IdInValidException{
         String username = SecurityUtil.getCurrentLogin().isPresent()?
                             SecurityUtil.getCurrentLogin().get() : "";
-        if(username==null) {
+        if(username.isEmpty()) {
             throw new IdInValidException("Access token is invalid");
         }
         this.accountService.updateRefreshToken(null, username);

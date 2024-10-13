@@ -63,52 +63,7 @@ public class S3ServiceImpl implements S3Service{
         }
     }
 
-  
-//     public String saveFile(MultipartFile file) {
-//         String originalFilename = file.getOriginalFilename();
-//         int count = 0;
-//         int maxTries = 3;
-//         while(true) {
-//             try {
-//                 File file1 = convertMultiPartToFile(file);
-//                 PutObjectResult putObjectResult = amazonS3.putObject(bucketName, originalFilename, file1);
-//                 return putObjectResult.getContentMd5();
-//             } catch (IOException e) {
-//                 if (++count == maxTries) throw new RuntimeException(e);
-//             }
-//         }
 
-//     }
-
-//    public  File convertMultiPartToFile(MultipartFile file ) throws IOException
-//     {
-//         File convFile = new File( file.getOriginalFilename() );
-//         FileOutputStream fos = new FileOutputStream( convFile );
-//         fos.write( file.getBytes() );
-//         fos.close();
-//         return convFile;
-//     }
-
-//     public String saveFile2(MultipartFile file) {
-//         String originalFilename = "abc/" + file.getOriginalFilename(); // Thêm folder khi lưu file
-//         int count = 0;
-//         int maxTries = 3;
-//         while (true) {
-//             try {
-//                 ObjectMetadata metadata = new ObjectMetadata();
-//                 metadata.setContentLength(file.getSize());
-//                 metadata.setContentType(file.getContentType()); // Đặt Content-Type chính xác
-
-//                 // Đẩy lên S3 và đặt quyền public
-//                 amazonS3.putObject(new PutObjectRequest(bucketName, originalFilename, file.getInputStream(), metadata)
-//                         .withCannedAcl(CannedAccessControlList.PublicRead));
-
-//                 return originalFilename; // Trả về tên file hoặc URL tùy ý
-//             } catch (IOException e) {
-//                 if (++count == maxTries) throw new RuntimeException(e);
-//             }
-//         }
-//     }
  
     
 

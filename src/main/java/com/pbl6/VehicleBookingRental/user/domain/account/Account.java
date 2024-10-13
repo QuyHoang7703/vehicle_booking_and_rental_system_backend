@@ -26,7 +26,6 @@ import lombok.Setter;
 @Table(name="account")
 @Getter
 @Setter
-@Data
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -59,8 +58,10 @@ public class Account {
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String otp;
-    private Instant otpExpirationTime;
+    private Instant expirationTime;
     private boolean verified;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String token;
 
     @PrePersist
     public void onCreate() {

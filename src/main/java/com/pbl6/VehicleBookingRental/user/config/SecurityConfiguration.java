@@ -59,9 +59,8 @@ public class SecurityConfiguration {
                 // .antMatcher("/secured/**")
                 .authorizeHttpRequests(
                         authz -> authz
-                                .requestMatchers("/", "/api/v1/auth/login", "/api/v1/auth/refresh", 
-                                                "/api/v1/auth/register", "/api/v1/auth/verify", 
-                                                "/api/v1/auth/resend_otp", "/api/v1/auth/register-info", "/api/v1/auth/google-login").permitAll()
+                                .requestMatchers("/", "/api/v1/auth/**").permitAll()
+                                .requestMatchers("/api/v1/auth/logout").authenticated()
                                 .anyRequest().authenticated()
                                 )
                     .oauth2Login(oauth2 -> oauth2

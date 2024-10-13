@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.dto.*;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.repository.AccountRepository;
@@ -45,7 +46,7 @@ public class AccountService {
         account.setEmail(registerDTO.getEmail());
         account.setPassword(registerDTO.getPassword());
         // account.setRole(role);
-        account.setOtpExpirationTime(Instant.now().plus(2, ChronoUnit.MINUTES));
+        account.setExpirationTime(Instant.now().plus(2, ChronoUnit.MINUTES));
         String otp = this.generateOTP();
         
         String otpDecoded = this.passwordEncoder.encode(otp);
@@ -197,11 +198,11 @@ public class AccountService {
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
             boolean isValidOtp = this.passwordEncoder.matches(otp, account.getOtp());
-            boolean isOtpExpired = Instant.now().isAfter(account.getOtpExpirationTime());
+            boolean isOtpExpired = Instant.now().isAfter(account.getExpirationTime());
             if(isValidOtp && !isOtpExpired){
                 account.setVerified(true);
                 account.setOtp(null);
-                account.setOtpExpirationTime(null);
+                account.setExpirationTime(null);
                 this.accountRepository.save(account);
             }else {
                 throw new IdInValidException("OTP is expired");
@@ -216,7 +217,7 @@ public class AccountService {
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
             account.setOtp(otpDecoded);
-            account.setOtpExpirationTime(Instant.now().plus(2, ChronoUnit.MINUTES));
+            account.setExpirationTime(Instant.now().plus(2, ChronoUnit.MINUTES));
             this.accountRepository.save(account);
         }
         this.sendVerificationEmail(email, otp);
@@ -231,5 +232,23 @@ public class AccountService {
         Account account = this.handleGetAccountByUsername(email);
 
         return account.isActive();
+    }
+
+    public void handleChangePassword(ReqChangePasswordDTO changePasswordDTO) throws IdInValidException {
+        Optional<Account> optionalAccount = this.accountRepository.findByToken(changePasswordDTO.getToken());
+        if(!optionalAccount.isPresent()) {
+            throw new IdInValidException("Token không hợp lệ");
+        }
+        if(!changePasswordDTO.getPassword().equals(changePasswordDTO.getConfirmPassword())) {
+            throw new IdInValidException("Mật khẩu không trùng khớp");
+        }
+        Account account = optionalAccount.get();
+       
+        String decodedPassword = this.passwordEncoder.encode(changePasswordDTO.getPassword());
+        account.setPassword(decodedPassword);
+        account.setExpirationTime(null);
+        account.setToken(null);
+        this.accountRepository.save(account); 
+
     }
 }

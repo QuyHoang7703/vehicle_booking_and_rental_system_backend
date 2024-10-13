@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 
-public class ResponseInfo {
-    private String info;
+public class ResponseInfo<T>{
+    private T info;
 }

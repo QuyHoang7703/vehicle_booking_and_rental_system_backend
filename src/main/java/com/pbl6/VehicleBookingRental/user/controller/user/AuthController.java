@@ -5,6 +5,7 @@ package com.pbl6.VehicleBookingRental.user.controller.user;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.login.ReqLoginDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqVerifyDTO;
@@ -37,6 +38,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.CustomOAuth2UserService;
 import com.pbl6.VehicleBookingRental.user.service.S3Service;
+import com.pbl6.VehicleBookingRental.user.service.TokenService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
@@ -55,6 +57,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final S3Service s3Service;
+    private final TokenService tokenService;
     @Value("${pbl6.jwt.access-token-validity-in-seconds}")
     private long accessTokenExpiration;
     @Value("${pbl6.jwt.refresh-token-validity-in-seconds}")
@@ -130,6 +133,7 @@ public class AuthController {
     @PostMapping("/auth/login")
     @ApiMessage("Login successfully")
     public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDTO) throws IdInValidException {
+        boolean check = this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified();
         if(!this.accountService.handleGetAccountByUsername(loginDTO.getUsername()).isVerified()){
             throw new IdInValidException("Tài khoản không tồn tại hoặc chưa được xác thực");
         }
@@ -272,15 +276,49 @@ public class AuthController {
         this.accountService.updateRefreshToken(null, username);
         ResponseCookie resCookies = ResponseCookie
                                                 .from("refresh_token", null)
-                                                .httpOnly(true)
+                                                // .httpOnly(true)
                                                 .secure(true)
                                                 .path("/")
                                                 .maxAge(0)
                                                 // .domain("example.com")
                                                 .build();
+        ResponseCookie accCookies = ResponseCookie
+                                                .from("access_token", null)
+                                                .httpOnly(true)
+                                                .secure(true)
+                                                .path("/")
+                                                .maxAge(0)
+                                                // .domain("example.com")
+                                                .build();                                       
         System.out.println(">>>>> Logout account username: " + username);
-        return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, resCookies.toString()).body(null);
+        return ResponseEntity.status(HttpStatus.OK)
+                            .header(HttpHeaders.SET_COOKIE, resCookies.toString())
+                            .header(HttpHeaders.SET_COOKIE, accCookies.toString())
+                            .body(null);
     }
+
+    @GetMapping("/auth/forgot-password")
+    @ApiMessage("Send request restore password")
+    public ResponseEntity<ResponseInfo<String>> sendRequestForgotPassword(@RequestParam("email") String email) throws IdInValidException {
+        this.tokenService.createToken(email);
+       
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Yêu cầu của bạn đã được gửi tới email"));
+    }
+
+    @GetMapping("/auth/verify-token")
+    @ApiMessage("Send request restore password")
+    public ResponseEntity<ResponseInfo<Boolean>> checkValidToken(@RequestParam("token") String token) {
+        
+       
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>(this.tokenService.isValidToken(token)));
+    }
+
+    @PostMapping("/auth/change-password")
+    public ResponseEntity<ResponseInfo<String>> changePassword(@RequestBody ReqChangePasswordDTO changePasswordDTO) throws IdInValidException{
+        this.accountService.handleChangePassword(changePasswordDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã thay đổi mật khẩu"));
+    }
+
 
 
   

@@ -39,6 +39,8 @@ public class S3ServiceImpl implements S3Service{
         try {
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentLength(file.getSize()); //Set size for file
+            String contentType = file.getContentType(); // Lấy Content-Type từ MultipartFile
+            metadata.setContentType(contentType != null ? contentType : "application/octet-stream");
             // Push file to S3
             PutObjectResult putObjectResult = amazonS3.putObject(bucketName, filePath, file.getInputStream(), metadata);
             return getImageUrl(filePath);
@@ -46,6 +48,26 @@ public class S3ServiceImpl implements S3Service{
             throw new RuntimeException("Failed to upload file to S3: " + e.getMessage(), e);
         }
     }
+    // public String uploadFile(MultipartFile file, String folderName) {
+    //     String originalFilename = file.getOriginalFilename();
+    //     String newFilename = UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename;
+    //     String filePath = folderName + "/" + newFilename;
+    
+    //     try {
+    //         ObjectMetadata metadata = new ObjectMetadata();
+    //         metadata.setContentLength(file.getSize());
+    //         // Thiết lập Content-Type
+    //         String contentType = file.getContentType(); // Lấy Content-Type từ MultipartFile
+    //         metadata.setContentType(contentType != null ? contentType : "application/octet-stream");
+    
+    //         // Push file to S3
+    //         PutObjectResult putObjectResult = amazonS3.putObject(bucketName, filePath, file.getInputStream(), metadata);
+    //         return getImageUrl(filePath);
+    //     } catch (IOException e) {
+    //         throw new RuntimeException("Failed to upload file to S3: " + e.getMessage(), e);
+    //     }
+    // }
+    
 
 
 }

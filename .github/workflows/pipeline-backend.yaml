@@ -9,8 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Compile Project
     env:
-      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-      AWS_SECRET: ${{ secrets.AWS_SECRET }}
+      aws.accessKey: ${{ secrets.AWS_ACCESS_KEY }}
+      aws.secret: ${{ secrets.AWS_SECRET }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

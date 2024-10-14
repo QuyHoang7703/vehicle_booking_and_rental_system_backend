@@ -14,11 +14,8 @@ import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 
 // import org.hibernate.mapping.Map;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
+import org.springframework.http.*;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -87,7 +84,7 @@ public class AuthController {
         // return ResponseEntity.status(HttpStatus.CREATED).body(this.accountService.convertToResUserRegister(newAccount));
     }
 
-    @PostMapping("auth/register-info")
+    @PostMapping(value="auth/register-info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiMessage("Register a new user")
     public ResponseEntity<ResAccountInfoDTO> addInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file,
                                                         @RequestPart("account_info") ReqAccountInfoDTO accountInfoDTO) throws IdInValidException {
@@ -97,7 +94,7 @@ public class AuthController {
         }
 
         account.setName(accountInfoDTO.getName());
-        account.setBirthDay(accountInfoDTO.getBirthDay());          
+        account.setBirthDay(accountInfoDTO.getBirthDay());
         account.setGender(accountInfoDTO.getGender());
         account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
         if(file != null) {
@@ -106,12 +103,12 @@ public class AuthController {
             String avatar = this.s3Service.uploadFile(file, "avatar");
 
 
-        
+
             // this.s3Service.sa
             account.setAvatar(avatar);
         }
         this.accountService.handleUpdateAccount(account);
-        
+
         return ResponseEntity.ok(this.accountService.convertToResAccountInfoDTO(account));
     }
 

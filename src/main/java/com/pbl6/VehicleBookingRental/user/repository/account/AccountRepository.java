@@ -1,4 +1,4 @@
-package com.pbl6.VehicleBookingRental.user.repository;
+package com.pbl6.VehicleBookingRental.user.repository.account;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -20,4 +21,5 @@ public interface AccountRepository  extends JpaRepository<Account, Integer>, Jpa
 
     Optional<Account> findByRefreshTokenAndEmail(String refreshToken, String email);
     Optional<Account> findByRefreshTokenAndPhoneNumber(String refreshToken, String phoneNumber);
+
 }

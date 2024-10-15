@@ -2,25 +2,27 @@ package com.pbl6.VehicleBookingRental.user.dto.response.login;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.pbl6.VehicleBookingRental.user.domain.account.Role;
+import lombok.*;
 
-@Getter
-@Setter
+import java.util.List;
+
+@Data
 public class ResLoginDTO {
     @JsonProperty("access_token")
     private String accessToken;
     private AccountLogin accountLogin;
-    @Getter
-    @Setter
+
+    @Data
     @AllArgsConstructor
     @NoArgsConstructor
     public static class AccountLogin {
         private long id;
         private String username;
         private String name;
+        private String avatar;
+//        private List<Role> roles;
+
     }
 
   

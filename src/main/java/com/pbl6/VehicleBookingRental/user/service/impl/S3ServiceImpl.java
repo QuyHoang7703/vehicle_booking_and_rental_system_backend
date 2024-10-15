@@ -33,7 +33,7 @@ public class S3ServiceImpl implements S3Service{
         return imageUrl + imagePath; 
     }
 
-    public String uploadFile(MultipartFile file, String folderName) {
+    public String uploadFile(MultipartFile file) {
         // return "abc";
         String originalFilename = file.getOriginalFilename();
 

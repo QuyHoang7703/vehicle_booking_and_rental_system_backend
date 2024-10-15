@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Entity
@@ -27,4 +28,13 @@ public class AccountRole {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date timeCancel;
+
+    private Instant timeRegister;
+
+    @PrePersist
+    public void handleBeforeCreated(){
+
+        this.timeRegister = Instant.now();
+    }
+
 }

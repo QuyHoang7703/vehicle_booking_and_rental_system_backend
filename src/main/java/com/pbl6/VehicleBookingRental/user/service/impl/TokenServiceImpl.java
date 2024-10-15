@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
-import com.pbl6.VehicleBookingRental.user.repository.AccountRepository;
+import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.service.EmailService;
 import com.pbl6.VehicleBookingRental.user.service.TokenService;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;

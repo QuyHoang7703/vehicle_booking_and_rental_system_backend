@@ -5,6 +5,8 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 
+import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,15 @@ public class AccountController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @GetMapping("/account")
+    @ApiMessage("fetch account info")
+    public ResponseEntity<ResAccountInfoDTO> getAccount() {
+        String username = SecurityUtil.getCurrentLogin().isPresent()?
+                SecurityUtil.getCurrentLogin().get():"";
+        Account currentAccount = this.accountService.handleGetAccountByUsername(username);
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(currentAccount));
+    }
+
 
     @GetMapping("/accounts")
     @ApiMessage("fetch all account success")
@@ -43,13 +54,13 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts(spec, pageable));
     }
 
-    @PutMapping("/accounts")
+    @PutMapping("/account")
     public ResponseEntity<ResAccountInfoDTO> updateAccount(@RequestBody Account account) throws IdInValidException {
         if(this.accountService.fetchAccountById(account.getId()) ==null) {
             throw new IdInValidException("Account with id = " + account.getId() + " is not exist");
         }
         Account updateAccount = this.accountService.handleUpdateAccount(account);
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccount(updateAccount));
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(updateAccount));
     }
 
     @DeleteMapping("/accounts/{id}")
@@ -71,7 +82,7 @@ public class AccountController {
             throw new IdInValidException("Account with id = " + id + " is not exist");
         }
        
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccount(account));
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(account));
     } 
 
 }

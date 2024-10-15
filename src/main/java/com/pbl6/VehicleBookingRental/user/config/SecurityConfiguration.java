@@ -51,26 +51,25 @@ public class SecurityConfiguration {
 
    
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, 
-    CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
                 .csrf(c->c.disable())
                 .cors(Customizer.withDefaults())
                 // .antMatcher("/secured/**")
                 .authorizeHttpRequests(
                         authz -> authz
-                                .requestMatchers("/", "/api/v1/auth/**").permitAll()
+                                .requestMatchers("/", "/api/v1/auth/**", "/identity/auth/outbound/authentication").permitAll()
                                 .requestMatchers("/api/v1/auth/logout").authenticated()
                                 .anyRequest().authenticated()
                                 )
-                //     .oauth2Login(oauth2 -> oauth2
-                //         .loginPage("/api/v1/auth/google-login")  // Chỉ định trang login cho OAuth2
-                //         .authorizationEndpoint(authorization -> authorization
-                //             .baseUri("/api/v1/auth/google-login")  // Đường dẫn cho OAuth2 login
-                //         )
-                //     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // Xử lý thông tin người dùng
-                //     .successHandler(customAuthenticationSuccessHandler)  // Xử lý khi đăng nhập thành công
-                // )
+//                     .oauth2Login(oauth2 -> oauth2
+//                         .loginPage("/login")  // Chỉ định trang login cho OAuth2
+//                         .authorizationEndpoint(authorization -> authorization
+//                             .baseUri("/api/v1/auth/google-login")  // Đường dẫn cho OAuth2 login
+//                         )
+//                     .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService)) // Xử lý thông tin người dùng
+//                     .successHandler(customAuthenticationSuccessHandler)  // Xử lý khi đăng nhập thành công
+//                 )
                                 
                                 
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

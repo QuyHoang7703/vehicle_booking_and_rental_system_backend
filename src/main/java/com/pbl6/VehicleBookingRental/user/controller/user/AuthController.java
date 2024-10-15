@@ -100,7 +100,7 @@ public class AuthController {
         if(file != null) {
             // String avatar = this.s3Service.saveFile(file);
             // String avatar = this.s3Service.saveFile2(file);
-            String avatar = this.s3Service.uploadFile(file, "avatar");
+            String avatar = this.s3Service.uploadFile(file);
 
 
 
@@ -156,7 +156,12 @@ public class AuthController {
         }
 
         ResLoginDTO res = new ResLoginDTO();
-        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin(account.getId(), account.getEmail(), account.getName());
+        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
+        accountLogin.setId(account.getId());
+        accountLogin.setUsername(account.getEmail());
+        accountLogin.setName(account.getName());
+        accountLogin.setAvatar(account.getAvatar());
+
         res.setAccountLogin(accountLogin);
         // Create token when authentication is successful
         // String u = authentication.getName();
@@ -194,20 +199,6 @@ public class AuthController {
                             .body(res);
     }
 
-    @GetMapping("/auth/account")
-    @ApiMessage("fetch account")
-    public ResponseEntity<ResLoginDTO.AccountLogin> getAccount() {
-        String username = SecurityUtil.getCurrentLogin().isPresent()?
-                            SecurityUtil.getCurrentLogin().get():"";
-        Account currentAccount = this.accountService.handleGetAccountByUsername(username);
-        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
-        if(currentAccount != null){
-            accountLogin.setId(currentAccount.getId());
-            accountLogin.setUsername(currentAccount.getEmail());
-            accountLogin.setName(currentAccount.getName());
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(accountLogin);
-    }
 
     @GetMapping("/auth/refresh")
     @ApiMessage("Refresh token")
@@ -231,7 +222,11 @@ public class AuthController {
         }
         
         ResLoginDTO res = new ResLoginDTO();
-        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin(account.getId(), account.getEmail(), account.getName());
+        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
+        accountLogin.setId(account.getId());
+        accountLogin.setUsername(account.getEmail());
+        accountLogin.setName(account.getName());
+        accountLogin.setAvatar(account.getAvatar());
         res.setAccountLogin(accountLogin);
         
   
@@ -321,6 +316,7 @@ public class AuthController {
         this.accountService.handleChangePassword(changePasswordDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã thay đổi mật khẩu"));
     }
+
 
 
 

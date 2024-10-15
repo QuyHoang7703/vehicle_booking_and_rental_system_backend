@@ -52,14 +52,18 @@ public class Account {
     private boolean active;
 
     private String lockReason;
+
     @Column(columnDefinition = "MEDIUMTEXT")
     private String refreshToken;
 
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String otp;
+
     private Instant expirationTime;
+
     private boolean verified;
+
     @Column(columnDefinition = "MEDIUMTEXT")
     private String token;
 

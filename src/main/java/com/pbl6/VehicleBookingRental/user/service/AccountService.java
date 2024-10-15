@@ -1,12 +1,17 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
+import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.dto.*;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
-import com.pbl6.VehicleBookingRental.user.repository.AccountRepository;
+import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
+import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -22,54 +27,50 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
 
-@Service    
+@Service
+@RequiredArgsConstructor
 public class AccountService {
     private final AccountRepository accountRepository;
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
     private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final RoleRepository roleRepository;
+    private final AccountRoleRepository accountRoleRepository;
+    private final AccountRoleSerivice accountRoleSerivice;
 
-    public AccountService(AccountRepository accountRepository,PasswordEncoder passwordEncoder, EmailService emailService) {
-        this.accountRepository = accountRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.emailService = emailService;
-    }
+
 
     public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInValidException {
-        // Optional<Role> optionalRole = this.roleRepository.findById(registerDTO.getRoleId());
-        // if(!optionalRole.isPresent()) {
-        //     throw new IdInValidException("Role is invalid");
-        // }
-        // Role role = optionalRole.get();
         Account account = new Account();
         account.setEmail(registerDTO.getEmail());
         account.setPassword(registerDTO.getPassword());
-        // account.setRole(role);
         account.setExpirationTime(Instant.now().plus(2, ChronoUnit.MINUTES));
         String otp = this.generateOTP();
-        
         String otpDecoded = this.passwordEncoder.encode(otp);
         account.setOtp(otpDecoded);
         //Send OTP to email register
         this.sendVerificationEmail(registerDTO.getEmail(), otp);
 
-        // Add attribute of user
         return this.accountRepository.save(account);
 
     }
 
     public ResAccountInfoDTO convertToResAccountInfoDTO(Account account){
         ResAccountInfoDTO resAccountDTO = new ResAccountInfoDTO();
-        resAccountDTO.setId(account.getId());
-        resAccountDTO.setEmail(account.getEmail());
-        resAccountDTO.setName(account.getName());
-        resAccountDTO.setBirthDay(account.getBirthDay());
-        resAccountDTO.setPhoneNumber(account.getPhoneNumber());
-        resAccountDTO.setGender(account.getGender());
-        resAccountDTO.setAvatar(account.getAvatar());
-        resAccountDTO.setActive(true);
-    
+
+        ResAccountInfoDTO.AccountInfo accountInfoDTO = new ResAccountInfoDTO.AccountInfo();
+        accountInfoDTO.setId(account.getId());
+        accountInfoDTO.setEmail(account.getEmail());
+        accountInfoDTO.setName(account.getName());
+        accountInfoDTO.setBirthDay(account.getBirthDay());
+        accountInfoDTO.setPhoneNumber(account.getPhoneNumber());
+        accountInfoDTO.setGender(account.getGender());
+        accountInfoDTO.setAvatar(account.getAvatar());
+        accountInfoDTO.setActive(true);
+
+        resAccountDTO.setAccountInfo(accountInfoDTO);
+
         return resAccountDTO;
     }
     
@@ -82,7 +83,8 @@ public class AccountService {
         meta.setPages(pageAccount.getTotalPages());
         meta.setTotal(pageAccount.getTotalElements());
         res.setMeta(meta);
-        List<ResAccountInfoDTO> list = pageAccount.getContent().stream().map(item -> new ResAccountInfoDTO (
+//        List<Role> roles = this.accountRoleSerivice.getAccountRolesByAccountID()
+        List<ResAccountInfoDTO.AccountInfo> list = pageAccount.getContent().stream().map(item -> new ResAccountInfoDTO.AccountInfo(
                                             item.getId(),
                                             item.getEmail(),
                                             item.getName(),
@@ -116,9 +118,10 @@ public class AccountService {
             accountUpdate.setAvatar(reqAccount.getAvatar());
             accountUpdate.setBirthDay(reqAccount.getBirthDay());
             // accountUpdate.setLockReason(reqAccount.getLockReason());
+             return this.accountRepository.save(accountUpdate);
         }
-        return this.accountRepository.save(accountUpdate);
-       
+        return null;
+
     }
 
     public void handleDeleteAccount(int id) {
@@ -132,21 +135,6 @@ public class AccountService {
       
     }
 
-    public ResAccountInfoDTO convertToResAccount(Account account){
-        Account currentAccount = this.handleGetAccountByUsername(account.getEmail());
-        ResAccountInfoDTO resAccount = new ResAccountInfoDTO();
-        resAccount.setId(account.getId());
-        resAccount.setEmail(account.getEmail());
-        resAccount.setName(account.getName());
-        resAccount.setPhoneNumber(account.getPhoneNumber());
-        resAccount.setGender(account.getGender());
-        resAccount.setAvatar(account.getAvatar());
-        resAccount.setActive(currentAccount.isActive());
-        // resAccount.setLockReason(account.getLockReason());
-        resAccount.setBirthDay(account.getBirthDay());
-
-        return resAccount;
-    }
 
     public boolean checkAvailableUsername(String username) {
         return accountRepository.existsByEmail(username) || accountRepository.existsByPhoneNumber(username);
@@ -204,6 +192,12 @@ public class AccountService {
                 account.setOtp(null);
                 account.setExpirationTime(null);
                 this.accountRepository.save(account);
+                Role userRole = this.roleRepository.findByName("USER")
+                        .orElseThrow(()-> new RuntimeException("Role not found"));
+                AccountRole accountRole = new AccountRole();
+                accountRole.setAccount(account);
+                accountRole.setRole(userRole);
+                this.accountRoleRepository.save(accountRole);
             }else {
                 throw new IdInValidException("OTP is expired");
             }
@@ -251,4 +245,9 @@ public class AccountService {
         this.accountRepository.save(account); 
 
     }
+
+
+
+
+
 }

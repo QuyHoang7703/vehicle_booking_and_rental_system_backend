@@ -161,6 +161,10 @@ public class AuthController {
         accountLogin.setUsername(account.getEmail());
         accountLogin.setName(account.getName());
         accountLogin.setAvatar(account.getAvatar());
+//        accountLogin.setBirthDay(account.getBirthDay());
+        accountLogin.setGender(account.getGender());
+        accountLogin.setPhoneNumber(account.getPhoneNumber());
+        accountLogin.setActive(account.isActive());
 
         res.setAccountLogin(accountLogin);
         // Create token when authentication is successful
@@ -223,10 +227,15 @@ public class AuthController {
         
         ResLoginDTO res = new ResLoginDTO();
         ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
+
         accountLogin.setId(account.getId());
         accountLogin.setUsername(account.getEmail());
         accountLogin.setName(account.getName());
         accountLogin.setAvatar(account.getAvatar());
+//        accountLogin.setBirthDay(account.getBirthDay());
+        accountLogin.setGender(account.getGender());
+        accountLogin.setPhoneNumber(account.getPhoneNumber());
+        accountLogin.setActive(account.isActive());
         res.setAccountLogin(accountLogin);
         
   

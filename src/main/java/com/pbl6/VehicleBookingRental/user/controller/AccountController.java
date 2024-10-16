@@ -3,40 +3,32 @@ package com.pbl6.VehicleBookingRental.user.controller;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 
 import com.turkraft.springfilter.boot.Filter;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("api/v1")
 public class AccountController {
     private final AccountService accountService;
-    private final PasswordEncoder passwordEncoder;
-
-    public AccountController(AccountService accountService, PasswordEncoder passwordEncoder) {
-        this.accountService = accountService;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     @GetMapping("/account")
     @ApiMessage("fetch account info")
@@ -83,6 +75,14 @@ public class AccountController {
         }
        
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(account));
-    } 
+    }
+
+    @PutMapping(value="/accounts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ApiMessage("Updated information for account")
+    public ResponseEntity<ResAccountInfoDTO> updateInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file
+            , @RequestPart("account_info") ReqAccountInfoDTO reqAccountInfoDTO) throws IdInValidException {
+        ResAccountInfoDTO resAccountInfoDTO  = this.accountService.updateAccountInfo(file, reqAccountInfoDTO);
+        return ResponseEntity.ok(resAccountInfoDTO);
+    }
 
 }

@@ -52,7 +52,6 @@ public class AuthController {
     private final SecurityUtil securityUtil;
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
-    private final CustomOAuth2UserService customOAuth2UserService;
     private final S3Service s3Service;
     private final TokenService tokenService;
     @Value("${pbl6.jwt.access-token-validity-in-seconds}")
@@ -98,8 +97,6 @@ public class AuthController {
         account.setGender(accountInfoDTO.getGender());
         account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
         if(file != null) {
-            // String avatar = this.s3Service.saveFile(file);
-            // String avatar = this.s3Service.saveFile2(file);
             String avatar = this.s3Service.uploadFile(file);
 
 
@@ -154,24 +151,10 @@ public class AuthController {
         if(account == null){
             throw new IdInValidException("Tài khoản không tồn tại");
         }
-
-        ResLoginDTO res = new ResLoginDTO();
-        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
-        accountLogin.setId(account.getId());
-        accountLogin.setUsername(account.getEmail());
-        accountLogin.setName(account.getName());
-        accountLogin.setAvatar(account.getAvatar());
-//        accountLogin.setBirthDay(account.getBirthDay());
-        accountLogin.setGender(account.getGender());
-        accountLogin.setPhoneNumber(account.getPhoneNumber());
-        accountLogin.setActive(account.isActive());
-
-        res.setAccountLogin(accountLogin);
+        ResLoginDTO res = this.accountService.convertToResLoginDTO(account);
         // Create token when authentication is successful
-        // String u = authentication.getName();
         String accessToken = this.securityUtil.createAccessToken(authentication.getName(), res);
         res.setAccessToken(accessToken);
-
         //Save access token into Cookie
         ResponseCookie accCookies = ResponseCookie
                                                 .from("access_token", accessToken)
@@ -181,8 +164,6 @@ public class AuthController {
                                                 .maxAge(accessTokenExpiration)
                                                 // .domain("example.com")
                                                 .build();
-        
-
         // Create refresh token
         String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
         this.accountService.updateRefreshToken(refresh_token, loginDTO.getUsername());
@@ -224,21 +205,8 @@ public class AuthController {
         if(account==null) {
             throw new IdInValidException("Refresh Token is invalid");
         }
-        
-        ResLoginDTO res = new ResLoginDTO();
-        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
 
-        accountLogin.setId(account.getId());
-        accountLogin.setUsername(account.getEmail());
-        accountLogin.setName(account.getName());
-        accountLogin.setAvatar(account.getAvatar());
-//        accountLogin.setBirthDay(account.getBirthDay());
-        accountLogin.setGender(account.getGender());
-        accountLogin.setPhoneNumber(account.getPhoneNumber());
-        accountLogin.setActive(account.isActive());
-        res.setAccountLogin(accountLogin);
-        
-  
+        ResLoginDTO res = this.accountService.convertToResLoginDTO(account);
         String accessToken = this.securityUtil.createAccessToken(username, res);
         res.setAccessToken(accessToken);
 
@@ -327,10 +295,5 @@ public class AuthController {
     }
 
 
-
-
-  
-
-  
 
 }

@@ -38,7 +38,7 @@ public class ResAccountInfoDTO {
 
         private boolean active;
 
-//        private List<Role> roles;
+        private List<String> roles;
 
         // private String lockReason;
     }

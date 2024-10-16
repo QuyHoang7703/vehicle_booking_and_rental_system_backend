@@ -36,7 +36,7 @@ public class ResLoginDTO {
         private String avatar;
 
         private boolean active;
-//        private List<Role> roles;
+        private List<String> roles;
 
     }
 

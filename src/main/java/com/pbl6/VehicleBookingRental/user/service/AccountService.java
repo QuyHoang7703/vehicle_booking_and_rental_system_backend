@@ -3,29 +3,34 @@ package com.pbl6.VehicleBookingRental.user.service;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
-import com.pbl6.VehicleBookingRental.user.dto.*;
+import com.pbl6.VehicleBookingRental.user.dto.Meta;
+import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import jakarta.mail.Multipart;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +42,8 @@ public class AccountService {
     private final EmailService emailService;
     private final RoleRepository roleRepository;
     private final AccountRoleRepository accountRoleRepository;
-    private final AccountRoleSerivice accountRoleSerivice;
-
+    private final RoleSerivice roleSerivice;
+    private final S3Service s3Service;
 
 
     public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInValidException {
@@ -56,6 +61,23 @@ public class AccountService {
 
     }
 
+    public ResLoginDTO convertToResLoginDTO(Account account) {
+        ResLoginDTO res = new ResLoginDTO();
+        ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
+        accountLogin.setId(account.getId());
+        accountLogin.setUsername(account.getEmail());
+        accountLogin.setName(account.getName());
+        accountLogin.setAvatar(account.getAvatar());
+//        accountLogin.setBirthDay(account.getBirthDay());
+        accountLogin.setGender(account.getGender());
+        accountLogin.setPhoneNumber(account.getPhoneNumber());
+        accountLogin.setActive(account.isActive());
+        List<String> roles = this.roleSerivice.getNameRolesByAccountID(account.getId());
+        accountLogin.setRoles(roles);
+        res.setAccountLogin(accountLogin);
+        return res;
+    }
+
     public ResAccountInfoDTO convertToResAccountInfoDTO(Account account){
         ResAccountInfoDTO resAccountDTO = new ResAccountInfoDTO();
 
@@ -69,6 +91,9 @@ public class AccountService {
         accountInfoDTO.setAvatar(account.getAvatar());
         accountInfoDTO.setActive(true);
 
+        List<String> roles = this.roleSerivice.getNameRolesByAccountID(account.getId());
+        accountInfoDTO.setRoles(roles);
+
         resAccountDTO.setAccountInfo(accountInfoDTO);
 
         return resAccountDTO;
@@ -78,25 +103,15 @@ public class AccountService {
         Page<Account> pageAccount = this.accountRepository.findAll(spec, pageable);
         ResultPaginationDTO res = new ResultPaginationDTO();
         Meta meta = new Meta();
-        meta.setCurrentPage(pageable.getPageNumber());
+        meta.setCurrentPage(pageable.getPageNumber()+1);
         meta.setPageSize(pageable.getPageSize());
         meta.setPages(pageAccount.getTotalPages());
         meta.setTotal(pageAccount.getTotalElements());
         res.setMeta(meta);
-//        List<Role> roles = this.accountRoleSerivice.getAccountRolesByAccountID()
-        List<ResAccountInfoDTO.AccountInfo> list = pageAccount.getContent().stream().map(item -> new ResAccountInfoDTO.AccountInfo(
-                                            item.getId(),
-                                            item.getEmail(),
-                                            item.getName(),
-                                            item.getPhoneNumber(),
-                                            item.getBirthDay(),
-                                            item.getGender(),
-                                            item.getAvatar(),
-                                            item.isActive()))
-                                            // item.getLockReason()))
-                                        .collect(Collectors.toList());
 
-        res.setResult(list);
+        List<ResAccountInfoDTO> resAccountInfoDTOList = pageAccount.getContent().stream().map(item -> convertToResAccountInfoDTO(item))
+                        .collect(Collectors.toList());
+        res.setResult(resAccountInfoDTOList);
         return res;
     }
 
@@ -244,6 +259,22 @@ public class AccountService {
         account.setToken(null);
         this.accountRepository.save(account); 
 
+    }
+
+    public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInValidException {
+        Account account = this.accountRepository.findById(reqAccountInfoDTO.getId())
+                .orElseThrow(()-> new IdInValidException("Account not found"));
+        account.setName(reqAccountInfoDTO.getName());
+        account.setBirthDay(reqAccountInfoDTO.getBirthDay());
+        account.setGender(reqAccountInfoDTO.getGender());
+        account.setPhoneNumber(reqAccountInfoDTO.getPhoneNumber());
+        if(avatar != null) {
+            String urlAvatar = this.s3Service.uploadFile(avatar);
+            account.setAvatar(urlAvatar);
+        }
+        this.accountRepository.save(account);
+
+        return this.convertToResAccountInfoDTO(account);
     }
 
 

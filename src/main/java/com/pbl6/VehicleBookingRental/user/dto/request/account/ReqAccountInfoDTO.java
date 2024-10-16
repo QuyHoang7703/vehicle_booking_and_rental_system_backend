@@ -11,6 +11,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ReqAccountInfoDTO {
+    private int id;
+
     private String username;
 
     private String name;

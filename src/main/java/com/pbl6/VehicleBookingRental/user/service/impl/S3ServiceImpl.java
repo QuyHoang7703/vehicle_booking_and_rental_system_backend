@@ -37,10 +37,9 @@ public class S3ServiceImpl implements S3Service{
         // return "abc";
         String originalFilename = file.getOriginalFilename();
 
-        String newFilename = UUID.randomUUID().toString().substring(0, 10) + "_" + originalFilename;
-      
-//         String filePath = folderName + "/" + newFilename;
-          String filePath =  newFilename;
+        String newFilename = UUID.randomUUID().toString()+ "_" + originalFilename;
+
+        String filePath =  newFilename;
 
 
         try {

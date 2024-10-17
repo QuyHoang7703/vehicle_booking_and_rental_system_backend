@@ -22,6 +22,7 @@ public class CarRentalPartner {
     @OneToMany(mappedBy = "carRentalPartner",cascade = CascadeType.ALL)
     @JsonIgnore
     private List<VehicleRegister> vehicleRegisterList;
+
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "business_partner_id")

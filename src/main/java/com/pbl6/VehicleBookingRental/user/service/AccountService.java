@@ -16,6 +16,7 @@ import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import jakarta.mail.Multipart;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,6 +24,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.List;
 
 import java.util.Optional;
@@ -34,6 +36,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AccountService {
     private final AccountRepository accountRepository;
     private static final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
@@ -270,6 +273,7 @@ public class AccountService {
         account.setPhoneNumber(reqAccountInfoDTO.getPhoneNumber());
         if(avatar != null) {
             String urlAvatar = this.s3Service.uploadFile(avatar);
+            this.s3Service.deleteFile(account.getAvatar());
             account.setAvatar(urlAvatar);
         }
         this.accountRepository.save(account);

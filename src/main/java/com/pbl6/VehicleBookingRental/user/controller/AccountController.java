@@ -7,6 +7,7 @@ import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
+import com.pbl6.VehicleBookingRental.user.service.S3Service;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -24,11 +25,14 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import com.turkraft.springfilter.boot.Filter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
 public class AccountController {
     private final AccountService accountService;
+    private final S3Service s3Service;
 
     @GetMapping("/account")
     @ApiMessage("fetch account info")
@@ -83,6 +87,12 @@ public class AccountController {
             , @RequestPart("account_info") ReqAccountInfoDTO reqAccountInfoDTO) throws IdInValidException {
         ResAccountInfoDTO resAccountInfoDTO  = this.accountService.updateAccountInfo(file, reqAccountInfoDTO);
         return ResponseEntity.ok(resAccountInfoDTO);
+    }
+
+    @PostMapping("/auth/upload-multiple")
+    public ResponseEntity<List<String>> uploadMultipleFiles(@RequestParam("files") List<MultipartFile> files) {
+        List<String> urls = this.s3Service.uploadFiles(files);
+        return ResponseEntity.ok(urls);
     }
 
 }

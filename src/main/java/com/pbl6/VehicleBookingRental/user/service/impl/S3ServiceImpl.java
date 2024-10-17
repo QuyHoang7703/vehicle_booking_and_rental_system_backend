@@ -1,25 +1,26 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import com.amazonaws.services.s3.model.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectResult;
 import com.pbl6.VehicleBookingRental.user.service.S3Service;
 
 import java.io.File;
 import lombok.RequiredArgsConstructor;
 import java.io.FileOutputStream;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class S3ServiceImpl implements S3Service{
     @Value("${bucketName}")
     private String bucketName;
@@ -33,14 +34,11 @@ public class S3ServiceImpl implements S3Service{
         return imageUrl + imagePath; 
     }
 
+    @Override
     public String uploadFile(MultipartFile file) {
-        // return "abc";
         String originalFilename = file.getOriginalFilename();
-
         String newFilename = UUID.randomUUID().toString()+ "_" + originalFilename;
-
         String filePath =  newFilename;
-
 
         try {
             ObjectMetadata metadata = new ObjectMetadata();
@@ -53,7 +51,6 @@ public class S3ServiceImpl implements S3Service{
                 // Nếu không phải là hình ảnh, có thể đặt giá trị mặc định hoặc xử lý lỗi
                 throw new IllegalArgumentException("Uploaded file is not an image.");
             }
-            // metadata.setContentType(contentType != null ? contentType : "multipart/form-data");
             // Push file to S3
             PutObjectResult putObjectResult = amazonS3.putObject(bucketName, filePath, file.getInputStream(), metadata);
             return getImageUrl(filePath);
@@ -62,9 +59,34 @@ public class S3ServiceImpl implements S3Service{
         }
     }
 
+    @Override
+    public List<String> uploadFiles(List<MultipartFile> files) {
+        List<String> imageUrls = new ArrayList<>(); // Lưu trữ URL của các ảnh đã upload
+        for (MultipartFile file : files) {
+            String imageUrl = this.uploadFile(file);
+            imageUrls.add(imageUrl);
+        }
+        return imageUrls;
+    }
 
- 
-    
+    @Override
+    public void deleteFile(String filePath) {
+        String [] parts = filePath.split("/");
+        String keyFromUrl = parts[parts.length - 1];
+        try {
+           amazonS3.deleteObject(bucketName, keyFromUrl);
+           log.info("Deleted file: " + parts[parts.length - 1]);
+        }catch (AmazonS3Exception e) {
+           throw new RuntimeException("Failed to delete file from S3: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deleteFiles(List<String> filePaths) {
+        for(String filePath : filePaths) {
+            deleteFile(filePath);
+        }
+    }
 
 
 }

@@ -13,6 +13,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 
 // import org.hibernate.mapping.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 
@@ -43,9 +44,13 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Collections;
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("api/v1")
 public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -97,12 +102,10 @@ public class AuthController {
         account.setGender(accountInfoDTO.getGender());
         account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
         if(file != null) {
-            String avatar = this.s3Service.uploadFile(file);
+            String urlAvatar = this.s3Service.uploadFile(file);
+//            this.s3Service.deleteFile(account.getAvatar());
+            account.setAvatar(urlAvatar);
 
-
-
-            // this.s3Service.sa
-            account.setAvatar(avatar);
         }
         this.accountService.handleUpdateAccount(account);
 
@@ -146,6 +149,7 @@ public class AuthController {
         Authentication authentication = this.authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.info("Username from authentication: " + authentication.getName());
         
         Account account = this.accountService.handleGetAccountByUsername(loginDTO.getUsername());
         if(account == null){
@@ -159,10 +163,11 @@ public class AuthController {
         ResponseCookie accCookies = ResponseCookie
                                                 .from("access_token", accessToken)
                                                 // .httpOnly(true)
-                                                .secure(true)
+//                                                .secure(true)
                                                 .path("/")
                                                 .maxAge(accessTokenExpiration)
-                                                // .domain("example.com")
+                                                .domain("vehicle-booking-and-rental-system.vercel.app")
+                .sameSite("None")
                                                 .build();
         // Create refresh token
         String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
@@ -170,10 +175,11 @@ public class AuthController {
         ResponseCookie resCookies = ResponseCookie
                                                 .from("refresh_token", refresh_token)
                                                 .httpOnly(true)
-                                                .secure(true)
+//                                                .secure(true)
                                                 .path("/")
                                                 .maxAge(refreshTokenExpiration)
-                                                // .domain("example.com")
+                                                .domain("vehicle-booking-and-rental-system.vercel.app")
+                .sameSite("None")
                                                 .build();
         
         
@@ -214,10 +220,10 @@ public class AuthController {
         ResponseCookie accCookies = ResponseCookie
                                                 .from("access_token", accessToken)
                                                 // .httpOnly(true)
-                                                .secure(true)
+                                                //.secure(true)
                                                 .path("/")
                                                 .maxAge(accessTokenExpiration)
-                                                // .domain("example.com")
+                                                .domain("vehicle-booking-and-rental-system.vercel.app")
                                                 .build();
 
         // Create refresh token 
@@ -226,10 +232,10 @@ public class AuthController {
         ResponseCookie resCookies = ResponseCookie
                                                 .from("refresh_token", refresh_token)
                                                 .httpOnly(true)
-                                                .secure(true)
+                                                //.secure(true)
                                                 .path("/")
                                                 .maxAge(refreshTokenExpiration)
-                                                // .domain("example.com")
+                                                .domain("vehicle-booking-and-rental-system.vercel.app")
                                                 .build();
         
         return ResponseEntity
@@ -255,7 +261,7 @@ public class AuthController {
                                                 .secure(true)
                                                 .path("/")
                                                 .maxAge(0)
-                                                // .domain("example.com")
+                                                .domain("vehicle-booking-and-rental-system.vercel.app")
                                                 .build();
         ResponseCookie accCookies = ResponseCookie
                                                 .from("access_token", null)
@@ -263,7 +269,7 @@ public class AuthController {
                                                 .secure(true)
                                                 .path("/")
                                                 .maxAge(0)
-                                                // .domain("example.com")
+                                                .domain("vehicle-booking-and-rental-system.vercel.app")
                                                 .build();                                       
         System.out.println(">>>>> Logout account username: " + username);
         return ResponseEntity.status(HttpStatus.OK)

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
+import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,14 +19,19 @@ import lombok.NoArgsConstructor;
 public class BusinessPartner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String business_license;
-    private String business_name;
-    private String email_of_representative;
-    private String nam_of_representative;
-    private String phone_of_representative;
+    private int id;
+//    private String businessLicense;
+    private String businessName;
+    private String emailOfRepresentative;
+    private String nameOfRepresentative;
+    private String phoneOfRepresentative;
     private String address;
-    private String partner_type;
+//    @Enumerated(EnumType.STRING)
+    private PartnerTypeEnum partnerType;
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String avatar;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

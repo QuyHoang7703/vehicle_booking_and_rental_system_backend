@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
+import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,8 @@ public class BusinessPartner {
     private String phoneOfRepresentative;
     private String address;
     private PartnerTypeEnum partnerType;
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

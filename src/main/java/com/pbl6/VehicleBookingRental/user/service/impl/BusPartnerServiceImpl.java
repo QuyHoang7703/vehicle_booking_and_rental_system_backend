@@ -2,16 +2,19 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
-import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
-import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
-import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.BusinessPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqBusPartnerDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
+import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.BusPartnerService;
+import com.pbl6.VehicleBookingRental.user.service.ImageService;
+import com.pbl6.VehicleBookingRental.user.service.S3Service;
+import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,9 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     private final BusPartnerRepository busPartnerRepository;
     private final AccountService accountService;
     private final RoleRepository roleRepository;
+    private final S3Service s3Service;
+    private final ImageRepository imageRepository;
+    private final ImageService imageService;
     @Override
     public BusPartner registerBusPartner(ReqBusPartnerDTO reqBusPartnerDTO, List<MultipartFile> licenses, List<MultipartFile> images) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -50,20 +57,67 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         // Create BusPartner
         BusPartner busPartner = new BusPartner();
         busPartner.setDescription(reqBusPartnerDTO.getDescription());
-        busPartner.setUrl(reqBusPartnerDTO.getUrlFanpage());
+        busPartner.setUrlFanpage(reqBusPartnerDTO.getUrlFanpage());
         busPartner.setPolicy(reqBusPartnerDTO.getPolicy());
         busPartner.setBusinessPartner(savedBusinessPartner);
-        this.busPartnerRepository.save(busPartner);
+        BusPartner savedBusPartner = this.busPartnerRepository.save(busPartner);
 
 //        businessPartner.setBusPartner(busPartner);
 
+        // Add business license images for bus partner
+        this.imageService.uploadAndSaveImages(licenses, "BUSINESS_LICENSE", savedBusPartner.getId());
+        this.imageService.uploadAndSaveImages(images, "BUS_PARTNER", savedBusPartner.getId());
 
-
-//        Role role = this.roleRepository.findByName("BUS_PARTNER").orElseThrow(() -> new UsernameNotFoundException("Role not found"));
-//        AccountRole accountRole = new AccountRole();
-//        accountRole.setRole(role);
-//        accountRole.setAccount(account);
-
-        return busPartner;
+        return savedBusPartner;
     }
+
+
+    @Override
+    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) {
+        // Tạo BusinessPartnerInfo từ BusPartner
+        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(busPartner);
+
+        // Tạo BusPartnerInfo từ BusPartner
+        ResBusPartnerDTO.BusPartnerInfo busPartnerInfo = createBusPartnerInfo(busPartner);
+
+        // Tạo và trả về ResBusPartnerDTO
+        ResBusPartnerDTO resBusPartnerDTO = new ResBusPartnerDTO();
+        resBusPartnerDTO.setBusinessInfo(businessPartnerInfo);
+        resBusPartnerDTO.setBusPartnerInfo(busPartnerInfo);
+
+        return resBusPartnerDTO;
+    }
+
+    private ResBusinessPartnerDTO.BusinessPartnerInfo createBusinessPartnerInfo(BusPartner busPartner) {
+        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = new ResBusinessPartnerDTO.BusinessPartnerInfo();
+        businessPartnerInfo.setId(busPartner.getId());
+        businessPartnerInfo.setBusinessName(busPartner.getBusinessPartner().getBusinessName());
+        businessPartnerInfo.setEmailOfRepresentative(busPartner.getBusinessPartner().getEmailOfRepresentative());
+        businessPartnerInfo.setNameOfRepresentative(busPartner.getBusinessPartner().getNameOfRepresentative());
+        businessPartnerInfo.setPhoneOfRepresentative(busPartner.getBusinessPartner().getPhoneOfRepresentative());
+        businessPartnerInfo.setAddress(busPartner.getBusinessPartner().getAddress());
+        businessPartnerInfo.setPartnerType(busPartner.getBusinessPartner().getPartnerType());
+        businessPartnerInfo.setApprovalStatus(busPartner.getBusinessPartner().getApprovalStatus());
+        return businessPartnerInfo;
+    }
+
+    private ResBusPartnerDTO.BusPartnerInfo createBusPartnerInfo(BusPartner busPartner) {
+        ResBusPartnerDTO.BusPartnerInfo busPartnerInfo = new ResBusPartnerDTO.BusPartnerInfo();
+        busPartnerInfo.setDescription(busPartner.getDescription());
+        busPartnerInfo.setUrlFanpage(busPartner.getUrlFanpage());
+        busPartnerInfo.setPolicy(busPartner.getPolicy());
+
+        List<String> urlLicenses = this.imageRepository.findByOwnerTypeAndOwnerId("BUSINESS_LICENSE",
+                        busPartner.getId()).stream().map(image -> image.getPathImage())
+                .collect(Collectors.toList());
+        busPartnerInfo.setUrlLicenses(urlLicenses);
+
+        List<String> urlImages = this.imageRepository.findByOwnerTypeAndOwnerId("BUS_PARTNER",
+                        busPartner.getId()).stream().map(image -> image.getPathImage())
+                .collect(Collectors.toList());
+        busPartnerInfo.setUrlImages(urlImages);
+
+        return busPartnerInfo;
+    }
+
 }

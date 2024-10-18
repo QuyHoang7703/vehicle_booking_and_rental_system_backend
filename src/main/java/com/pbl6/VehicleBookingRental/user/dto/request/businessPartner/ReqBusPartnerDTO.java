@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReqBusPartnerDTO extends BusinessPartnerDTO{
-    private PartnerTypeEnum partnerType;
+public class ReqBusPartnerDTO extends ReqBusinessPartnerDTO {
     private String description;
     private String urlFanpage;
     private String policy;

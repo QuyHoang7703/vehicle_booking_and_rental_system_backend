@@ -103,7 +103,7 @@ public class AuthController {
         account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
         if(file != null) {
             String urlAvatar = this.s3Service.uploadFile(file);
-            this.s3Service.deleteFile(account.getAvatar());
+//            this.s3Service.deleteFile(account.getAvatar());
             account.setAvatar(urlAvatar);
 
         }

@@ -1,33 +1,28 @@
-<<<<<<< HEAD
-name: Movie Ticket Backend Pipeline
-=======
+
 name: Vehicle Booking Rental Pipeline
->>>>>>> main
+
 
 on:
   push:
     branches:
       - main
-<<<<<<< HEAD
   pull_request:
     branches:
       - main
-=======
->>>>>>> main
+
 
 jobs:
   compile:
     runs-on: ubuntu-latest
     name: Compile Project
-<<<<<<< HEAD
-=======
+
     env:
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET: ${{ secrets.AWS_SECRET }}
       GG_Client_ID: ${{ secrets.GG_Client_ID }}
       GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
 
->>>>>>> main
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -39,10 +34,7 @@ jobs:
           java-version: '17'
           distribution: 'corretto'
       - name: Run Unit Test
-<<<<<<< HEAD
-        run: mvn clean compile
 
-=======
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET: ${{ secrets.AWS_SECRET }}
@@ -51,8 +43,6 @@ jobs:
         run: mvn clean compile
 
 
-
->>>>>>> main
   unit-test:
     runs-on: ubuntu-latest
     name: Running Unit Test

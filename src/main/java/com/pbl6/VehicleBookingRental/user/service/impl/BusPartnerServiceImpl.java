@@ -2,19 +2,22 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
+import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
+import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
-import com.pbl6.VehicleBookingRental.user.service.AccountService;
-import com.pbl6.VehicleBookingRental.user.service.BusPartnerService;
-import com.pbl6.VehicleBookingRental.user.service.ImageService;
-import com.pbl6.VehicleBookingRental.user.service.S3Service;
+import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,12 +34,15 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     private final BusinessPartnerRepository businessPartnerRepository;
     private final BusPartnerRepository busPartnerRepository;
     private final AccountService accountService;
-    private final RoleRepository roleRepository;
     private final S3Service s3Service;
     private final ImageRepository imageRepository;
     private final ImageService imageService;
+    private final RoleRepository roleRepository;
+    private final AccountRoleRepository accountRoleRepository;
+    private final BusinessPartnerService businessPartnerService;
+
     @Override
-    public BusPartner registerBusPartner(ReqBusPartnerDTO reqBusPartnerDTO, List<MultipartFile> licenses, List<MultipartFile> images) {
+    public ResBusinessPartnerDTO registerBusPartner(ReqBusPartnerDTO reqBusPartnerDTO, MultipartFile avatar, List<MultipartFile> licenses, List<MultipartFile> images) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Account account = this.accountService.handleGetAccountByUsername(username);
@@ -52,6 +58,10 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         businessPartner.setAddress(reqBusPartnerDTO.getAddress());
         businessPartner.setPartnerType(reqBusPartnerDTO.getPartnerType());
         businessPartner.setAccount(account);
+        if(avatar != null) {
+            String url = this.s3Service.uploadFile(avatar);
+            businessPartner.setAvatar(url);
+        }
         BusinessPartner savedBusinessPartner = this.businessPartnerRepository.save(businessPartner);
 
         // Create BusPartner
@@ -65,15 +75,28 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 //        businessPartner.setBusPartner(busPartner);
 
         // Add business license images for bus partner
-        this.imageService.uploadAndSaveImages(licenses, "BUSINESS_LICENSE", savedBusPartner.getId());
-        this.imageService.uploadAndSaveImages(images, "BUS_PARTNER", savedBusPartner.getId());
+        this.imageService.uploadAndSaveImages(licenses, String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE), savedBusPartner.getId());
+        this.imageService.uploadAndSaveImages(images, String.valueOf(ImageOfObjectEnum.BUS_PARTNER), savedBusPartner.getId());
 
-        return savedBusPartner;
+        ResBusinessPartnerDTO resBusinessPartnerDTO = this.businessPartnerService.convertToResBusinessPartnerDTO(savedBusinessPartner);
+
+
+        return resBusinessPartnerDTO;
+    }
+
+    @Override
+    public BusPartner getBusPartnerByBusinessPartnerId(int id) throws IdInValidException{
+        BusinessPartner businessPartner = this.businessPartnerRepository.findById(id)
+                .orElseThrow(() -> new IdInValidException("Business Partner not found"));
+        BusPartner busPartner = this.busPartnerRepository.findByBusinessPartner(businessPartner)
+                .orElseThrow(()-> new IdInValidException("Bus Partner not found"));
+
+        return busPartner;
     }
 
 
     @Override
-    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) {
+    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) throws IdInValidException {
         // Tạo BusinessPartnerInfo từ BusPartner
         ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(busPartner);
 
@@ -88,9 +111,11 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         return resBusPartnerDTO;
     }
 
+
+
     private ResBusinessPartnerDTO.BusinessPartnerInfo createBusinessPartnerInfo(BusPartner busPartner) {
         ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = new ResBusinessPartnerDTO.BusinessPartnerInfo();
-        businessPartnerInfo.setId(busPartner.getId());
+        businessPartnerInfo.setId(busPartner.getBusinessPartner().getId());
         businessPartnerInfo.setBusinessName(busPartner.getBusinessPartner().getBusinessName());
         businessPartnerInfo.setEmailOfRepresentative(busPartner.getBusinessPartner().getEmailOfRepresentative());
         businessPartnerInfo.setNameOfRepresentative(busPartner.getBusinessPartner().getNameOfRepresentative());
@@ -98,6 +123,7 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         businessPartnerInfo.setAddress(busPartner.getBusinessPartner().getAddress());
         businessPartnerInfo.setPartnerType(busPartner.getBusinessPartner().getPartnerType());
         businessPartnerInfo.setApprovalStatus(busPartner.getBusinessPartner().getApprovalStatus());
+        businessPartnerInfo.setAvatar(busPartner.getBusinessPartner().getAvatar());
         return businessPartnerInfo;
     }
 
@@ -119,5 +145,6 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 
         return busPartnerInfo;
     }
+
 
 }

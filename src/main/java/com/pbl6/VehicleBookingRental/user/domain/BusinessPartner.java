@@ -19,16 +19,19 @@ import lombok.NoArgsConstructor;
 public class BusinessPartner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 //    private String businessLicense;
     private String businessName;
     private String emailOfRepresentative;
     private String nameOfRepresentative;
     private String phoneOfRepresentative;
     private String address;
+//    @Enumerated(EnumType.STRING)
     private PartnerTypeEnum partnerType;
     @Enumerated(EnumType.STRING)
-    private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;;
+    private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String avatar;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

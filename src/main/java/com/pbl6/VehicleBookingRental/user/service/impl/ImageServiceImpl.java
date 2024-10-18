@@ -17,7 +17,7 @@ public class ImageServiceImpl implements ImageService {
     private final ImageRepository imageRepository;
 
     @Override
-    public void uploadAndSaveImages(List<MultipartFile> files, String ownerType, int ownerId) {
+    public List<String> uploadAndSaveImages(List<MultipartFile> files, String ownerType, int ownerId) {
         if(files != null && !files.isEmpty()) {
             List<String> urlFiles = this.s3Service.uploadFiles(files);
 
@@ -30,5 +30,6 @@ public class ImageServiceImpl implements ImageService {
             }
         }
 
+        return null;
     }
 }

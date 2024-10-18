@@ -22,5 +22,6 @@ public class ResBusinessPartnerDTO {
         private String address;
         private PartnerTypeEnum partnerType;
         private ApprovalStatusEnum approvalStatus;
+        private String avatar;
     }
 }

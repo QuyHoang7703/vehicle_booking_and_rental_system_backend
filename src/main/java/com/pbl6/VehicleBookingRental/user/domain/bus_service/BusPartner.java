@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "bus_partner")
 @AllArgsConstructor
@@ -18,15 +20,13 @@ public class BusPartner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
     private String description ;
-    private String url;
+    private String urlFanpage;
     private String policy;
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "business_partner_id")
     private BusinessPartner businessPartner;
-    @ManyToOne
-    @JsonIgnore
-    @JoinColumn(name = "image_id")
-    private Images image;
+//    @OneToMany
+//    private List<Images> images;
 
 }

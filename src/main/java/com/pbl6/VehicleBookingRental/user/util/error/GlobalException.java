@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 
@@ -21,6 +22,15 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalException {
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<RestResponse<Object>> handleAllException(Exception ex) {
+        RestResponse<Object> res = new RestResponse<Object>();
+        res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        res.setMessage(ex.getMessage());
+        res.setError("Internal Server Error");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+    }
+
     @ExceptionHandler(value = {
             SQLIntegrityConstraintViolationException.class,
             UsernameNotFoundException.class,
@@ -37,7 +47,8 @@ public class GlobalException {
 
     }
 
-    @ExceptionHandler(NoResourceFoundException.class)
+    @ExceptionHandler(value={NoResourceFoundException.class, NoHandlerFoundException.class})
+    
     public ResponseEntity<Object> handleNotFoundException(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();
         res.setStatusCode(HttpStatus.NOT_FOUND.value());

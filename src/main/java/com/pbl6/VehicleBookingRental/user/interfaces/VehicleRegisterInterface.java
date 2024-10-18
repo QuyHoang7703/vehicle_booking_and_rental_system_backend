@@ -4,7 +4,8 @@ import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
-import com.pbl6.VehicleBookingRental.user.domain.dto.car_rental_DTO.VehicleRentalServiceDTO;
+import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServiceDTO;
+
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;

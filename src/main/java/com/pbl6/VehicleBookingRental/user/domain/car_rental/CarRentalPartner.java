@@ -19,9 +19,12 @@ public class CarRentalPartner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    private String insuranceInformation;
+
     @OneToMany(mappedBy = "carRentalPartner",cascade = CascadeType.ALL)
     @JsonIgnore
     private List<VehicleRegister> vehicleRegisterList;
+
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "business_partner_id")

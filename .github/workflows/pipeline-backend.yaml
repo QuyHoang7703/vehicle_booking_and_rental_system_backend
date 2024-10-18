@@ -1,20 +1,33 @@
+<<<<<<< HEAD
+name: Movie Ticket Backend Pipeline
+=======
 name: Vehicle Booking Rental Pipeline
+>>>>>>> main
 
 on:
   push:
     branches:
       - main
+<<<<<<< HEAD
+  pull_request:
+    branches:
+      - main
+=======
+>>>>>>> main
 
 jobs:
   compile:
     runs-on: ubuntu-latest
     name: Compile Project
+<<<<<<< HEAD
+=======
     env:
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET: ${{ secrets.AWS_SECRET }}
       GG_Client_ID: ${{ secrets.GG_Client_ID }}
       GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
 
+>>>>>>> main
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -26,6 +39,10 @@ jobs:
           java-version: '17'
           distribution: 'corretto'
       - name: Run Unit Test
+<<<<<<< HEAD
+        run: mvn clean compile
+
+=======
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET: ${{ secrets.AWS_SECRET }}
@@ -35,6 +52,7 @@ jobs:
 
 
 
+>>>>>>> main
   unit-test:
     runs-on: ubuntu-latest
     name: Running Unit Test
@@ -70,6 +88,7 @@ jobs:
             echo "Waiting for MySQL..."
             sleep 5
           done
+
       - name: Run Unit Test
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
@@ -79,10 +98,12 @@ jobs:
         run: mvn clean test
 
 
+
   build:
     runs-on: ubuntu-latest
     name: Build Backend
     needs: [compile, unit-test]
+
     env:
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET: ${{ secrets.AWS_SECRET }}
@@ -99,6 +120,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'corretto'
+
       - name: Build Backend
         run: mvn clean compile
 
@@ -106,11 +128,13 @@ jobs:
     name: Build Docker image
     runs-on: ubuntu-latest
     needs: build
+
     env:
       AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
       AWS_SECRET: ${{ secrets.AWS_SECRET }}
       GG_Client_ID: ${{ secrets.GG_Client_ID }}
       GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
+
 
     steps:
       - name: Checkout Code
@@ -135,8 +159,9 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            minhquang3010/server_backend_pbl6:1.0
+            minhquang3010/server_backend_pbl6:1.1
             minhquang3010/server_backend_pbl6:latest
           build-args: |
             PROFILE=dev
-            APP_VERSION=1.0
+            APP_VERSION=1.1
+

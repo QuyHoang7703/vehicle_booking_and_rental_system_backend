@@ -21,6 +21,7 @@ public class CarRentalService {
     private int type;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "vehicle_register_id")
     private VehicleRegister vehicleRegister;
 

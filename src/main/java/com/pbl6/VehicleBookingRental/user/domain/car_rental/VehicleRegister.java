@@ -20,21 +20,23 @@ public class VehicleRegister {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    private String location;
     private String manufacturer;
     private String description;
     private int quantity;
     private String status;
-    private Date dateOfStatus;
-    private double discountPercentage;
-    private double carDeposit;
-    private double reservationFees;
+    private Date date_of_status;
+    private double discount_percentage;
+    private double car_deposit;
+    private double reservation_fees;
     private String ulties;
     private String policy;
-    private double ratingTotal;
+    private double rating_total;
     private double amount;
 
 
     @OneToMany(mappedBy = "vehicleRegister", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<CarRentalService> typeOfRentalServiceList;
 
     @ManyToOne

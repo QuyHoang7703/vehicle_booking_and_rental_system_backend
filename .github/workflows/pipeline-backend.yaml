@@ -1,4 +1,7 @@
+
 name: Vehicle Booking Rental Pipeline
+
+
 on:
   push:
     branches:
@@ -6,6 +9,7 @@ on:
   pull_request:
     branches:
       - main
+
 
 jobs:
   compile:
@@ -18,6 +22,7 @@ jobs:
       GG_Client_ID: ${{ secrets.GG_Client_ID }}
       GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
 
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -29,12 +34,15 @@ jobs:
           java-version: '17'
           distribution: 'corretto'
       - name: Run Unit Test
+
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET: ${{ secrets.AWS_SECRET }}
           GG_Client_ID: ${{ secrets.GG_Client_ID }}
           GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
         run: mvn clean compile
+
+
   unit-test:
     runs-on: ubuntu-latest
     name: Running Unit Test

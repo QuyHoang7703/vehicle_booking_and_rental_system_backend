@@ -45,7 +45,7 @@ public class AccountService {
     private final EmailService emailService;
     private final RoleRepository roleRepository;
     private final AccountRoleRepository accountRoleRepository;
-    private final RoleSerivice roleSerivice;
+    private final RoleService roleSerivice;
     private final S3Service s3Service;
 
 

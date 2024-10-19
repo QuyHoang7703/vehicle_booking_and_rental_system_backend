@@ -66,7 +66,7 @@ public class TokenServiceImpl implements TokenService{
 
         
         // Tạo liên kết chứa token để người dùng nhấn vào => chuyển đến fe xử lý
-        String resetPasswordLink = "url_frontend/verify-token?token=" + token;
+        String resetPasswordLink = "http://localhost:3000/reset-password?token=" + token;
 
         // Tạo nội dung email từ template HTML
         Context context = new Context();

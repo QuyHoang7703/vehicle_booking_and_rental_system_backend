@@ -16,4 +16,5 @@ public class ReqBusinessPartnerDTO {
     private String address;
     private PartnerTypeEnum partnerType;
 
+
 }

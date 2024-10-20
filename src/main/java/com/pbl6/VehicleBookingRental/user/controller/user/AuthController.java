@@ -149,6 +149,7 @@ public class AuthController {
         Authentication authentication = this.authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.info("authentication: " + authentication);
         log.info("Username from authentication: " + authentication.getName());
         
         Account account = this.accountService.handleGetAccountByUsername(loginDTO.getUsername());

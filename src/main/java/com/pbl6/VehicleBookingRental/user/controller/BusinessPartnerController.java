@@ -1,8 +1,10 @@
 package com.pbl6.VehicleBookingRental.user.controller;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
+import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -10,9 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,5 +27,17 @@ public class BusinessPartnerController {
 
         
         return ResponseEntity.status(HttpStatus.OK).body(resultPaginationDTO);
+    }
+
+    @PutMapping("business-partner/verify/{id}")
+    public ResponseEntity<ResponseInfo<String>> verifyRegister(@PathVariable Integer id, @RequestParam("partnerType") String partnerType) throws IdInValidException {
+        this.businessPartnerService.verifyRegister(id, partnerType);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đăng ký thành công đối tác: " + partnerType));
+    }
+
+    @DeleteMapping("business-partner/cancel-partnership/{id}")
+    public ResponseEntity<ResponseInfo<String>> cancel(@PathVariable Integer id, @RequestParam("partnerType") String partnerType) throws IdInValidException {
+        this.businessPartnerService.cancelPartnership(id, partnerType);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác thành công: " + partnerType));
     }
 }

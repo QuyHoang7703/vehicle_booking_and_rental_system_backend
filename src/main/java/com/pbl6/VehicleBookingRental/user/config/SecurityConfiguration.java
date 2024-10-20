@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.config;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.crypto.SecretKey;
@@ -14,6 +15,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -22,22 +24,26 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.util.Base64;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
+@EnableWebSecurity
+@Slf4j
 public class SecurityConfiguration {
     @Value("${pbl6.jwt.base64-secret}")
     private String jwtKey;
@@ -72,10 +78,15 @@ public class SecurityConfiguration {
 //                 )
                                 
                                 
-                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
-                .authenticationEntryPoint(customAuthenticationEntryPoint))
-                
-                
+//                .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwtConfigurer -> jwtConfigurer
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint(customAuthenticationEntryPoint))
+//                        );
+
+
                     
                 .formLogin(f -> f.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -104,12 +115,34 @@ public class SecurityConfiguration {
                 getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
         return token -> {
             try {
-                return jwtDecoder.decode(token);
+                Jwt decodedJwt = jwtDecoder.decode(token);
+
+                // Lấy role từ claims
+                Map<String, Object> claims = decodedJwt.getClaims();
+                List<String> role = (List<String>) claims.get("authorizes");
+
+                // Bạn có thể thêm logic ở đây để xử lý role nếu cần thiết
+                System.out.println(">>> Role from JWT: " + role);
+                // In ra toàn bộ claims để kiểm tra
+                System.out.println(">>> Decoded JWT claims: " + claims);
+
+                return decodedJwt; // Trả về token đã decode
             } catch (Exception e) {
                 System.out.println(">>> JWT error: " + e.getMessage());
                 throw e;
             }
         };
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_"); //QUyền hạn được lấy ra ko cần có tiền tố gì trước nó
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("authorizes"); //Lấy quyền hạn bên trong claim có tên là "permission"
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
     }
 
    

@@ -3,6 +3,9 @@ package com.pbl6.VehicleBookingRental.user.util;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.service.AccountService;
+import com.pbl6.VehicleBookingRental.user.service.RoleService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -20,7 +23,9 @@ import org.springframework.stereotype.Service;
 import com.nimbusds.jose.util.Base64;
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -29,9 +34,13 @@ import javax.crypto.spec.SecretKeySpec;
 public class SecurityUtil {
     public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
     private final JwtEncoder jwtEncoder;
+    private final RoleService roleService;
+    private final AccountService accountService;
     
-    public SecurityUtil(JwtEncoder jwtEncoder) {
+    public SecurityUtil(JwtEncoder jwtEncoder, RoleService roleService, AccountService accountService) {
         this.jwtEncoder = jwtEncoder;
+        this.roleService = roleService;
+        this.accountService = accountService;
     }
 
     @Value("${pbl6.jwt.base64-secret}")
@@ -67,13 +76,15 @@ public class SecurityUtil {
 
         //Create header
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
-
+        Account account = this.accountService.handleGetAccountByUsername(username);
+        List<String> roles = this.roleService.getNameRolesByAccountID(account.getId());
         // Create payload
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuedAt(now)
             .expiresAt(validity)
             .subject(username)
             .claim("user", loginDTO.getAccountLogin())
+                .claim("authorizes", roles.stream().map(role -> "" + role).collect(Collectors.toList()))
             .build();   
 
        

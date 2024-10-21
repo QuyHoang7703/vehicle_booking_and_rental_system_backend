@@ -16,4 +16,5 @@ public interface RoleService {
     ResultPaginationDTO getRoles(Specification<Role> spec, Pageable pageable);
     boolean existsByName(String name);
     List<GrantedAuthority> getAuthoritiesByRoleName(String roleName);
+    List<String> getAllRoleNames();
 }

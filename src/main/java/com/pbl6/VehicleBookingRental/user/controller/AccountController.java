@@ -2,14 +2,21 @@ package com.pbl6.VehicleBookingRental.user.controller;
 
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
+import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
+import com.pbl6.VehicleBookingRental.user.service.RoleService;
 import com.pbl6.VehicleBookingRental.user.service.S3Service;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.turkraft.springfilter.builder.FilterBuilder;
+import com.turkraft.springfilter.converter.FilterSpecificationConverter;
+import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -17,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
@@ -26,14 +34,20 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import com.turkraft.springfilter.boot.Filter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
+@Slf4j
 public class AccountController {
     private final AccountService accountService;
     private final S3Service s3Service;
+    private final RoleService roleService;
+    private final FilterSpecificationConverter filterSpecificationConverter;
+    private final FilterBuilder filterBuilder;
 
     @GetMapping("/account")
     @ApiMessage("fetch account info")
@@ -48,8 +62,16 @@ public class AccountController {
     @GetMapping("/accounts")
     @PreAuthorize("hasAuthority('GET_ALL_ACCOUNT')")
     @ApiMessage("fetch all account success")
+    @Transactional
     public ResponseEntity<ResultPaginationDTO> getAllAccounts(@Filter Specification<Account> spec, Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts(spec, pageable));
+        Specification<Account> roleNotAdminSpec = (root, query, criteriaBuilder) ->{
+            Join<Account, AccountRole> accounRoleJoin = root.join("accountRole");
+            Join<AccountRole, Role> roleJoin = accounRoleJoin.join("role");
+            return criteriaBuilder.notEqual(roleJoin.get("name"), "ADMIN");
+        };
+
+        Specification<Account> finalSpec = spec.and(roleNotAdminSpec);
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts(finalSpec, pageable));
     }
 
     @PutMapping("/account")

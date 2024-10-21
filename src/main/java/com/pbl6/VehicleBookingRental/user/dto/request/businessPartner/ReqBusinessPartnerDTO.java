@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReqBusinessPartnerDTO {
+
 //    private String businessLicense;
     private String businessName;
     private String emailOfRepresentative;

@@ -14,4 +14,5 @@ public interface AccountRoleRepository extends JpaRepository<AccountRole, Intege
     List<AccountRole> findByAccountId(int id);
     @Transactional
     void deleteAccountRolesByAccountAndRole(Account account, Role role);
+//    List<AccountRole> findByRole
 }

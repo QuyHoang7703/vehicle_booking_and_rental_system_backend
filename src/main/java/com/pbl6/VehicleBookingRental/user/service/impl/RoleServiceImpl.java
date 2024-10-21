@@ -102,5 +102,10 @@ public class RoleServiceImpl implements RoleService {
 
     }
 
+    @Override
+    public List<String> getAllRoleNames() {
+        return this.roleRepository.findAllRoleNames();
+    }
+
 
 }

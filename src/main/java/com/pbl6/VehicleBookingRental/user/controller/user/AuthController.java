@@ -163,12 +163,11 @@ public class AuthController {
         //Save access token into Cookie
         ResponseCookie accCookies = ResponseCookie
                                                 .from("access_token", accessToken)
-                                                // .httpOnly(true)
-//                                                .secure(true)
+//                                                 .httpOnly(true)
+                                                .secure(true)
                                                 .path("/")
                                                 .maxAge(accessTokenExpiration)
-                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                .sameSite("None")
+//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
                                                 .build();
         // Create refresh token
         String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
@@ -176,11 +175,10 @@ public class AuthController {
         ResponseCookie resCookies = ResponseCookie
                                                 .from("refresh_token", refresh_token)
                                                 .httpOnly(true)
-//                                                .secure(true)
+                                                .secure(true)
                                                 .path("/")
                                                 .maxAge(refreshTokenExpiration)
-                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                .sameSite("None")
+//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
                                                 .build();
         
         
@@ -221,10 +219,10 @@ public class AuthController {
         ResponseCookie accCookies = ResponseCookie
                                                 .from("access_token", accessToken)
                                                 // .httpOnly(true)
-                                                //.secure(true)
+                                                .secure(true)
                                                 .path("/")
                                                 .maxAge(accessTokenExpiration)
-                                                .domain("vehicle-booking-and-rental-system.vercel.app")
+//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
                                                 .build();
 
         // Create refresh token 
@@ -233,10 +231,10 @@ public class AuthController {
         ResponseCookie resCookies = ResponseCookie
                                                 .from("refresh_token", refresh_token)
                                                 .httpOnly(true)
-                                                //.secure(true)
+                                                .secure(true)
                                                 .path("/")
                                                 .maxAge(refreshTokenExpiration)
-                                                .domain("vehicle-booking-and-rental-system.vercel.app")
+//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
                                                 .build();
         
         return ResponseEntity
@@ -258,24 +256,16 @@ public class AuthController {
         this.accountService.updateRefreshToken(null, username);
         ResponseCookie resCookies = ResponseCookie
                                                 .from("refresh_token", null)
-                                                // .httpOnly(true)
-                                                .secure(true)
-                                                .path("/")
-                                                .maxAge(0)
-                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                                                .build();
-        ResponseCookie accCookies = ResponseCookie
-                                                .from("access_token", null)
                                                 .httpOnly(true)
                                                 .secure(true)
                                                 .path("/")
                                                 .maxAge(0)
-                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                                                .build();                                       
+//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
+                                                .build();
+
         System.out.println(">>>>> Logout account username: " + username);
         return ResponseEntity.status(HttpStatus.OK)
                             .header(HttpHeaders.SET_COOKIE, resCookies.toString())
-                            .header(HttpHeaders.SET_COOKIE, accCookies.toString())
                             .body(null);
     }
 

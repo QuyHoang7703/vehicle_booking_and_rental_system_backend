@@ -24,11 +24,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public boolean isPermissionExist(Permission permission) {
-        return this.permissionRepository.existsByModuleAndApiPathAndMethod(
-                permission.getModule(),
-                permission.getApiPath(),
-                permission.getMethod()
-        );
+        return this.permissionRepository.existsByName(permission.getName());
     }
 
     @Override
@@ -51,9 +47,7 @@ public class PermissionServiceImpl implements PermissionService {
         Permission permissionDb = this.fetchPermissionById(permission.getId());
         if (permissionDb != null) {
             permissionDb.setName(permission.getName());
-            permissionDb.setApiPath(permission.getApiPath());
-            permissionDb.setMethod(permission.getMethod());
-            permissionDb.setModule(permission.getModule());
+            permissionDb.setDescription(permission.getDescription());
             return this.permissionRepository.save(permissionDb);
         }
         return null;

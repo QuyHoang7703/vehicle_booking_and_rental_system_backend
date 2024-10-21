@@ -13,7 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -85,6 +88,18 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public boolean existsByName(String name) {
         return this.roleRepository.existsByName(name);
+    }
+
+    @Override
+    @Transactional
+    public List<GrantedAuthority> getAuthoritiesByRoleName(String roleName) {
+        Role role = this.roleRepository.findByName(roleName).orElse(null);
+        if(role != null) {
+            return role.getPermissions().stream().map(permission -> new SimpleGrantedAuthority(permission.getName()))
+                    .collect(Collectors.toList());
+        }
+        return null;
+
     }
 
 

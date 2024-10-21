@@ -17,9 +17,9 @@ public class TestAuthorizationController {
     }
 
     @GetMapping("/test2")
-    @PreAuthorize("hasRole('BUS_PARTNER')")
+    @PreAuthorize("hasAuthority('Get all accounts v2')")
     public String test2() {
-        log.info("AUthenication: " + SecurityContextHolder.getContext().getAuthentication().getName());
+        log.info("Authenication after using jwt: " + SecurityContextHolder.getContext().getAuthentication());
         return "test2";
     }
 }

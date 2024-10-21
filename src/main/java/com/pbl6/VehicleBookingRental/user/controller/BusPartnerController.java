@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -38,23 +39,24 @@ public class BusPartnerController {
     }
 
     @GetMapping("/bus-partners/{id}")
+    @PreAuthorize("hasAuthority('VIEW_REGISTER_BUSINESS_PARTNER')")
     public ResponseEntity<ResBusPartnerDTO> getBusPartnerById(@PathVariable Integer id) throws IdInValidException {
         BusPartner busPartner = this.busPartnerService.getBusPartnerByBusinessPartnerId(id);
         ResBusPartnerDTO resBusPartnerDTO = this.busPartnerService.convertToResBusPartnerDTO(busPartner);
         return ResponseEntity.status(HttpStatus.OK).body(resBusPartnerDTO);
     }
 
-    @PutMapping("bus-partners/verify/{id}")
-    public ResponseEntity<ResponseInfo<String>> verifyRegister(@PathVariable Integer id, @RequestParam("partnerType") String partnerType) throws IdInValidException {
-        this.businessPartnerService.verifyRegister(id, partnerType);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đăng ký thành công đối tác: " + partnerType));
-    }
-
-    @DeleteMapping("bus-partners/cancel-partnership/{id}")
-    public ResponseEntity<ResponseInfo<String>> cancel(@PathVariable Integer id, @RequestParam("partnerType") String partnerType) throws IdInValidException {
-        this.businessPartnerService.cancelPartnership(id, partnerType);
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác thành công: " + partnerType));
-    }
+//    @PutMapping("bus-partners/verify/{id}")
+//    public ResponseEntity<ResponseInfo<String>> verifyRegister(@PathVariable Integer id, @RequestParam("partnerType") String partnerType) throws IdInValidException {
+//        this.businessPartnerService.verifyRegister(id, partnerType);
+//        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đăng ký thành công đối tác: " + partnerType));
+//    }
+//
+//    @DeleteMapping("bus-partners/cancel-partnership/{id}")
+//    public ResponseEntity<ResponseInfo<String>> cancel(@PathVariable Integer id, @RequestParam("partnerType") String partnerType) throws IdInValidException {
+//        this.businessPartnerService.cancelPartnership(id, partnerType);
+//        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác thành công: " + partnerType));
+//    }
 
 
 }

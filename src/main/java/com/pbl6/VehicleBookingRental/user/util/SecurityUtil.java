@@ -84,7 +84,7 @@ public class SecurityUtil {
             .expiresAt(validity)
             .subject(username)
             .claim("user", loginDTO.getAccountLogin())
-                .claim("authorizes", roles.stream().map(role -> "" + role).collect(Collectors.toList()))
+//                .claim("authorizes", roles.stream().map(role -> "" + role).collect(Collectors.toList()))
             .build();   
 
        

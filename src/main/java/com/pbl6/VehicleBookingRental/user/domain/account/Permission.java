@@ -25,20 +25,18 @@ public class Permission {
     private String name;
 
     @NotBlank(message = "apiPath không được để trống")
-    private String apiPath;
+    private String description;
 
-    public Permission(String name, String apiPath, String method, String module) {
+    public Permission(String name, String description) {
         this.name = name;
-        this.apiPath = apiPath;
-        this.method = method;
-        this.module = module;
+        this.description = description;
     }
 
-    @NotBlank(message = "method không được để trống")
-    private String method;
-
-    @NotBlank(message = "module không được để trống")
-    private String module;
+//    @NotBlank(message = "method không được để trống")
+//    private String method;
+//
+//    @NotBlank(message = "module không được để trống")
+//    private String module;
 
     private Instant createdAt;
     private Instant updatedAt;

@@ -4,6 +4,7 @@ import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
+import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
@@ -49,6 +50,10 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         businessPartnerInfo.setPartnerType(businessPartner.getPartnerType());
         businessPartnerInfo.setApprovalStatus(businessPartner.getApprovalStatus());
         businessPartnerInfo.setAvatar(businessPartner.getAvatar());
+        AccountInfo accountInfo = new AccountInfo();
+        accountInfo.setId(businessPartner.getAccount().getId());
+        accountInfo.setEmail(businessPartner.getAccount().getEmail());
+        businessPartnerInfo.setAccountInfo(accountInfo);
 
         resBusinessPartnerDTO.setBusinessInfo(businessPartnerInfo);
         return resBusinessPartnerDTO;

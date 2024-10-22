@@ -5,7 +5,6 @@ import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.repository.permissionRole.PermissionRepository;
 import com.pbl6.VehicleBookingRental.user.service.PermissionService;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

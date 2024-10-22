@@ -2,10 +2,8 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCarRentalPartnerDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCarRentalPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
@@ -13,8 +11,10 @@ import com.pbl6.VehicleBookingRental.user.repository.businessPartner.CarRentalPa
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     private final AccountService accountService;
     private final ImageService imageService;
@@ -35,12 +36,19 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     private final BusinessPartnerService businessPartnerService;
     private final ImageRepository imageRepository;
     @Override
-    public ResBusinessPartnerDTO registerBusPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO, MultipartFile avatar, List<MultipartFile> licenses, List<MultipartFile> images) {
+    public ResBusinessPartnerDTO registerBusPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
+                                                    MultipartFile avatar,
+                                                    List<MultipartFile> licenses,
+                                                    List<MultipartFile> images) throws ApplicationException{
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Account account = this.accountService.handleGetAccountByUsername(username);
         if(account == null) {
             throw new UsernameNotFoundException("Username not found");
+        }
+        if(this.businessPartnerService.isRegistered(account.getId(), reqCarRentalPartnerDTO.getPartnerType())){
+            log.info("Already registered");
+            throw new ApplicationException("You have already registered this business partner");
         }
         // Create BusinessPartner
         BusinessPartner businessPartner = new BusinessPartner();
@@ -59,7 +67,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
 
         // Create BusPartner
         CarRentalPartner carRentalPartner = new CarRentalPartner();
-        carRentalPartner.setInsuranceInformation(reqCarRentalPartnerDTO.getInsuranceInformation());
+        carRentalPartner.setClientType(reqCarRentalPartnerDTO.getClientType());
         carRentalPartner.setBusinessPartner(savedBusinessPartner);
         CarRentalPartner savedCarRentalPartner = this.carRentalPartnerRepository.save(carRentalPartner);
 
@@ -77,16 +85,16 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     }
 
     @Override
-    public CarRentalPartner getCarRentalPartnerByBusinessPartnerId(int id) throws IdInValidException {
+    public CarRentalPartner getCarRentalPartnerByBusinessPartnerId(int id) throws IdInvalidException {
         BusinessPartner businessPartner = this.businessPartnerRepository.findById(id)
-                .orElseThrow(() -> new IdInValidException("Business Partner not found"));
+                .orElseThrow(() -> new IdInvalidException("Business Partner not found"));
         CarRentalPartner carRentalPartner = this.carRentalPartnerRepository.findByBusinessPartner(businessPartner)
-                .orElseThrow(() -> new IdInValidException("Car Rental Partner not found"));
+                .orElseThrow(() -> new IdInvalidException("Car Rental Partner not found"));
         return carRentalPartner;
     }
 
     @Override
-    public ResCarRentalPartnerDTO convertoCarRentalPartnerDTO(CarRentalPartner carRentalPartner) throws IdInValidException {
+    public ResCarRentalPartnerDTO convertoCarRentalPartnerDTO(CarRentalPartner carRentalPartner) throws IdInvalidException {
         // Tạo BusinessPartnerInfo từ BusPartner
         ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(carRentalPartner);
 
@@ -117,7 +125,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
 
     private ResCarRentalPartnerDTO.CarRentalPartnerInfo createCarRentalPartnerInfo(CarRentalPartner carRentalPartner) {
         ResCarRentalPartnerDTO.CarRentalPartnerInfo carRentalPartnerInfo = new ResCarRentalPartnerDTO.CarRentalPartnerInfo();
-        carRentalPartnerInfo.setInsuranceInformation(carRentalPartner.getInsuranceInformation());
+        carRentalPartnerInfo.setClientType(carRentalPartner.getClientType());
 
 
         List<String> urlLicenses = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE),

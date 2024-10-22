@@ -15,7 +15,7 @@ import com.pbl6.VehicleBookingRental.user.service.DriverService;
 import com.pbl6.VehicleBookingRental.user.service.ImageService;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -89,9 +89,9 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void verifyDriver(int id) throws IdInValidException {
+    public void verifyDriver(int id) throws IdInvalidException {
         Driver driver = this.driverRepository.findById(id)
-                .orElseThrow(() -> new IdInValidException("Id is invalid"));
+                .orElseThrow(() -> new IdInvalidException("Id is invalid"));
         driver.setApprovalStatus(ApprovalStatusEnum.APPROVED);
         this.driverRepository.save(driver);
         Account account = driver.getAccount();
@@ -106,9 +106,9 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     @Transactional
-    public void cancelDriver(int id) throws IdInValidException {
+    public void cancelDriver(int id) throws IdInvalidException {
         Driver driver = this.driverRepository.findById(id)
-                .orElseThrow(() -> new IdInValidException("Id is invalid"));
+                .orElseThrow(() -> new IdInvalidException("Id is invalid"));
         driver.setApprovalStatus(ApprovalStatusEnum.PENDING_APPROVAL);
         this.driverRepository.save(driver);
         Role role = this.roleRepository.findByName("DRIVER")

@@ -5,7 +5,7 @@ import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.service.PermissionService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,18 +29,18 @@ public class PermissionController {
 
     @PutMapping("/permissions")
     @ApiMessage("Updated a permission")
-    public ResponseEntity<Permission> updatePermission(@Valid @RequestBody Permission permission) throws IdInValidException {
+    public ResponseEntity<Permission> updatePermission(@Valid @RequestBody Permission permission) throws IdInvalidException {
         if(this.permissionService.fetchPermissionById(permission.getId()) == null) {
-            throw new IdInValidException("Permission with Id: " + permission.getId() + "is not available");
+            throw new IdInvalidException("Permission with Id: " + permission.getId() + "is not available");
         }
         return ResponseEntity.status(HttpStatus.OK).body(permissionService.updatePermission(permission));
     }
 
     @DeleteMapping("/permissions/{id}")
     @ApiMessage("Deleted a permission")
-    public ResponseEntity<ResponseInfo<String>> deletePermission(@PathVariable("id") int id) throws IdInValidException {
+    public ResponseEntity<ResponseInfo<String>> deletePermission(@PathVariable("id") int id) throws IdInvalidException {
         if(this.permissionService.fetchPermissionById(id) == null) {
-            throw new IdInValidException("Permission with Id: " + id + "is not available");
+            throw new IdInvalidException("Permission with Id: " + id + "is not available");
         }
         this.permissionService.deletePermission(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Deleted permission with Id: " + id));

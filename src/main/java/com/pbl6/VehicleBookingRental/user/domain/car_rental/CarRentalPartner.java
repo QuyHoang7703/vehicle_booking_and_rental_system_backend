@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.domain.car_rental;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
+import com.pbl6.VehicleBookingRental.user.util.constant.ClientTypeEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,7 +20,7 @@ public class CarRentalPartner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private String insuranceInformation;
+    private ClientTypeEnum clientType;
 
     @OneToMany(mappedBy = "carRentalPartner",cascade = CascadeType.ALL)
     @JsonIgnore

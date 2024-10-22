@@ -7,6 +7,7 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.RoleService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -132,5 +133,25 @@ public class SecurityUtil {
             return s;
         }
         return null;
+    }
+
+    public ResponseCookie createAccessCookie(String name, String value, long maxAge) {
+        return ResponseCookie.from(name, value)
+                //.httpOnly(true)   // HTTP-only for security
+                .secure(true)     // Secure flag
+                .path("/")        // Cookie valid for entire site
+                .maxAge(maxAge)   // Expiration time
+                .build();
+
+    }
+
+    public ResponseCookie createRefreshCookie(String name, String value, long maxAge) {
+        return ResponseCookie.from(name, value)
+                .httpOnly(true)   // HTTP-only for security
+                .secure(true)     // Secure flag
+                .path("/")        // Cookie valid for entire site
+                .maxAge(maxAge)   // Expiration time
+                .build();
+
     }
 }

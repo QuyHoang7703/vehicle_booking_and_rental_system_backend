@@ -148,37 +148,18 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info("authentication: " + authentication);
         log.info("Username from authentication: " + authentication.getName());
-        
-//        Account account = this.accountService.handleGetAccountByUsername(loginDTO.getUsername());
-//        if(account == null){
-//            throw new IdInvalidException("Tài khoản không tồn tại");
-//        }
+
         ResLoginDTO res = this.accountService.convertToResLoginDTO(account);
         // Create token when authentication is successful
         String accessToken = this.securityUtil.createAccessToken(authentication.getName(), res);
         res.setAccessToken(accessToken);
         //Save access token into Cookie
-        ResponseCookie accCookies = ResponseCookie
-                                                .from("access_token", accessToken)
-//                                                 .httpOnly(true)
-                                                .secure(true)
-                                                .path("/")
-                                                .maxAge(accessTokenExpiration)
-//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                                                .build();
+        ResponseCookie accCookies = this.securityUtil.createAccessCookie("access_token", accessToken, accessTokenExpiration);
         // Create refresh token
         String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
         this.accountService.updateRefreshToken(refresh_token, loginDTO.getUsername());
-        ResponseCookie resCookies = ResponseCookie
-                                                .from("refresh_token", refresh_token)
-                                                .httpOnly(true)
-                                                .secure(true)
-                                                .path("/")
-                                                .maxAge(refreshTokenExpiration)
-//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                                                .build();
-        
-        
+        ResponseCookie resCookies = this.securityUtil.createAccessCookie("refresh_token", refresh_token, refreshTokenExpiration);
+
         return ResponseEntity
                             .status(HttpStatus.OK)
                             .header(HttpHeaders.SET_COOKIE, accCookies.toString())
@@ -213,27 +194,13 @@ public class AuthController {
         res.setAccessToken(accessToken);
 
         //Save access token into Cookie
-        ResponseCookie accCookies = ResponseCookie
-                                                .from("access_token", accessToken)
-                                                // .httpOnly(true)
-                                                .secure(true)
-                                                .path("/")
-                                                .maxAge(accessTokenExpiration)
-//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                                                .build();
+        ResponseCookie accCookies = this.securityUtil.createAccessCookie("access_token", accessToken, accessTokenExpiration);
 
         // Create refresh token 
         String refresh_token = this.securityUtil.createRefreshToken(username, res);
         this.accountService.updateRefreshToken(refresh_token, username);
-        ResponseCookie resCookies = ResponseCookie
-                                                .from("refresh_token", refresh_token)
-                                                .httpOnly(true)
-                                                .secure(true)
-                                                .path("/")
-                                                .maxAge(refreshTokenExpiration)
-//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                                                .build();
-        
+        ResponseCookie resCookies = this.securityUtil.createAccessCookie("refresh_token", refresh_token, refreshTokenExpiration);
+
         return ResponseEntity
                             .status(HttpStatus.OK)
                             .header(HttpHeaders.SET_COOKIE, accCookies.toString())
@@ -251,22 +218,8 @@ public class AuthController {
             throw new IdInvalidException("Access token is invalid");
         }
         this.accountService.updateRefreshToken(null, username);
-        ResponseCookie accCookies = ResponseCookie
-                                                .from("access_token", null)
-//                                                .httpOnly(true)
-                                                .secure(true)
-                                                .path("/")
-                                                .maxAge(0)
-                                               //.domain("vehicle-booking-and-rental-system.vercel.app")
-                                                .build();
-        ResponseCookie resCookies = ResponseCookie
-                                                .from("refresh_token", null)
-                                                .httpOnly(true)
-                                                .secure(true)
-                                                .path("/")
-                                                .maxAge(0)
-//                                                .domain("vehicle-booking-and-rental-system.vercel.app")
-                                                .build();
+        ResponseCookie accCookies = this.securityUtil.createAccessCookie("access_token", null, 0);
+        ResponseCookie resCookies = this.securityUtil.createAccessCookie("refresh_token", null, 0);
 
         System.out.println(">>>>> Logout account username: " + username);
         return ResponseEntity.status(HttpStatus.OK)
@@ -296,26 +249,6 @@ public class AuthController {
         this.accountService.handleChangePassword(changePasswordDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã thay đổi mật khẩu"));
     }
-
-//    private ResponseCookie createAccessCookie(String name, String value, long maxAge) {
-//        return ResponseCookie.from(name, value)
-////                .httpOnly(true)   // HTTP-only for security
-//                .secure(true)     // Secure flag
-//                .path("/")        // Cookie valid for entire site
-//                .maxAge(maxAge)   // Expiration time
-//                .build();
-//
-//    }
-//
-//    private ResponseCookie createRefreshCookie(String name, String value, long maxAge) {
-//        return ResponseCookie.from(name, value)
-//                .httpOnly(true)   // HTTP-only for security
-//                .secure(true)     // Secure flag
-//                .path("/")        // Cookie valid for entire site
-//                .maxAge(maxAge)   // Expiration time
-//                .build();
-//
-//    }
 
 
 

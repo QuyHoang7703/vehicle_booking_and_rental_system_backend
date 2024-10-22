@@ -3,9 +3,8 @@ package com.pbl6.VehicleBookingRental.user.controller;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResDriverDTO;
-import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
 import com.pbl6.VehicleBookingRental.user.service.DriverService;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,13 +28,13 @@ public class DriverController {
     }
 
     @PutMapping("/drivers/verify/{id}")
-    public ResponseEntity<ResponseInfo<String>> verifyDriver(@PathVariable int id) throws IdInValidException {
+    public ResponseEntity<ResponseInfo<String>> verifyDriver(@PathVariable int id) throws IdInvalidException {
         this.driverService.verifyDriver(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã đăng ký thành công đối tác tài xế" ));
     }
 
     @DeleteMapping("/drivers/cancel-partnership/{id}")
-    public ResponseEntity<ResponseInfo<String>> cancelDriver(@PathVariable int id) throws IdInValidException {
+    public ResponseEntity<ResponseInfo<String>> cancelDriver(@PathVariable int id) throws IdInvalidException {
         this.driverService.cancelDriver(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác tài xế" ));
     }

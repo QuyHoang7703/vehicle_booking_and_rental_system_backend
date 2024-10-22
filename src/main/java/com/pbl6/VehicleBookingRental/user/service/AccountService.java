@@ -13,8 +13,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
-import jakarta.mail.Multipart;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
 import java.util.List;
 
 import java.util.Optional;
@@ -49,7 +47,7 @@ public class AccountService {
     private final S3Service s3Service;
 
 
-    public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInValidException {
+    public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInvalidException {
         Account account = new Account();
         account.setEmail(registerDTO.getEmail());
         account.setPassword(registerDTO.getPassword());
@@ -92,7 +90,10 @@ public class AccountService {
         accountInfoDTO.setPhoneNumber(account.getPhoneNumber());
         accountInfoDTO.setGender(account.getGender());
         accountInfoDTO.setAvatar(account.getAvatar());
-        accountInfoDTO.setActive(true);
+        accountInfoDTO.setActive(account.isActive());
+//        if(account.getLockReason()!=null){
+//
+//        }
 
         List<String> roles = this.roleSerivice.getNameRolesByAccountID(account.getId());
         accountInfoDTO.setRoles(roles);
@@ -142,8 +143,10 @@ public class AccountService {
 
     }
 
-    public void handleDeleteAccount(int id) {
-        this.accountRepository.deleteById(id);
+    public void handleDeactivateAccount(int id) {
+        Account accountDb = this.fetchAccountById(id);
+        accountDb.setActive(false);
+        this.accountRepository.save(accountDb);
     }
     
     public Account handleGetAccountByUsername(String username) {
@@ -199,7 +202,7 @@ public class AccountService {
         this.emailService.sendEmail(email, subject, body);
     }
 
-    public void verify(String email, String otp) throws IdInValidException{
+    public void verify(String email, String otp) throws IdInvalidException {
         Optional<Account> optionalAccount = this.accountRepository.findByEmail(email);
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
@@ -217,7 +220,7 @@ public class AccountService {
                 accountRole.setRole(userRole);
                 this.accountRoleRepository.save(accountRole);
             }else {
-                throw new IdInValidException("OTP is expired");
+                throw new IdInvalidException("OTP is expired");
             }
         }
     }
@@ -246,13 +249,13 @@ public class AccountService {
         return account.isActive();
     }
 
-    public void handleChangePassword(ReqChangePasswordDTO changePasswordDTO) throws IdInValidException {
+    public void handleChangePassword(ReqChangePasswordDTO changePasswordDTO) throws IdInvalidException {
         Optional<Account> optionalAccount = this.accountRepository.findByToken(changePasswordDTO.getToken());
         if(!optionalAccount.isPresent()) {
-            throw new IdInValidException("Token không hợp lệ");
+            throw new IdInvalidException("Token không hợp lệ");
         }
         if(!changePasswordDTO.getPassword().equals(changePasswordDTO.getConfirmPassword())) {
-            throw new IdInValidException("Mật khẩu không trùng khớp");
+            throw new IdInvalidException("Mật khẩu không trùng khớp");
         }
         Account account = optionalAccount.get();
        
@@ -264,9 +267,9 @@ public class AccountService {
 
     }
 
-    public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInValidException {
+    public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInvalidException {
         Account account = this.accountRepository.findById(reqAccountInfoDTO.getId())
-                .orElseThrow(()-> new IdInValidException("Account not found"));
+                .orElseThrow(()-> new IdInvalidException("Account not found"));
         account.setName(reqAccountInfoDTO.getName());
         account.setBirthDay(reqAccountInfoDTO.getBirthDay());
         account.setGender(reqAccountInfoDTO.getGender());

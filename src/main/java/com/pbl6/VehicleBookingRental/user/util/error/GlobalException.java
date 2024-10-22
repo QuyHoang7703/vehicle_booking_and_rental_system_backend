@@ -15,9 +15,6 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 
-import com.pbl6.VehicleBookingRental.user.domain.RestResponse;
-
-import java.nio.file.AccessDeniedException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,7 +45,7 @@ public class GlobalException {
             SQLIntegrityConstraintViolationException.class,
             UsernameNotFoundException.class,
             BadCredentialsException.class,
-            IdInValidException.class
+            IdInvalidException.class
     })
     public ResponseEntity<RestResponse<Object>> handleException(Exception ex) {
         RestResponse<Object> restResponse = new RestResponse<Object>();

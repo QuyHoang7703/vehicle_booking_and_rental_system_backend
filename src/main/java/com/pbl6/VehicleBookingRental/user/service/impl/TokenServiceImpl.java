@@ -7,7 +7,7 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.service.EmailService;
 import com.pbl6.VehicleBookingRental.user.service.TokenService;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -22,12 +22,12 @@ public class TokenServiceImpl implements TokenService{
     private final AccountRepository accountRepository;
 
     @Override
-    public void createToken(String email) throws IdInValidException {
+    public void createToken(String email) throws IdInvalidException {
         Optional<Account> optionalAccount = this.accountRepository.findByEmail(email);
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
             if((account.isActive() || account.isVerified())==false) {
-                throw new IdInValidException("Tài khoản này đã bị kháo");
+                throw new IdInvalidException("Tài khoản này đã bị kháo");
             }
       
             String token = UUID.randomUUID().toString();
@@ -39,7 +39,7 @@ public class TokenServiceImpl implements TokenService{
             this.sendRequestForgotPassword(email, account.getName(), token);
             System.out.println(">>>>>>> Token: " + token);
         }else{
-            throw new IdInValidException("Email này chưa được đăng ký trong hệ thống");
+            throw new IdInvalidException("Email này chưa được đăng ký trong hệ thống");
         }
     }
 

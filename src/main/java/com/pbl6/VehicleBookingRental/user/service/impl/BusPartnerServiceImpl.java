@@ -2,8 +2,6 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
-import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
-import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
@@ -14,11 +12,11 @@ import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusPartnerR
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
-import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
-import jakarta.transaction.Transactional;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -30,6 +28,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BusPartnerServiceImpl implements BusPartnerService {
     private final BusinessPartnerRepository businessPartnerRepository;
     private final BusPartnerRepository busPartnerRepository;
@@ -42,12 +41,19 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     private final BusinessPartnerService businessPartnerService;
 
     @Override
-    public ResBusinessPartnerDTO registerBusPartner(ReqBusPartnerDTO reqBusPartnerDTO, MultipartFile avatar, List<MultipartFile> licenses, List<MultipartFile> images) {
+    public ResBusinessPartnerDTO registerBusPartner(ReqBusPartnerDTO reqBusPartnerDTO,
+                                                    MultipartFile avatar,
+                                                    List<MultipartFile> licenses,
+                                                    List<MultipartFile> images) throws ApplicationException{
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         Account account = this.accountService.handleGetAccountByUsername(username);
         if(account == null) {
             throw new UsernameNotFoundException("Username not found");
+        }
+        if(this.businessPartnerService.isRegistered(account.getId(), reqBusPartnerDTO.getPartnerType())){
+            log.info("Already registered");
+            throw new ApplicationException("You have already registered this business partner");
         }
         // Create BusinessPartner
         BusinessPartner businessPartner = new BusinessPartner();
@@ -85,18 +91,18 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     }
 
     @Override
-    public BusPartner getBusPartnerByBusinessPartnerId(int id) throws IdInValidException{
+    public BusPartner getBusPartnerByBusinessPartnerId(int id) throws IdInvalidException {
         BusinessPartner businessPartner = this.businessPartnerRepository.findById(id)
-                .orElseThrow(() -> new IdInValidException("Business Partner not found"));
+                .orElseThrow(() -> new IdInvalidException("Business Partner not found"));
         BusPartner busPartner = this.busPartnerRepository.findByBusinessPartner(businessPartner)
-                .orElseThrow(()-> new IdInValidException("Bus Partner not found"));
+                .orElseThrow(()-> new IdInvalidException("Bus Partner not found"));
 
         return busPartner;
     }
 
 
     @Override
-    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) throws IdInValidException {
+    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) throws IdInvalidException {
         // Tạo BusinessPartnerInfo từ BusPartner
         ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(busPartner);
 
@@ -110,6 +116,7 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 
         return resBusPartnerDTO;
     }
+
 
 
 

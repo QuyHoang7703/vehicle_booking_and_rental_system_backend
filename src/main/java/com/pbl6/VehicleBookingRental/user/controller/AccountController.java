@@ -8,7 +8,6 @@ import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 
-import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.service.RoleService;
 import com.pbl6.VehicleBookingRental.user.service.S3Service;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
@@ -23,20 +22,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 
 import com.turkraft.springfilter.boot.Filter;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -60,7 +56,7 @@ public class AccountController {
 
 
     @GetMapping("/accounts")
-    @PreAuthorize("hasAuthority('GET_ALL_ACCOUNT')")
+    @PreAuthorize("hasRole('ADMIN')")
     @ApiMessage("fetch all account success")
     @Transactional
     public ResponseEntity<ResultPaginationDTO> getAllAccounts(@Filter Specification<Account> spec, Pageable pageable) {
@@ -75,31 +71,32 @@ public class AccountController {
     }
 
     @PutMapping("/account")
-    public ResponseEntity<ResAccountInfoDTO> updateAccount(@RequestBody Account account) throws IdInValidException {
+    public ResponseEntity<ResAccountInfoDTO> updateAccount(@RequestBody Account account) throws IdInvalidException {
         if(this.accountService.fetchAccountById(account.getId()) ==null) {
-            throw new IdInValidException("Account with id = " + account.getId() + " is not exist");
+            throw new IdInvalidException("Account with id = " + account.getId() + " is not exist");
         }
         Account updateAccount = this.accountService.handleUpdateAccount(account);
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(updateAccount));
     }
 
-    @DeleteMapping("/accounts/{id}")
-    @ApiMessage("Deleted a account")
-    public ResponseEntity<Void> deleteAccount(@PathVariable("id") int id) throws IdInValidException{
+    @PutMapping("/accounts")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ApiMessage("Deactivate the account")
+    public ResponseEntity<Void> deactivateAccount(@RequestParam("idAccount") int id) throws IdInvalidException {
         Account account = this.accountService.fetchAccountById(id);
         if(account==null) {
-            throw new IdInValidException("Account with id = " + id + " is not exist");
+            throw new IdInvalidException("Account with id = " + id + " is not exist");
         }
-        this.accountService.handleDeleteAccount(id);
+        this.accountService.handleDeactivateAccount(id);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @GetMapping("/accounts/{id}")
     @ApiMessage("Updated a account")
-    public ResponseEntity<ResAccountInfoDTO> fetchAccountById(@PathVariable("id") int id) throws IdInValidException{
+    public ResponseEntity<ResAccountInfoDTO> fetchAccountById(@PathVariable("id") int id) throws IdInvalidException {
         Account account = this.accountService.fetchAccountById(id);
         if(account==null) {
-            throw new IdInValidException("Account with id = " + id + " is not exist");
+            throw new IdInvalidException("Account with id = " + id + " is not exist");
         }
        
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(account));
@@ -108,7 +105,7 @@ public class AccountController {
     @PutMapping(value="/accounts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiMessage("Updated information for account")
     public ResponseEntity<ResAccountInfoDTO> updateInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file
-            , @RequestPart("account_info") ReqAccountInfoDTO reqAccountInfoDTO) throws IdInValidException {
+            , @RequestPart("account_info") ReqAccountInfoDTO reqAccountInfoDTO) throws IdInvalidException {
         ResAccountInfoDTO resAccountInfoDTO  = this.accountService.updateAccountInfo(file, reqAccountInfoDTO);
         return ResponseEntity.ok(resAccountInfoDTO);
     }

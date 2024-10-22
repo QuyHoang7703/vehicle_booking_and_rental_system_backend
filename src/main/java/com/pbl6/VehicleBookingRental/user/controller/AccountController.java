@@ -91,17 +91,6 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @GetMapping("/accounts/{id}")
-    @ApiMessage("Updated a account")
-    public ResponseEntity<ResAccountInfoDTO> fetchAccountById(@PathVariable("id") int id) throws IdInvalidException {
-        Account account = this.accountService.fetchAccountById(id);
-        if(account==null) {
-            throw new IdInvalidException("Account with id = " + id + " is not exist");
-        }
-       
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(account));
-    }
-
     @PutMapping(value="/accounts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiMessage("Updated information for account")
     public ResponseEntity<ResAccountInfoDTO> updateInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file
@@ -110,10 +99,10 @@ public class AccountController {
         return ResponseEntity.ok(resAccountInfoDTO);
     }
 
-    @PostMapping("/auth/upload-multiple")
-    public ResponseEntity<List<String>> uploadMultipleFiles(@RequestParam("files") List<MultipartFile> files) {
-        List<String> urls = this.s3Service.uploadFiles(files);
-        return ResponseEntity.ok(urls);
-    }
+//    @PostMapping("/auth/upload-multiple")
+//    public ResponseEntity<List<String>> uploadMultipleFiles(@RequestParam("files") List<MultipartFile> files) {
+//        List<String> urls = this.s3Service.uploadFiles(files);
+//        return ResponseEntity.ok(urls);
+//    }
 
 }

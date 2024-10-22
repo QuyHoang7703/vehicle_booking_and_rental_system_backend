@@ -13,12 +13,15 @@ import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -268,15 +271,20 @@ public class AccountService {
     }
 
     public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInvalidException {
-        Account account = this.accountRepository.findById(reqAccountInfoDTO.getId())
-                .orElseThrow(()-> new IdInvalidException("Account not found"));
+//        Account account = this.accountRepository.findById(reqAccountInfoDTO.getId())
+//                .orElseThrow(()-> new IdInvalidException("Account not found"));
+        String email = SecurityUtil.getCurrentLogin().isPresent()?
+                SecurityUtil.getCurrentLogin().get() : "";
+        Account account = this.handleGetAccountByUsername(email);
         account.setName(reqAccountInfoDTO.getName());
         account.setBirthDay(reqAccountInfoDTO.getBirthDay());
         account.setGender(reqAccountInfoDTO.getGender());
         account.setPhoneNumber(reqAccountInfoDTO.getPhoneNumber());
         if(avatar != null) {
             String urlAvatar = this.s3Service.uploadFile(avatar);
-            this.s3Service.deleteFile(account.getAvatar());
+            if(account.getAvatar()!=null) {
+                this.s3Service.deleteFile(account.getAvatar());
+            }
             account.setAvatar(urlAvatar);
         }
         this.accountRepository.save(account);

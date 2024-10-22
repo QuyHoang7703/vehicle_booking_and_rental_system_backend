@@ -251,6 +251,14 @@ public class AuthController {
             throw new IdInvalidException("Access token is invalid");
         }
         this.accountService.updateRefreshToken(null, username);
+        ResponseCookie accCookies = ResponseCookie
+                                                .from("access_token", null)
+//                                                .httpOnly(true)
+                                                .secure(true)
+                                                .path("/")
+                                                .maxAge(0)
+                                               //.domain("vehicle-booking-and-rental-system.vercel.app")
+                                                .build();
         ResponseCookie resCookies = ResponseCookie
                                                 .from("refresh_token", null)
                                                 .httpOnly(true)
@@ -262,6 +270,7 @@ public class AuthController {
 
         System.out.println(">>>>> Logout account username: " + username);
         return ResponseEntity.status(HttpStatus.OK)
+                            .header(HttpHeaders.SET_COOKIE, accCookies.toString())
                             .header(HttpHeaders.SET_COOKIE, resCookies.toString())
                             .body(null);
     }
@@ -287,6 +296,26 @@ public class AuthController {
         this.accountService.handleChangePassword(changePasswordDTO);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã thay đổi mật khẩu"));
     }
+
+//    private ResponseCookie createAccessCookie(String name, String value, long maxAge) {
+//        return ResponseCookie.from(name, value)
+////                .httpOnly(true)   // HTTP-only for security
+//                .secure(true)     // Secure flag
+//                .path("/")        // Cookie valid for entire site
+//                .maxAge(maxAge)   // Expiration time
+//                .build();
+//
+//    }
+//
+//    private ResponseCookie createRefreshCookie(String name, String value, long maxAge) {
+//        return ResponseCookie.from(name, value)
+//                .httpOnly(true)   // HTTP-only for security
+//                .secure(true)     // Secure flag
+//                .path("/")        // Cookie valid for entire site
+//                .maxAge(maxAge)   // Expiration time
+//                .build();
+//
+//    }
 
 
 

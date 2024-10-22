@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.businessPartner;
 
+import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import lombok.AllArgsConstructor;
@@ -23,5 +24,8 @@ public class ResBusinessPartnerDTO {
         private PartnerTypeEnum partnerType;
         private ApprovalStatusEnum approvalStatus;
         private String avatar;
+        private AccountInfo accountInfo;
     }
+
+
 }

@@ -158,7 +158,7 @@ public class AuthController {
         // Create refresh token
         String refresh_token = this.securityUtil.createRefreshToken(loginDTO.getUsername(), res);
         this.accountService.updateRefreshToken(refresh_token, loginDTO.getUsername());
-        ResponseCookie resCookies = this.securityUtil.createAccessCookie("refresh_token", refresh_token, refreshTokenExpiration);
+        ResponseCookie resCookies = this.securityUtil.createRefreshCookie("refresh_token", refresh_token, refreshTokenExpiration);
 
         return ResponseEntity
                             .status(HttpStatus.OK)
@@ -199,7 +199,7 @@ public class AuthController {
         // Create refresh token 
         String refresh_token = this.securityUtil.createRefreshToken(username, res);
         this.accountService.updateRefreshToken(refresh_token, username);
-        ResponseCookie resCookies = this.securityUtil.createAccessCookie("refresh_token", refresh_token, refreshTokenExpiration);
+        ResponseCookie resCookies = this.securityUtil.createRefreshCookie("refresh_token", refresh_token, refreshTokenExpiration);
 
         return ResponseEntity
                             .status(HttpStatus.OK)
@@ -219,7 +219,7 @@ public class AuthController {
         }
         this.accountService.updateRefreshToken(null, username);
         ResponseCookie accCookies = this.securityUtil.createAccessCookie("access_token", null, 0);
-        ResponseCookie resCookies = this.securityUtil.createAccessCookie("refresh_token", null, 0);
+        ResponseCookie resCookies = this.securityUtil.createRefreshCookie("refresh_token", null, 0);
 
         System.out.println(">>>>> Logout account username: " + username);
         return ResponseEntity.status(HttpStatus.OK)

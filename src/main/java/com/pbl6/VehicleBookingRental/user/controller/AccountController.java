@@ -70,14 +70,14 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts(finalSpec, pageable));
     }
 
-    @PutMapping("/account")
-    public ResponseEntity<ResAccountInfoDTO> updateAccount(@RequestBody Account account) throws IdInvalidException {
-        if(this.accountService.fetchAccountById(account.getId()) ==null) {
-            throw new IdInvalidException("Account with id = " + account.getId() + " is not exist");
-        }
-        Account updateAccount = this.accountService.handleUpdateAccount(account);
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(updateAccount));
-    }
+//    @PutMapping("/account")
+//    public ResponseEntity<ResAccountInfoDTO> updateAccount(@RequestBody Account account) throws IdInvalidException {
+//        if(this.accountService.fetchAccountById(account.getId()) ==null) {
+//            throw new IdInvalidException("Account with id = " + account.getId() + " is not exist");
+//        }
+//        Account updateAccount = this.accountService.handleUpdateAccount(account);
+//        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(updateAccount));
+//    }
 
     @PutMapping("/accounts")
     @PreAuthorize("hasRole('ADMIN')")

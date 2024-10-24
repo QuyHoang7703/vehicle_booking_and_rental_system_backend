@@ -4,13 +4,18 @@ package com.pbl6.VehicleBookingRental.user.controller;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
+import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqUpdatePasswordDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 
 import com.pbl6.VehicleBookingRental.user.service.RoleService;
 import com.pbl6.VehicleBookingRental.user.service.S3Service;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.turkraft.springfilter.builder.FilterBuilder;
 import com.turkraft.springfilter.converter.FilterSpecificationConverter;
 import jakarta.persistence.criteria.Join;
@@ -79,9 +84,21 @@ public class AccountController {
 //        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(updateAccount));
 //    }
 
-    @PutMapping("/accounts")
+    @PutMapping("/accounts/activate")
     @PreAuthorize("hasRole('ADMIN')")
-    @ApiMessage("Deactivate the account")
+    @ApiMessage("Activated the account")
+    public ResponseEntity<Void> activateAccount(@RequestParam("idAccount") int id) throws IdInvalidException {
+        Account account = this.accountService.fetchAccountById(id);
+        if(account==null) {
+            throw new IdInvalidException("Account with id = " + id + " is not exist");
+        }
+        this.accountService.handleActivateAccount(id);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @PutMapping("/accounts/deactivate")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ApiMessage("Deactivated the account")
     public ResponseEntity<Void> deactivateAccount(@RequestParam("idAccount") int id) throws IdInvalidException {
         Account account = this.accountService.fetchAccountById(id);
         if(account==null) {
@@ -91,6 +108,7 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
+
     @PutMapping(value="/accounts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiMessage("Updated information for account")
     public ResponseEntity<ResAccountInfoDTO> updateInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file
@@ -99,10 +117,21 @@ public class AccountController {
         return ResponseEntity.ok(resAccountInfoDTO);
     }
 
-//    @PostMapping("/auth/upload-multiple")
-//    public ResponseEntity<List<String>> uploadMultipleFiles(@RequestParam("files") List<MultipartFile> files) {
-//        List<String> urls = this.s3Service.uploadFiles(files);
-//        return ResponseEntity.ok(urls);
-//    }
+    @PostMapping("register-account-admin")
+    @ApiMessage("Registered account with role admin")
+    public ResponseEntity<String> registerAccountAdmin(@RequestBody ReqRegisterDTO registerDTO) {
+
+
+        return ResponseEntity.status(HttpStatus.CREATED).body("oke");
+    }
+
+    @PutMapping("accounts/update-password")
+    @ApiMessage("Updated password for the account")
+    public ResponseEntity<ResponseInfo<String>> updatePassword(@RequestBody ReqUpdatePasswordDTO reqUpdatePasswordDTO) throws ApplicationException {
+        this.accountService.updatePassword(reqUpdatePasswordDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã thay đổi mật khẩu"));
+    }
+
+
 
 }

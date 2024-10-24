@@ -7,6 +7,7 @@ import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqUpdatePasswordDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
@@ -14,6 +15,7 @@ import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -146,10 +148,20 @@ public class AccountService {
 
     }
 
+    public void handleActivateAccount(int id) {
+        Account accountDb = this.fetchAccountById(id);
+        if(!accountDb.isActive()){
+            accountDb.setActive(true);
+            this.accountRepository.save(accountDb);
+        }
+    }
+
     public void handleDeactivateAccount(int id) {
         Account accountDb = this.fetchAccountById(id);
-        accountDb.setActive(false);
-        this.accountRepository.save(accountDb);
+        if(accountDb.isActive()){
+            accountDb.setActive(false);
+            this.accountRepository.save(accountDb);
+        }
     }
     
     public Account handleGetAccountByUsername(String username) {
@@ -273,9 +285,9 @@ public class AccountService {
     public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInvalidException {
 //        Account account = this.accountRepository.findById(reqAccountInfoDTO.getId())
 //                .orElseThrow(()-> new IdInvalidException("Account not found"));
-        String email = SecurityUtil.getCurrentLogin().isPresent()?
+        String username = SecurityUtil.getCurrentLogin().isPresent()?
                 SecurityUtil.getCurrentLogin().get() : "";
-        Account account = this.handleGetAccountByUsername(email);
+        Account account = this.handleGetAccountByUsername(username);
         account.setName(reqAccountInfoDTO.getName());
         account.setBirthDay(reqAccountInfoDTO.getBirthDay());
         account.setGender(reqAccountInfoDTO.getGender());
@@ -292,8 +304,30 @@ public class AccountService {
         return this.convertToResAccountInfoDTO(account);
     }
 
+    public void createAccountWithRole(Account account, String roleName) throws ApplicationException {
+        Role role = this.roleRepository.findByName(roleName)
+                .orElseThrow(()-> new ApplicationException("Role not found"));
+        AccountRole accountRole = new AccountRole();
+        accountRole.setAccount(account);
+        accountRole.setRole(role);
+        this.accountRoleRepository.save(accountRole);
+    }
 
-
-
+    public void updatePassword(ReqUpdatePasswordDTO reqUpdatePasswordDTO) throws ApplicationException {
+        String username = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : "";
+        Account account = this.handleGetAccountByUsername(username);
+        String currentPass = account.getPassword();
+        if(!passwordEncoder.matches(reqUpdatePasswordDTO.getCurrentPassword(), account.getPassword())) {
+            throw new ApplicationException("Mật khẩu hiện tại không chính xác");
+        }
+        if(reqUpdatePasswordDTO.getNewPassword().equals(reqUpdatePasswordDTO.getCurrentPassword())) {
+            throw new ApplicationException("Mật khẩu mới không được trùng với mật khẩu hiện tại");
+        }
+        if(!reqUpdatePasswordDTO.getNewPassword().equals(reqUpdatePasswordDTO.getConfirmPassword())) {
+            throw new ApplicationException("Mật khẩu không trùng khớp");
+        }
+        account.setPassword(passwordEncoder.encode(reqUpdatePasswordDTO.getNewPassword()));
+        this.accountRepository.save(account);
+    }
 
 }

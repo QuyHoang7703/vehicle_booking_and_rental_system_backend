@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.domain.car_rental;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
+import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -35,8 +36,15 @@ public class CarRentalOrders {
     @JoinColumn(name = "car_rental_service_id")
     private CarRentalService carRentalService;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @MapsId
     @JoinColumn(name = "order_id")
     private Orders order;
+
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name ="account_id")
+    private Account account;
+
+
 }

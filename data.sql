@@ -1,20 +1,18 @@
 USE vehicle_booking_rental;
-INSERT INTO account (is_active, birth_day, email, reason, gender, name, password, phone_number, username,  active, avatar, lock_reason, male, refresh_token)
-VALUES
-    (1, '1990-01-15', 'john.doe@example.com', NULL, 'Male', 'John Doe', '$2a$12$ZNeYKBeLZKXHlf6w90xztOFvf1yJgjruTxrgb3vpsUUxjv/PZubye', '123456789', 'john_doe',  1, 'avatar1.jpg', NULL, 1, 'sample_refresh_token_1'),
-    (1, '1985-06-20', 'jane.doe@example.com', 'Forgot Password', 'Female', 'Jane Doe', '$2a$12$bkWl3l7PxZ0cflPW9y/Ydeaa1p/tMXNDmcm8PhPsiTf3SiPyXT6/6', '987654321', 'jane_doe',  1, 'avatar2.jpg', 'Account Locked', 0, 'sample_refresh_token_2'),
-    (0, '1995-12-25', 'alex.smith@example.com', 'Inactive Account', 'Male', 'Alex Smith', '$2a$12$87h9GkescNPfbiCRD9HDSOGMEp5RfQYkGWr5sZia8rKgXOW0lhK32', '564738291', 'alex_smith', 0, 'avatar3.jpg', 'Inactive for long', 1, 'sample_refresh_token_3'),
-    (1, '2000-03-05', 'emily.johnson@example.com', NULL, 'Female', 'Emily Johnson', '$2a$12$87h9GkescNPfbiCRD9HDSOGMEp5RfQYkGWr5sZia8rKgXOW0lhK32', '182736455', 'emily_j', 1, 'avatar4.jpg', NULL, 0, 'sample_refresh_token_4'),
-    (0, '1988-11-11', 'michael.brown@example.com', 'Manual Deactivation', 'Male', 'Michael Brown', '$2a$12$87h9GkescNPfbiCRD9HDSOGMEp5RfQYkGWr5sZia8rKgXOW0lhK32', '495867234', 'michael_b',  0, 'avatar5.jpg', 'User Request', 1, 'sample_refresh_token_5');
-
 
 --  dữ liệu bảng business_partner
-INSERT INTO business_partner (address, business_license, business_name, email_of_representative, nam_of_representative, partner_type, phone_of_representative, account_id)
-VALUES
-    ('123 Main Street, City A', 'BL-123456', 'Tech Solutions Co.', 'john.tech@example.com', 'John Doe', 'Technology', '123-456-7890', 11),
-    ('456 Elm Street, City B', 'BL-789012', 'Health Care Inc.', 'jane.health@example.com', 'Jane Smith', 'Healthcare', '987-654-3210', 13),
-    
-    ('789 Maple Avenue, City C', 'BL-345678', 'Edu Academy', 'mark.edu@example.com', 'Mark Johnson', 'Education', '555-123-4567', 14);
+INSERT INTO business_partner 
+(address, approval_status, avatar, business_name, email_of_representative, name_of_representative, partner_type, phone_of_representative, account_id) 
+VALUES 
+('102 Nguyễn Văn Linh, Đà Nẵng', 'PENDING_APPROVAL', 'https://vehiclerentalbookingsystem.s3.ap-southeast-2.amazonaws.com/avatar1.jpg', 'Công ty TNHH Vận Tải Minh Tâm', 'minhtamvt@gmail.com', 'Phạm Minh Tâm', 1, '0987654321', 2);
+INSERT INTO business_partner 
+(address, approval_status, avatar, business_name, email_of_representative, name_of_representative, partner_type, phone_of_representative, account_id) 
+VALUES 
+('58 Hoàng Quốc Việt, Hà Nội', 'APPROVED', 'https://vehiclerentalbookingsystem.s3.ap-southeast-2.amazonaws.com/avatar2.jpg', 'Nhà xe Hoàng Long', 'hoanglongvtdn@gmail.com', 'Trần Hoàng Long', 0, '0901234567', 1);
+INSERT INTO business_partner 
+(address, approval_status, avatar, business_name, email_of_representative, name_of_representative, partner_type, phone_of_representative, account_id) 
+VALUES 
+('20 Lê Lợi, Huế', 'PENDING_APPROVAL', 'https://vehiclerentalbookingsystem.s3.ap-southeast-2.amazonaws.com/avatar3.jpg', 'Công ty Vận Tải Hưng Thịnh', 'hungthinhvt@gmail.com', 'Nguyễn Văn Hưng', 1, '0934567890', 2);
 
 
 --  dữ liệu bảng car_rental_partner
@@ -42,10 +40,12 @@ VALUES
 
 
 --  dữ liệu mẫu  bảng car_rental_service
-INSERT INTO car_rental_service (price, type, service_id)
+INSERT INTO car_rental_service (price, type, vehicle_register_id)
 VALUES
-    (5000.00, 1, 7),  
-    (15000.00, 0, 6), 
-    (20000.00, 0, 8), -- Dịch vụ xe du lich : 1
-    (30000.00, 0, 9), -- Dịch vụ thuê xe :0
-    (10000.00, 0, 10);
+    (5000.00, 1, 2),  
+    (15000.00, 0, 1), 
+    (20000.00, 0, 3), -- Dịch vụ xe du lich : 1
+    (30000.00, 0, 4), -- Dịch vụ thuê xe :0
+    (10000.00, 0, 5);
+    
+-- dữ liệu 

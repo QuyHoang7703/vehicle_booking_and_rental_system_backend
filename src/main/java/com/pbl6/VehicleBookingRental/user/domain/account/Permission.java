@@ -20,7 +20,6 @@ public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
     @NotBlank(message = "name không được để trống")
     private String name;
 

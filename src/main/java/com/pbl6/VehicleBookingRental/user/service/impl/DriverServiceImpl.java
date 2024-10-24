@@ -115,7 +115,7 @@ public class DriverServiceImpl implements DriverService {
         detailDriverInfo.setIssueDateLicense(driver.getIssueDateLicense());
         detailDriverInfo.setPhoneNumberOfRelative(driver.getPhoneNumberOfRelative());
         detailDriverInfo.setVehicleType(driver.getVehicleType().getName());
-        detailDriverInfo.setApprovalStatus(ApprovalStatusEnum.PENDING_APPROVAL);
+        detailDriverInfo.setApprovalStatus(driver.getApprovalStatus());
 
         List<String> urlAvatarOfDriver = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.AVATAR_OF_DRIVER), driver.getId())
                 .stream().map(image -> image.getPathImage())

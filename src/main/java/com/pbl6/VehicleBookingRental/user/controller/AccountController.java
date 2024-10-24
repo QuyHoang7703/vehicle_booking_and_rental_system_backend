@@ -117,12 +117,12 @@ public class AccountController {
         return ResponseEntity.ok(resAccountInfoDTO);
     }
 
-    @PostMapping("register-account-admin")
+    @PostMapping("accounts/register-admin")
+    @PreAuthorize("hasRole('ADMIN')")
     @ApiMessage("Registered account with role admin")
-    public ResponseEntity<String> registerAccountAdmin(@RequestBody ReqRegisterDTO registerDTO) {
-
-
-        return ResponseEntity.status(HttpStatus.CREATED).body("oke");
+    public ResponseEntity<Void> registerAccountAdmin(@RequestBody ReqRegisterDTO registerDTO) throws ApplicationException {
+        Account account = this.accountService.registerAccountAdmin(registerDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
     @PutMapping("accounts/update-password")

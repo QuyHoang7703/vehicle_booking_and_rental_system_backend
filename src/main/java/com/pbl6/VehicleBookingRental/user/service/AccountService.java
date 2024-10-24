@@ -330,4 +330,21 @@ public class AccountService {
         this.accountRepository.save(account);
     }
 
+    public Account registerAccountAdmin(ReqRegisterDTO reqRegisterDTO) throws ApplicationException {
+        if(!reqRegisterDTO.getPassword().equals(reqRegisterDTO.getConfirmPassword())) {
+            throw new ApplicationException("Mật khẩu không trùng khớp");
+        }
+        Account account = new Account();
+        account.setEmail(reqRegisterDTO.getEmail());
+        account.setPassword(this.passwordEncoder.encode(reqRegisterDTO.getPassword()));
+        account.setActive(true);
+        account.setVerified(true);
+        Account savedAccount = this.accountRepository.save(account);
+        this.createAccountWithRole(savedAccount, "ADMIN");
+
+        return savedAccount;
+    }
+
+
+
 }

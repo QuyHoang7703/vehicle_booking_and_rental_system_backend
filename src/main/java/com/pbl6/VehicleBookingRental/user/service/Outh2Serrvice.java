@@ -1,14 +1,19 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
+import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.dto.request.oauth2.ExchangeTokenRequest;
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.oauth2.ExchangeTokenResponse;
 import com.pbl6.VehicleBookingRental.user.dto.response.oauth2.OutboundUserResponse;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
+import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.httpclient.OutboundIdentityClient;
 import com.pbl6.VehicleBookingRental.user.repository.httpclient.OutboundUserClient;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +35,8 @@ public class Outh2Serrvice {
     private final AccountRepository accountRepository;
     private final SecurityUtil securityUtil;
     private final AccountService accountService;
+    private final RoleRepository roleRepository;
+    private final AccountRoleRepository accountRoleRepository;
 
     // @NonFinal
      @Value("${outbound.identity.client-id}")
@@ -51,7 +58,7 @@ public class Outh2Serrvice {
     @Value("${pbl6.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
 
-    public Account getToken(String code) {
+    public Account getToken(String code) throws ApplicationException {
         ExchangeTokenResponse exchangeTokenResponse = outboundIdentityClient.exchangeToken(ExchangeTokenRequest.builder()
                 .code(code)
                 .clientId(CLIENT_ID)
@@ -69,7 +76,16 @@ public class Outh2Serrvice {
             account.setEmail(userInfo.getEmail());
             account.setName(userInfo.getName());
             account.setAvatar(userInfo.getPicture());
-            return this.accountRepository.save(account);
+            account.setVerified(true);
+            account.setActive(true);
+            Account newAccount = this.accountRepository.save(account);
+            Role role = this.roleRepository.findByName("USER")
+                    .orElseThrow(() -> new ApplicationException("Role not found"));
+            AccountRole accountRole = new AccountRole();
+            accountRole.setRole(role);
+            accountRole.setAccount(newAccount);
+            this.accountRoleRepository.save(accountRole);
+            return newAccount;
 
         }
         Account account = this.accountService.handleGetAccountByUsername(userInfo.getEmail());

@@ -23,6 +23,11 @@ public class Role {
     private int id;
     private String name;
     private Instant createAt;
+    private Instant updateAt;
+
+    public Role(String name) {
+        this.name = name;
+    }
 
     @PrePersist
     public void handleBeforeCreated(){
@@ -30,10 +35,18 @@ public class Role {
         this.createAt = Instant.now();
     }
 
+    @PreUpdate
+    public void handleBeforeUpdate(){
+
+        this.updateAt = Instant.now();
+    }
+
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<AccountRole> accountRole;
-    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<RolePermission> permissionRole;
+
+    @ManyToMany(fetch=FetchType.LAZY)
+    @JoinTable(name="permission_role", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    private List<Permission> permissions;
+
 }

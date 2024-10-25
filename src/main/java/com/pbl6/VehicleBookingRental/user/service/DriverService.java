@@ -15,8 +15,9 @@ public interface DriverService {
     ResGeneralDriverInfoDTO registerDriver(ReqDriveDTO reqDriveDTO,
                                            MultipartFile avatarOfDriver,
                                            List<MultipartFile> citizenImages,
-                                           List<MultipartFile> vehicleImages,
                                            List<MultipartFile> driverLicenseImages,
+                                           List<MultipartFile> vehicleRegistrations,
+                                           List<MultipartFile> vehicleImages,
                                            List<MultipartFile> vehicleInsuranceImages) throws ApplicationException;
     ResGeneralDriverInfoDTO convertToResGeneralDriverInfoDTO(Account account, Driver driver);
     ResDriverDTO convertoResDriverDTO(ResGeneralDriverInfoDTO resGeneralDriverInfoDTO, Driver driver);

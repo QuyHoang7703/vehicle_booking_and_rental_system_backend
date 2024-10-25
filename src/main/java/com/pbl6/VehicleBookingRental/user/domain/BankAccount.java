@@ -2,11 +2,16 @@ package com.pbl6.VehicleBookingRental.user.domain;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import jakarta.persistence.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 @Entity
 @Table(name = "bank_account")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class BankAccount {
 
     @Id
@@ -24,7 +29,9 @@ public class BankAccount {
 
     // Many-to-One relationship với bảng Account (giả định đã có class Account)
     @ManyToOne
-    @JoinColumn(name = "account_id", insertable = false, updatable = false)
+//    @JoinColumn(name = "account_id", insertable = false, updatable = false)
+    @JoinColumn(name = "account_id")
+
     private Account account;
 }
 

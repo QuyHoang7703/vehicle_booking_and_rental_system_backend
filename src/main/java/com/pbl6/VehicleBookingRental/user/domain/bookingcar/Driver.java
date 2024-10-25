@@ -30,15 +30,23 @@ public class Driver {
     private String placeOfIssue;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate expiryDate;
-    private String licensePlateNumber;
+    private String permanentAddress;
+    private String location;
+    private double ratingTotal;
+
+
     private String driverLicenseNumber;
     private LicenseTypeEnum licenseType;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate issueDateLicense;
-    private String permanentAddress;
+
+    private String licensePlateNumber;
+
+    private String nameOfRelative;
     private String phoneNumberOfRelative;
-    private String location;
-    private double ratingTotal;
+    private String relationship;
+
+
     @Enumerated(EnumType.STRING)
     private ApprovalStatusEnum approvalStatus;
 

@@ -97,7 +97,7 @@ public class Outh2Serrvice {
         ResLoginDTO resLoginDTO = new ResLoginDTO();
         ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
         accountLogin.setId(account.getId());
-        accountLogin.setUsername(account.getEmail());
+        accountLogin.setEmail(account.getEmail());
         accountLogin.setName(account.getName());
         accountLogin.setAvatar(account.getAvatar());
         resLoginDTO.setAccountLogin(accountLogin);

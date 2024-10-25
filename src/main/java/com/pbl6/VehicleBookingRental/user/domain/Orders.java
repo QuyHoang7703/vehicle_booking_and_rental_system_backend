@@ -4,11 +4,17 @@ import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Booking;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
 @Entity
 @Table(name="orders")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

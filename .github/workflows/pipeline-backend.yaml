@@ -145,7 +145,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            minhquang3010/server_backend_pbl6:1.2
+            minhquang3010/server_backend_pbl6:1.3
             minhquang3010/server_backend_pbl6:latest
           build-args: |
             PROFILE=dev

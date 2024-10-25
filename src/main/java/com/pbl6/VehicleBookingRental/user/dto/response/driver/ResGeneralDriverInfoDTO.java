@@ -18,6 +18,7 @@ public class ResGeneralDriverInfoDTO {
         private String phoneNumber;
         private String permanentAddress;
         private String location;
+        private String avatar;
         private int formRegisterId;
 
     }

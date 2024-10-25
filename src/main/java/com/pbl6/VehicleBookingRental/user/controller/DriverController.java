@@ -28,10 +28,14 @@ public class DriverController {
     public ResponseEntity<ResGeneralDriverInfoDTO> registerDriver(@RequestPart("driverInfo") ReqDriveDTO reqDriveDTO,
                                                                   @RequestParam("avatarOfDriver") MultipartFile avatarOfDriver,
                                                                   @RequestParam("citizenImages") List<MultipartFile> citizenImages,
+                                                                  @RequestParam("driverLicenseImages") List<MultipartFile> driverLicenseImages,
+                                                                  @RequestParam("vehicleRegistration") List<MultipartFile> vehicleRegistration,
                                                                   @RequestParam("vehicleImages") List<MultipartFile> vehicleImages,
-                                                                  @RequestParam("driverLicenseImage") List<MultipartFile> driverImages,
                                                                   @RequestParam("vehicleInsurance") List<MultipartFile> vehicleInsurance) throws ApplicationException {
-        ResGeneralDriverInfoDTO driverInfo = driverService.registerDriver(reqDriveDTO, avatarOfDriver, citizenImages, vehicleImages, driverImages, vehicleInsurance);
+        ResGeneralDriverInfoDTO driverInfo = driverService.registerDriver(reqDriveDTO
+                , avatarOfDriver, citizenImages
+                , driverLicenseImages, vehicleRegistration
+                , vehicleImages, vehicleInsurance);
         return ResponseEntity.status(HttpStatus.OK).body(driverInfo);
     }
 

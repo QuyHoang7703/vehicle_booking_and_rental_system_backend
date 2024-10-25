@@ -1,6 +1,8 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.driver;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+
+import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccount;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.LicenseTypeEnum;
 import jakarta.persistence.EnumType;
@@ -16,57 +18,89 @@ import java.util.List;
 @NoArgsConstructor
 public class ResDriverDTO {
     private ResGeneralDriverInfoDTO.GeneralDriverInfo generalDriverInfo;
-    private DetailDriverInfo detailDriverInfo;
+    private CitizenDTO citizen;
+    private DriverLicenseDTO driverLicense;
+    private VehicleDTO vehicle;
+    private RelativeDTO relative;
+    private ResBankAccount bankAccount;
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
+//    private DetailDriverInfo detailDriverInfo;
+
 //    @Data
 //    @AllArgsConstructor
 //    @NoArgsConstructor
-//    public static class DriverInfo{
+//    public static class DetailDriverInfo {
 //        private int id;
-//        private String email;
-//        private String name;
-//        private String phoneNumber;
-//        private String permanentAddress;
-//        private String location;
-//        private int formRegisterId;
+//        private String citizenID;
+//        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+//        private LocalDate dateOfIssue;
+//        private String placeOfIssue;
+//        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+//        private LocalDate expiryDate;
+//        private String licensePlateNumber;
+//        private String driverLicenseNumber;
+//        private LicenseTypeEnum licenseType;
+//        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+//        private LocalDate issueDateLicense;
+////        private String permanentAddress;
+//        private String phoneNumberOfRelative;
+////        private String location;
+//        private String vehicleType;
+//
+//        private String avatarOfDriver;
+//        private List<String> citizenImages;
+//        private List<String> vehicleImages;
+//        private List<String> driverLicenseImage;
+//        private List<String> vehicleInsurance;
 //
 //    }
 
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class DetailDriverInfo {
-        private int id;
-        private String citizenID;
+    public static class CitizenDTO {
+        private String citizenId;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
         private LocalDate dateOfIssue;
         private String placeOfIssue;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
         private LocalDate expiryDate;
-        private String licensePlateNumber;
+        private List<String> citizenImages;
+
+    }
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class DriverLicenseDTO{
         private String driverLicenseNumber;
         private LicenseTypeEnum licenseType;
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
         private LocalDate issueDateLicense;
-//        private String permanentAddress;
-        private String phoneNumberOfRelative;
-//        private String location;
-        private String vehicleType;
-        @Enumerated(EnumType.STRING)
-        private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
-        private String avatarOfDriver;
-        private List<String> citizenImages;
-        private List<String> vehicleImages;
         private List<String> driverLicenseImage;
-        private List<String> vehicleInsurance;
-
 
     }
-//    @Data
-//    @AllArgsConstructor
-//
-//    public static class DriverRegistrationForm{
-//        private DriverInfo driverInfo;
-//    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class VehicleDTO{
+        private String licensePlateNumber;
+        private String vehicleType;
+        private List<String> vehicleImages;
+        private List<String> vehicleInsurance;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class RelativeDTO{
+        private String nameOfRelative;
+        private String phoneOfRelative;
+        private String relationship;
+    }
+
 
 
 }

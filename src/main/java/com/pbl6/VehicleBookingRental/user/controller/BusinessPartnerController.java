@@ -85,9 +85,7 @@ public class BusinessPartnerController {
             return ResponseEntity.status(HttpStatus.OK).body(resCarRentalPartnerDTO);
         }
 
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid partnerType provided.");
-
 
     }
 }

@@ -16,7 +16,7 @@ public class ResBusPartnerDTO extends ResBusinessPartnerDTO{
     public static class BusPartnerInfo{
         private String description;
         private String urlFanpage;
-        private String policy;
+        private List<String> policy;
         private List<String> urlLicenses;
         private List<String> urlImages;
     }

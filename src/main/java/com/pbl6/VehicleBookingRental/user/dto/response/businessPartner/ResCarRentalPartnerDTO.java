@@ -16,6 +16,7 @@ public class ResCarRentalPartnerDTO extends ResBusinessPartnerDTO{
     @NoArgsConstructor
     public static class CarRentalPartnerInfo{
         private ClientTypeEnum clientType;
+        private List<String> policies;
         private List<String> urlLicenses;
         private List<String> urlImages;
     }

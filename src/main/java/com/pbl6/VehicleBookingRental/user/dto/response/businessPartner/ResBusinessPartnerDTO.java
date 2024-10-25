@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.businessPartner;
 
 import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
+import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccount;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ public class ResBusinessPartnerDTO {
         private String avatar;
         private AccountInfo accountInfo;
     }
+//    private ResBankAccount resBankAccount;
 
 
 }

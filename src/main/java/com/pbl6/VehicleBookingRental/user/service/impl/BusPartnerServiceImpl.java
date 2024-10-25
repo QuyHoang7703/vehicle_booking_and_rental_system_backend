@@ -3,6 +3,7 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
+import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
@@ -12,6 +13,7 @@ import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusPartnerR
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -23,6 +25,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,8 +39,7 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     private final S3Service s3Service;
     private final ImageRepository imageRepository;
     private final ImageService imageService;
-    private final RoleRepository roleRepository;
-    private final AccountRoleRepository accountRoleRepository;
+    private final BankAccountService bankAccountService;
     private final BusinessPartnerService businessPartnerService;
 
     @Override
@@ -45,8 +47,8 @@ public class BusPartnerServiceImpl implements BusPartnerService {
                                                     MultipartFile avatar,
                                                     List<MultipartFile> licenses,
                                                     List<MultipartFile> images) throws ApplicationException{
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
+        String username = SecurityUtil.getCurrentLogin().isPresent()?
+                SecurityUtil.getCurrentLogin().get() : "";
         Account account = this.accountService.handleGetAccountByUsername(username);
         if(account == null) {
             throw new UsernameNotFoundException("Username not found");
@@ -63,18 +65,24 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         businessPartner.setPhoneOfRepresentative(reqBusPartnerDTO.getPhoneOfRepresentative());
         businessPartner.setAddress(reqBusPartnerDTO.getAddress());
         businessPartner.setPartnerType(reqBusPartnerDTO.getPartnerType());
+
+        List<String> policies = reqBusPartnerDTO.getPolicies();
+        String policiesAsString = String.join("!", policies);
+        businessPartner.setPolicy(policiesAsString);
+
         businessPartner.setAccount(account);
         if(avatar != null) {
             String url = this.s3Service.uploadFile(avatar);
             businessPartner.setAvatar(url);
         }
         BusinessPartner savedBusinessPartner = this.businessPartnerRepository.save(businessPartner);
+        this.bankAccountService.createBankAccount(reqBusPartnerDTO.getBankAccount(), account);
 
         // Create BusPartner
         BusPartner busPartner = new BusPartner();
         busPartner.setDescription(reqBusPartnerDTO.getDescription());
         busPartner.setUrlFanpage(reqBusPartnerDTO.getUrlFanpage());
-        busPartner.setPolicy(reqBusPartnerDTO.getPolicy());
+//        busPartner.setPolicy(reqBusPartnerDTO.getPolicy());
         busPartner.setBusinessPartner(savedBusinessPartner);
         BusPartner savedBusPartner = this.busPartnerRepository.save(busPartner);
 
@@ -119,7 +127,6 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 
 
 
-
     private ResBusinessPartnerDTO.BusinessPartnerInfo createBusinessPartnerInfo(BusPartner busPartner) {
         ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = new ResBusinessPartnerDTO.BusinessPartnerInfo();
         businessPartnerInfo.setId(busPartner.getBusinessPartner().getId());
@@ -138,7 +145,9 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         ResBusPartnerDTO.BusPartnerInfo busPartnerInfo = new ResBusPartnerDTO.BusPartnerInfo();
         busPartnerInfo.setDescription(busPartner.getDescription());
         busPartnerInfo.setUrlFanpage(busPartner.getUrlFanpage());
-        busPartnerInfo.setPolicy(busPartner.getPolicy());
+        String policiesString = busPartner.getBusinessPartner().getPolicy();
+        List<String> policiesList = Arrays.asList(policiesString.split("!"));
+        busPartnerInfo.setPolicy(policiesList);
 
         List<String> urlLicenses = this.imageRepository.findByOwnerTypeAndOwnerId("BUSINESS_LICENSE",
                         busPartner.getId()).stream().map(image -> image.getPathImage())
@@ -149,6 +158,10 @@ public class BusPartnerServiceImpl implements BusPartnerService {
                         busPartner.getId()).stream().map(image -> image.getPathImage())
                 .collect(Collectors.toList());
         busPartnerInfo.setUrlImages(urlImages);
+
+//        AccountInfo accountInfo = new AccountInfo();
+//        accountInfo.setId(busPartner.getBusinessPartner().getAccount().getId());
+//        accountInfo.setEmail(busPartner.getBusinessPartner().getAccount().getEmail());
 
         return busPartnerInfo;
     }

@@ -32,6 +32,8 @@ public class BusinessPartner {
     private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
     @Column(columnDefinition = "MEDIUMTEXT")
     private String avatar;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String policy;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 public class ReqBusPartnerDTO extends ReqBusinessPartnerDTO {
     private String description;
     private String urlFanpage;
-    private String policy;
+
 
 }

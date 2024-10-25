@@ -21,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,6 +35,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     private final BusinessPartnerRepository businessPartnerRepository;
     private final CarRentalPartnerRepository carRentalPartnerRepository;
     private final BusinessPartnerService businessPartnerService;
+    private final BankAccountService bankAccountService;
     private final ImageRepository imageRepository;
     @Override
     public ResBusinessPartnerDTO registerBusPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
@@ -59,12 +61,16 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
         businessPartner.setAddress(reqCarRentalPartnerDTO.getAddress());
         businessPartner.setPartnerType(reqCarRentalPartnerDTO.getPartnerType());
         businessPartner.setAccount(account);
+        List<String> policies = reqCarRentalPartnerDTO.getPolicies();
+        String policiesAsString = String.join("!", policies);
+        businessPartner.setPolicy(policiesAsString);
+
         if(avatar != null) {
             String url = this.s3Service.uploadFile(avatar);
             businessPartner.setAvatar(url);
         }
         BusinessPartner savedBusinessPartner = this.businessPartnerRepository.save(businessPartner);
-
+        this.bankAccountService.createBankAccount(reqCarRentalPartnerDTO.getBankAccount(), account);
         // Create BusPartner
         CarRentalPartner carRentalPartner = new CarRentalPartner();
         carRentalPartner.setClientType(reqCarRentalPartnerDTO.getClientType());
@@ -127,7 +133,6 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
         ResCarRentalPartnerDTO.CarRentalPartnerInfo carRentalPartnerInfo = new ResCarRentalPartnerDTO.CarRentalPartnerInfo();
         carRentalPartnerInfo.setClientType(carRentalPartner.getClientType());
 
-
         List<String> urlLicenses = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE),
                         carRentalPartner.getId()).stream().map(image -> image.getPathImage())
                 .collect(Collectors.toList());
@@ -137,6 +142,10 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
                         carRentalPartner.getId()).stream().map(image -> image.getPathImage())
                 .collect(Collectors.toList());
         carRentalPartnerInfo.setUrlImages(urlImages);
+
+        String policiesString = carRentalPartner.getBusinessPartner().getPolicy();
+        List<String> policiesList = Arrays.asList(policiesString.split("!"));
+        carRentalPartnerInfo.setPolicies(policiesList);
 
         return carRentalPartnerInfo;
     }

@@ -6,6 +6,8 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
+import com.pbl6.VehicleBookingRental.user.dto.Meta;
+import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccount;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
@@ -28,6 +30,9 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,7 +52,6 @@ public class DriverServiceImpl implements DriverService {
     private final RoleRepository roleRepository;
     private final AccountRoleRepository accountRoleRepository;
     private final VehicleTypeRepo vehicleTypeRepo;
-    private final BankAccountRepository bankAccountRepository;
     private final BankAccountService bankAccountService;
 
     @Override
@@ -64,7 +68,11 @@ public class DriverServiceImpl implements DriverService {
         if(account == null) {
             throw new UsernameNotFoundException("Username not found");
         }
-//        ResAccountInfoDTO resAccountInfoDTO = this.accountService.convertToResAccountInfoDTO(account);
+        this.accountService.handleUpdateAccount(null, reqDriveDTO.getAccountInfo());
+//        if(account.getName() == null || account.getPhoneNumber() == null
+//                || account.getBirthDay() == null || account.getGender() == null) {
+//
+//        }
         Driver driver = new Driver();
 
         driver.setCitizenID(reqDriveDTO.getCitizen().getCitizenId());
@@ -211,6 +219,23 @@ public class DriverServiceImpl implements DriverService {
     public Driver getDriverById(int id) throws IdInvalidException {
         return this.driverRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Driver ID is invalid"));
+    }
+
+    @Override
+    public ResultPaginationDTO getAllDrivers(Specification<Driver> specification, Pageable pageable) {
+        Page<Driver> driverPage = this.driverRepository.findAll(specification, pageable);
+        ResultPaginationDTO res = new ResultPaginationDTO();
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(driverPage.getTotalPages());
+        meta.setTotal(driverPage.getTotalElements());
+        res.setMeta(meta);
+        List<ResGeneralDriverInfoDTO> generalDriverInfoDTOList = driverPage.getContent().stream()
+                .map(driver -> this.convertToResGeneralDriverInfoDTO(driver.getAccount(), driver))
+                .collect(Collectors.toList());
+        res.setResult(generalDriverInfoDTOList);
+        return res;
     }
 
     @Override

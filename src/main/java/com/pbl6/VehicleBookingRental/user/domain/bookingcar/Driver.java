@@ -59,7 +59,7 @@ public class Driver {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @OneToOne
+    @ManyToOne
     @JsonIgnore
     @JoinColumn(name = "vehicle_type_id")
     private VehicleType vehicleType;

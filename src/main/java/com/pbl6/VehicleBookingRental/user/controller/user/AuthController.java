@@ -89,24 +89,24 @@ public class AuthController {
     @ApiMessage("Register a new user")
     public ResponseEntity<ResAccountInfoDTO> addInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file,
                                                         @RequestPart("account_info") ReqAccountInfoDTO accountInfoDTO) throws IdInvalidException {
-        Account account = this.accountService.handleGetAccountByUsername(accountInfoDTO.getUsername());
-        if(account == null ){
-            throw new IdInvalidException("Email chưa được đăng ký");
-        }
+//        Account account = this.accountService.handleGetAccountByUsername(accountInfoDTO.getUsername());
+//        if(account == null ){
+//            throw new IdInvalidException("Email chưa được đăng ký");
+//        }
+//
+//        account.setName(accountInfoDTO.getName());
+//        account.setBirthDay(accountInfoDTO.getBirthDay());
+//        account.setGender(accountInfoDTO.getGender());
+//        account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
+//        if(file != null) {
+//            String urlAvatar = this.s3Service.uploadFile(file);
+////            this.s3Service.deleteFile(account.getAvatar());
+//            account.setAvatar(urlAvatar);
+//
+//        }
+        Account updatedAccount = this.accountService.handleUpdateAccount(file, accountInfoDTO);
 
-        account.setName(accountInfoDTO.getName());
-        account.setBirthDay(accountInfoDTO.getBirthDay());
-        account.setGender(accountInfoDTO.getGender());
-        account.setPhoneNumber(accountInfoDTO.getPhoneNumber());
-        if(file != null) {
-            String urlAvatar = this.s3Service.uploadFile(file);
-//            this.s3Service.deleteFile(account.getAvatar());
-            account.setAvatar(urlAvatar);
-
-        }
-        this.accountService.handleUpdateAccount(account);
-
-        return ResponseEntity.ok(this.accountService.convertToResAccountInfoDTO(account));
+        return ResponseEntity.ok(this.accountService.convertToResAccountInfoDTO(updatedAccount));
     }
 
     @PostMapping("/auth/verify")

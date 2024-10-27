@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,4 +25,8 @@ public class VehicleType {
     @OneToMany(mappedBy = "vehicleType",cascade = CascadeType.ALL)
     @JsonIgnore
     private List<VehicleRegister> vehicleRegisters;
+
+    @OneToMany(mappedBy = "vehicleType", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Driver> drivers;
 }

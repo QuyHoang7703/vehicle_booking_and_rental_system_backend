@@ -14,7 +14,7 @@ public interface CarRentalPartnerService {
     public ResBusinessPartnerDTO registerBusPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
                                                     MultipartFile avatar,
                                                     List<MultipartFile> licenses,
-                                                    List<MultipartFile> images) throws ApplicationException;
+                                                    List<MultipartFile> images) throws Exception;
     public CarRentalPartner getCarRentalPartnerByBusinessPartnerId(int id) throws IdInvalidException;
-    public ResCarRentalPartnerDTO convertoCarRentalPartnerDTO(CarRentalPartner carRentalPartner) throws IdInvalidException;
+    public ResCarRentalPartnerDTO convertoCarRentalPartnerDTO(CarRentalPartner carRentalPartner) throws Exception;
 }

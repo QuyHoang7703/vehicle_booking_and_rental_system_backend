@@ -73,7 +73,7 @@ public class BusinessPartnerController {
 
     @GetMapping("business-partner/detail")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Object> getBusPartnerById(@RequestParam("formRegisterId") int id, @RequestParam("partnerType") PartnerTypeEnum partnerType) throws IdInvalidException {
+    public ResponseEntity<Object> getBusPartnerById(@RequestParam("formRegisterId") int id, @RequestParam("partnerType") PartnerTypeEnum partnerType) throws Exception {
         if(partnerType == PartnerTypeEnum.BUS_PARTNER){
             BusPartner busPartner = this.busPartnerService.getBusPartnerByBusinessPartnerId(id);
             ResBusPartnerDTO resBusPartnerDTO = this.busPartnerService.convertToResBusPartnerDTO(busPartner);

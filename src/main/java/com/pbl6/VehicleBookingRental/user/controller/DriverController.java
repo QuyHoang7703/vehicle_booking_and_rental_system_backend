@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.controller;
 
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
+import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResGeneralDriverInfoDTO;
@@ -9,7 +10,10 @@ import com.pbl6.VehicleBookingRental.user.service.DriverService;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
+import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,7 +35,7 @@ public class DriverController {
                                                                   @RequestParam("driverLicenseImages") List<MultipartFile> driverLicenseImages,
                                                                   @RequestParam("vehicleRegistration") List<MultipartFile> vehicleRegistration,
                                                                   @RequestParam("vehicleImages") List<MultipartFile> vehicleImages,
-                                                                  @RequestParam("vehicleInsurance") List<MultipartFile> vehicleInsurance) throws ApplicationException {
+                                                                  @RequestParam("vehicleInsurance") List<MultipartFile> vehicleInsurance) throws Exception {
         ResGeneralDriverInfoDTO driverInfo = driverService.registerDriver(reqDriveDTO
                 , avatarOfDriver, citizenImages
                 , driverLicenseImages, vehicleRegistration
@@ -62,10 +66,17 @@ public class DriverController {
     }
 
     @GetMapping("/drivers/detail")
-    public ResponseEntity<ResDriverDTO> getDriverRegisterForm(@RequestParam("formRegisterId") int formRegisterId) throws IdInvalidException {
+    public ResponseEntity<ResDriverDTO> getDriverRegisterForm(@RequestParam("formRegisterId") int formRegisterId) throws Exception {
         Driver driver = this.driverService.getDriverById(formRegisterId);
         ResGeneralDriverInfoDTO resGeneralDriverInfoDTO = this.driverService.convertToResGeneralDriverInfoDTO(driver.getAccount(), driver);
         ResDriverDTO resDriverDTO = this.driverService.convertoResDriverDTO(resGeneralDriverInfoDTO, driver);
         return ResponseEntity.status(HttpStatus.OK).body(resDriverDTO);
+    }
+
+    @GetMapping("/drivers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResultPaginationDTO> fetchAllDrivers(@Filter Specification<Driver> specification, Pageable pageable) {
+        ResultPaginationDTO resultPaginationDTO = this.driverService.getAllDrivers(specification, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(resultPaginationDTO);
     }
 }

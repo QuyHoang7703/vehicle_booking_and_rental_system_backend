@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -132,20 +133,23 @@ public class AccountService {
         return null;
     }
 
-    public Account handleUpdateAccount(Account reqAccount) {
-        int id = reqAccount.getId();
-        Account accountUpdate = this.fetchAccountById(id);
-        if(accountUpdate != null) {
-            accountUpdate.setName(reqAccount.getName());
-            accountUpdate.setPhoneNumber(reqAccount.getPhoneNumber());
-            accountUpdate.setGender(reqAccount.getGender());
-            accountUpdate.setAvatar(reqAccount.getAvatar());
-            accountUpdate.setBirthDay(reqAccount.getBirthDay());
-            // accountUpdate.setLockReason(reqAccount.getLockReason());
-             return this.accountRepository.save(accountUpdate);
+    public Account handleUpdateAccount(MultipartFile file, ReqAccountInfoDTO reqAccountInfoDTO) {
+        Account accountUpdate = this.handleGetAccountByUsername(reqAccountInfoDTO.getUsername());
+        if(accountUpdate == null) {
+            throw new UsernameNotFoundException("Username not found");
         }
-        return null;
+        accountUpdate.setName(reqAccountInfoDTO.getName());
+        accountUpdate.setPhoneNumber(reqAccountInfoDTO.getPhoneNumber());
+        accountUpdate.setGender(reqAccountInfoDTO.getGender());
+        accountUpdate.setBirthDay(reqAccountInfoDTO.getBirthDay());
+        // accountUpdate.setLockReason(reqAccount.getLockReason());
+        if(file != null) {
+            String urlAvatar = this.s3Service.uploadFile(file);
+//            this.s3Service.deleteFile(account.getAvatar());
+            accountUpdate.setAvatar(urlAvatar);
 
+        }
+         return this.accountRepository.save(accountUpdate);
     }
 
     public void handleActivateAccount(int id) {
@@ -283,8 +287,6 @@ public class AccountService {
     }
 
     public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInvalidException {
-//        Account account = this.accountRepository.findById(reqAccountInfoDTO.getId())
-//                .orElseThrow(()-> new IdInvalidException("Account not found"));
         String username = SecurityUtil.getCurrentLogin().isPresent()?
                 SecurityUtil.getCurrentLogin().get() : "";
         Account account = this.handleGetAccountByUsername(username);

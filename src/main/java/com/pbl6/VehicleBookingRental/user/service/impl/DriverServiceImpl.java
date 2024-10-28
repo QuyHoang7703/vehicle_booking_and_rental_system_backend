@@ -6,11 +6,12 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
+import com.pbl6.VehicleBookingRental.user.dto.Meta;
+import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccount;
+import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResGeneralDriverInfoDTO;
-import com.pbl6.VehicleBookingRental.user.repository.BankAccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.DriverRepository;
@@ -23,11 +24,15 @@ import com.pbl6.VehicleBookingRental.user.service.ImageService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,8 +52,8 @@ public class DriverServiceImpl implements DriverService {
     private final RoleRepository roleRepository;
     private final AccountRoleRepository accountRoleRepository;
     private final VehicleTypeRepo vehicleTypeRepo;
-    private final BankAccountRepository bankAccountRepository;
     private final BankAccountService bankAccountService;
+
 
     @Override
     public ResGeneralDriverInfoDTO registerDriver(ReqDriveDTO reqDriveDTO,
@@ -57,14 +62,21 @@ public class DriverServiceImpl implements DriverService {
                                                   List<MultipartFile> driverLicenseImages,
                                                   List<MultipartFile> vehicleRegistrations,
                                                   List<MultipartFile> vehicleImages,
-                                                  List<MultipartFile> vehicleInsuranceImages) throws ApplicationException{
+                                                  List<MultipartFile> vehicleInsuranceImages) throws Exception {
         String username = SecurityUtil.getCurrentLogin().isPresent()?
                 SecurityUtil.getCurrentLogin().get() : "";
         Account account = this.accountService.handleGetAccountByUsername(username);
         if(account == null) {
             throw new UsernameNotFoundException("Username not found");
         }
-//        ResAccountInfoDTO resAccountInfoDTO = this.accountService.convertToResAccountInfoDTO(account);
+        if(this.isRegisteredDriver(account.getId())){
+            throw new ApplicationException("Driver already registered");
+        }
+        this.accountService.handleUpdateAccount(null, reqDriveDTO.getAccountInfo());
+//        if(account.getName() == null || account.getPhoneNumber() == null
+//                || account.getBirthDay() == null || account.getGender() == null) {
+//
+//        }
         Driver driver = new Driver();
 
         driver.setCitizenID(reqDriveDTO.getCitizen().getCitizenId());
@@ -115,7 +127,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public ResDriverDTO convertoResDriverDTO(ResGeneralDriverInfoDTO resGeneralDriverInfoDTO, Driver driver) {
+    public ResDriverDTO convertoResDriverDTO(ResGeneralDriverInfoDTO resGeneralDriverInfoDTO, Driver driver) throws Exception {
         ResDriverDTO resDriverDTO = new ResDriverDTO();
         resDriverDTO.setGeneralDriverInfo(resGeneralDriverInfoDTO.getGeneralDriverInfo());
 
@@ -156,13 +168,7 @@ public class DriverServiceImpl implements DriverService {
         relativeDTO.setPhoneOfRelative(driver.getPhoneNumberOfRelative());
         relativeDTO.setRelationship(driver.getRelationship());
 
-        ResBankAccount resBankAccount = new ResBankAccount();
-        Account account = driver.getAccount();
-        BankAccount bankAccount = driver.getAccount().getBankAccounts().get(0);
-        resBankAccount.setAccountNumber(bankAccount.getAccountNumber());
-        resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
-        resBankAccount.setBankName(bankAccount.getBankName());
-        resBankAccount.setIdAccount(bankAccount.getAccount().getId());
+        ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(driver.getAccount().getId(), PartnerTypeEnum.DRIVER);
 
         resDriverDTO.setCitizen(citizenDTO);
         resDriverDTO.setDriverLicense(driverLicenseDTO);
@@ -211,6 +217,28 @@ public class DriverServiceImpl implements DriverService {
     public Driver getDriverById(int id) throws IdInvalidException {
         return this.driverRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Driver ID is invalid"));
+    }
+
+    @Override
+    public ResultPaginationDTO getAllDrivers(Specification<Driver> specification, Pageable pageable) {
+        Page<Driver> driverPage = this.driverRepository.findAll(specification, pageable);
+        ResultPaginationDTO res = new ResultPaginationDTO();
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(driverPage.getTotalPages());
+        meta.setTotal(driverPage.getTotalElements());
+        res.setMeta(meta);
+        List<ResGeneralDriverInfoDTO> generalDriverInfoDTOList = driverPage.getContent().stream()
+                .map(driver -> this.convertToResGeneralDriverInfoDTO(driver.getAccount(), driver))
+                .collect(Collectors.toList());
+        res.setResult(generalDriverInfoDTOList);
+        return res;
+    }
+
+    @Override
+    public boolean isRegisteredDriver(int accountId) {
+        return this.driverRepository.existsByAccount_Id(accountId);
     }
 
     @Override

@@ -50,6 +50,7 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         businessPartnerInfo.setPartnerType(businessPartner.getPartnerType());
         businessPartnerInfo.setApprovalStatus(businessPartner.getApprovalStatus());
         businessPartnerInfo.setAvatar(businessPartner.getAvatar());
+
         AccountInfo accountInfo = new AccountInfo();
         accountInfo.setId(businessPartner.getAccount().getId());
         accountInfo.setEmail(businessPartner.getAccount().getEmail());

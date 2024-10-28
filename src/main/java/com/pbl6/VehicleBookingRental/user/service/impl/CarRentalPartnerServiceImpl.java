@@ -1,22 +1,24 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCarRentalPartnerDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCarRentalPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.CarRentalPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,9 +43,9 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     public ResBusinessPartnerDTO registerBusPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
                                                     MultipartFile avatar,
                                                     List<MultipartFile> licenses,
-                                                    List<MultipartFile> images) throws ApplicationException{
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
+                                                    List<MultipartFile> images) throws Exception {
+        String username = SecurityUtil.getCurrentLogin().isPresent()?
+                SecurityUtil.getCurrentLogin().get() : "";
         Account account = this.accountService.handleGetAccountByUsername(username);
         if(account == null) {
             throw new UsernameNotFoundException("Username not found");
@@ -100,36 +102,24 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     }
 
     @Override
-    public ResCarRentalPartnerDTO convertoCarRentalPartnerDTO(CarRentalPartner carRentalPartner) throws IdInvalidException {
+    public ResCarRentalPartnerDTO convertoCarRentalPartnerDTO(CarRentalPartner carRentalPartner) throws Exception {
+        ResBusinessPartnerDTO resBusinessPartnerDTO = this.businessPartnerService.convertToResBusinessPartnerDTO(carRentalPartner.getBusinessPartner());
         // Tạo BusinessPartnerInfo từ BusPartner
-        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(carRentalPartner);
+//        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(carRentalPartner);
 
         // Tạo CarRentalPartner từ CarRentalPartner
         ResCarRentalPartnerDTO.CarRentalPartnerInfo carRentalPartnerInfo = createCarRentalPartnerInfo(carRentalPartner);
 
         // Tạo và trả về ResCarRentalPartnerDTO
         ResCarRentalPartnerDTO resCarRentalPartnerDTO = new ResCarRentalPartnerDTO();
-        resCarRentalPartnerDTO.setBusinessInfo(businessPartnerInfo);
+        resCarRentalPartnerDTO.setBusinessInfo(resBusinessPartnerDTO.getBusinessInfo());
         resCarRentalPartnerDTO.setCarRentalPartnerInfo(carRentalPartnerInfo);
 
         return resCarRentalPartnerDTO;
     }
 
-    private ResBusinessPartnerDTO.BusinessPartnerInfo createBusinessPartnerInfo(CarRentalPartner carRentalPartner) {
-        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = new ResBusinessPartnerDTO.BusinessPartnerInfo();
-        businessPartnerInfo.setId(carRentalPartner.getBusinessPartner().getId());
-        businessPartnerInfo.setBusinessName(carRentalPartner.getBusinessPartner().getBusinessName());
-        businessPartnerInfo.setEmailOfRepresentative(carRentalPartner.getBusinessPartner().getEmailOfRepresentative());
-        businessPartnerInfo.setNameOfRepresentative(carRentalPartner.getBusinessPartner().getNameOfRepresentative());
-        businessPartnerInfo.setPhoneOfRepresentative(carRentalPartner.getBusinessPartner().getPhoneOfRepresentative());
-        businessPartnerInfo.setAddress(carRentalPartner.getBusinessPartner().getAddress());
-        businessPartnerInfo.setPartnerType(carRentalPartner.getBusinessPartner().getPartnerType());
-        businessPartnerInfo.setApprovalStatus(carRentalPartner.getBusinessPartner().getApprovalStatus());
-        businessPartnerInfo.setAvatar(carRentalPartner.getBusinessPartner().getAvatar());
-        return businessPartnerInfo;
-    }
 
-    private ResCarRentalPartnerDTO.CarRentalPartnerInfo createCarRentalPartnerInfo(CarRentalPartner carRentalPartner) {
+    private ResCarRentalPartnerDTO.CarRentalPartnerInfo createCarRentalPartnerInfo(CarRentalPartner carRentalPartner) throws Exception {
         ResCarRentalPartnerDTO.CarRentalPartnerInfo carRentalPartnerInfo = new ResCarRentalPartnerDTO.CarRentalPartnerInfo();
         carRentalPartnerInfo.setClientType(carRentalPartner.getClientType());
 
@@ -146,6 +136,17 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
         String policiesString = carRentalPartner.getBusinessPartner().getPolicy();
         List<String> policiesList = Arrays.asList(policiesString.split("!"));
         carRentalPartnerInfo.setPolicies(policiesList);
+
+//        ResBankAccountDTO resBankAccount = new ResBankAccountDTO();
+//        Account account = carRentalPartner.getBusinessPartner().getAccount();
+//        BankAccount bankAccount = account.getBankAccounts().get(0);
+//        resBankAccount.setAccountNumber(bankAccount.getAccountNumber());
+//        resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
+//        resBankAccount.setBankName(bankAccount.getBankName());
+//        resBankAccount.setIdAccount(account.getId());
+        ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(carRentalPartner.getBusinessPartner().getAccount().getId(), PartnerTypeEnum.CAR_RENTAL_PARTNER);
+
+        carRentalPartnerInfo.setBankAccount(resBankAccount);
 
         return carRentalPartnerInfo;
     }

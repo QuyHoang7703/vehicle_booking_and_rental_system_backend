@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.dto.request.businessPartner;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bankAccount.ReqBankAccount;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.LicenseTypeEnum;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReqDriveDTO {
+    private ReqAccountInfoDTO accountInfo;
     private CitizenDTO citizen;
     private DriverLicenseDTO driverLicense;
     private VehicleDTO vehicle;

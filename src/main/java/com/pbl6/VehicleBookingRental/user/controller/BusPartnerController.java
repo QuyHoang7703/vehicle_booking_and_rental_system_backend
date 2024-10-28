@@ -31,22 +31,13 @@ public class BusPartnerController {
     public ResponseEntity<ResBusinessPartnerDTO> registerBusinessPartner(@RequestPart("businessPartnerInfo") ReqBusPartnerDTO reqBusPartnerDTO,
                                                                          @RequestParam(value = "avatar", required = false) MultipartFile avatar,
                                                                          @RequestParam(value = "businessLicense", required = false) List<MultipartFile> licenses,
-                                                                         @RequestParam(value = "businessImages", required = false) List<MultipartFile> images) throws ApplicationException {
+                                                                         @RequestParam(value = "businessImages", required = false) List<MultipartFile> images) throws Exception {
 
         ResBusinessPartnerDTO resBusinessPartnerDTO = this.busPartnerService.registerBusPartner(reqBusPartnerDTO, avatar, licenses, images);
 
 
         return ResponseEntity.status(HttpStatus.OK).body(resBusinessPartnerDTO);
     }
-
-    @GetMapping("/bus-partners/{id}")
-    @PreAuthorize("hasAuthority('VIEW_REGISTER_BUSINESS_PARTNER')")
-    public ResponseEntity<ResBusPartnerDTO> getBusPartnerById(@PathVariable Integer id) throws IdInvalidException {
-        BusPartner busPartner = this.busPartnerService.getBusPartnerByBusinessPartnerId(id);
-        ResBusPartnerDTO resBusPartnerDTO = this.busPartnerService.convertToResBusPartnerDTO(busPartner);
-        return ResponseEntity.status(HttpStatus.OK).body(resBusPartnerDTO);
-    }
-
 
 
 }

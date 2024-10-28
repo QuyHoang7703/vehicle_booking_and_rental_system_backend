@@ -1,26 +1,24 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
-import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqBusPartnerDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
-import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
-import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -46,7 +44,7 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     public ResBusinessPartnerDTO registerBusPartner(ReqBusPartnerDTO reqBusPartnerDTO,
                                                     MultipartFile avatar,
                                                     List<MultipartFile> licenses,
-                                                    List<MultipartFile> images) throws ApplicationException{
+                                                    List<MultipartFile> images) throws Exception {
         String username = SecurityUtil.getCurrentLogin().isPresent()?
                 SecurityUtil.getCurrentLogin().get() : "";
         Account account = this.accountService.handleGetAccountByUsername(username);
@@ -87,15 +85,11 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         BusPartner savedBusPartner = this.busPartnerRepository.save(busPartner);
 
 //        businessPartner.setBusPartner(busPartner);
-
         // Add business license images for bus partner
         this.imageService.uploadAndSaveImages(licenses, String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE), savedBusPartner.getId());
         this.imageService.uploadAndSaveImages(images, String.valueOf(ImageOfObjectEnum.BUS_PARTNER), savedBusPartner.getId());
 
-        ResBusinessPartnerDTO resBusinessPartnerDTO = this.businessPartnerService.convertToResBusinessPartnerDTO(savedBusinessPartner);
-
-
-        return resBusinessPartnerDTO;
+        return this.businessPartnerService.convertToResBusinessPartnerDTO(savedBusinessPartner);
     }
 
     @Override
@@ -110,38 +104,24 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 
 
     @Override
-    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) throws IdInvalidException {
+    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) throws Exception {
+        ResBusinessPartnerDTO resBusinessPartnerDTO = this.businessPartnerService.convertToResBusinessPartnerDTO(busPartner.getBusinessPartner());
         // Tạo BusinessPartnerInfo từ BusPartner
-        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(busPartner);
+//        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(busPartner);
 
         // Tạo BusPartnerInfo từ BusPartner
         ResBusPartnerDTO.BusPartnerInfo busPartnerInfo = createBusPartnerInfo(busPartner);
 
         // Tạo và trả về ResBusPartnerDTO
         ResBusPartnerDTO resBusPartnerDTO = new ResBusPartnerDTO();
-        resBusPartnerDTO.setBusinessInfo(businessPartnerInfo);
+        resBusPartnerDTO.setBusinessInfo(resBusinessPartnerDTO.getBusinessInfo());
         resBusPartnerDTO.setBusPartnerInfo(busPartnerInfo);
 
         return resBusPartnerDTO;
     }
 
 
-
-    private ResBusinessPartnerDTO.BusinessPartnerInfo createBusinessPartnerInfo(BusPartner busPartner) {
-        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = new ResBusinessPartnerDTO.BusinessPartnerInfo();
-        businessPartnerInfo.setId(busPartner.getBusinessPartner().getId());
-        businessPartnerInfo.setBusinessName(busPartner.getBusinessPartner().getBusinessName());
-        businessPartnerInfo.setEmailOfRepresentative(busPartner.getBusinessPartner().getEmailOfRepresentative());
-        businessPartnerInfo.setNameOfRepresentative(busPartner.getBusinessPartner().getNameOfRepresentative());
-        businessPartnerInfo.setPhoneOfRepresentative(busPartner.getBusinessPartner().getPhoneOfRepresentative());
-        businessPartnerInfo.setAddress(busPartner.getBusinessPartner().getAddress());
-        businessPartnerInfo.setPartnerType(busPartner.getBusinessPartner().getPartnerType());
-        businessPartnerInfo.setApprovalStatus(busPartner.getBusinessPartner().getApprovalStatus());
-        businessPartnerInfo.setAvatar(busPartner.getBusinessPartner().getAvatar());
-        return businessPartnerInfo;
-    }
-
-    private ResBusPartnerDTO.BusPartnerInfo createBusPartnerInfo(BusPartner busPartner) {
+    private ResBusPartnerDTO.BusPartnerInfo createBusPartnerInfo(BusPartner busPartner) throws Exception {
         ResBusPartnerDTO.BusPartnerInfo busPartnerInfo = new ResBusPartnerDTO.BusPartnerInfo();
         busPartnerInfo.setDescription(busPartner.getDescription());
         busPartnerInfo.setUrlFanpage(busPartner.getUrlFanpage());
@@ -159,9 +139,16 @@ public class BusPartnerServiceImpl implements BusPartnerService {
                 .collect(Collectors.toList());
         busPartnerInfo.setUrlImages(urlImages);
 
-//        AccountInfo accountInfo = new AccountInfo();
-//        accountInfo.setId(busPartner.getBusinessPartner().getAccount().getId());
-//        accountInfo.setEmail(busPartner.getBusinessPartner().getAccount().getEmail());
+//        ResBankAccountDTO resBankAccount = new ResBankAccountDTO();
+//        Account account = busPartner.getBusinessPartner().getAccount();
+//        BankAccount bankAccount = account.getBankAccounts().get(0);
+//        resBankAccount.setAccountNumber(bankAccount.getAccountNumber());
+//        resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
+//        resBankAccount.setBankName(bankAccount.getBankName());
+//        resBankAccount.setIdAccount(account.getId());
+        ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(busPartner.getBusinessPartner().getAccount().getId(), PartnerTypeEnum.BUS_PARTNER);
+
+        busPartnerInfo.setBankAccount(resBankAccount);
 
         return busPartnerInfo;
     }

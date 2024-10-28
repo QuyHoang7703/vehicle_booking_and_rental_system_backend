@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.businessPartner;
 
+import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,7 @@ public class ResBusPartnerDTO extends ResBusinessPartnerDTO{
         private List<String> policy;
         private List<String> urlLicenses;
         private List<String> urlImages;
+        private ResBankAccountDTO bankAccount;
     }
 
 }

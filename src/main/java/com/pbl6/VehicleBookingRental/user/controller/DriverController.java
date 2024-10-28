@@ -35,7 +35,7 @@ public class DriverController {
                                                                   @RequestParam("driverLicenseImages") List<MultipartFile> driverLicenseImages,
                                                                   @RequestParam("vehicleRegistration") List<MultipartFile> vehicleRegistration,
                                                                   @RequestParam("vehicleImages") List<MultipartFile> vehicleImages,
-                                                                  @RequestParam("vehicleInsurance") List<MultipartFile> vehicleInsurance) throws ApplicationException {
+                                                                  @RequestParam("vehicleInsurance") List<MultipartFile> vehicleInsurance) throws Exception {
         ResGeneralDriverInfoDTO driverInfo = driverService.registerDriver(reqDriveDTO
                 , avatarOfDriver, citizenImages
                 , driverLicenseImages, vehicleRegistration
@@ -66,7 +66,7 @@ public class DriverController {
     }
 
     @GetMapping("/drivers/detail")
-    public ResponseEntity<ResDriverDTO> getDriverRegisterForm(@RequestParam("formRegisterId") int formRegisterId) throws IdInvalidException {
+    public ResponseEntity<ResDriverDTO> getDriverRegisterForm(@RequestParam("formRegisterId") int formRegisterId) throws Exception {
         Driver driver = this.driverService.getDriverById(formRegisterId);
         ResGeneralDriverInfoDTO resGeneralDriverInfoDTO = this.driverService.convertToResGeneralDriverInfoDTO(driver.getAccount(), driver);
         ResDriverDTO resDriverDTO = this.driverService.convertoResDriverDTO(resGeneralDriverInfoDTO, driver);

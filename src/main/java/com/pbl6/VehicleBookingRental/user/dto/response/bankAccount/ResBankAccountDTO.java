@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResBankAccount {
+public class ResBankAccountDTO {
     private String accountNumber;
     private String accountHolderName;
     private String bankName;

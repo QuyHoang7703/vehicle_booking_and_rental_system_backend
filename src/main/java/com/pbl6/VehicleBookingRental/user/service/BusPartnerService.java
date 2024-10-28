@@ -14,9 +14,9 @@ public interface BusPartnerService {
     public ResBusinessPartnerDTO registerBusPartner(ReqBusPartnerDTO reqBusPartnerDTO,
                                                     MultipartFile avatar,
                                                     List<MultipartFile> licenses,
-                                                    List<MultipartFile> images) throws ApplicationException;
+                                                    List<MultipartFile> images) throws Exception;
     public BusPartner getBusPartnerByBusinessPartnerId(int id) throws IdInvalidException;
-    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) throws IdInvalidException;
+    public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) throws Exception;
 
 //    public void verifyRegister(int id, String partnerType) throws IdInValidException;
 //    @Transactional

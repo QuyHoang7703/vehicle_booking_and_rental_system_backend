@@ -18,7 +18,7 @@ public class BankAccount {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "account_number", length = 20)
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String accountNumber;
 
     @Column(name = "account_holder_name", length = 100)
@@ -27,11 +27,13 @@ public class BankAccount {
     @Column(name = "bank_name", length = 100)
     private String bankName;
 
-    // Many-to-One relationship với bảng Account (giả định đã có class Account)
-    @ManyToOne
-//    @JoinColumn(name = "account_id", insertable = false, updatable = false)
-    @JoinColumn(name = "account_id")
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String aesKey;
 
+
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
     private Account account;
 }
 

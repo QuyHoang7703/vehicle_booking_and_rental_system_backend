@@ -30,7 +30,7 @@ public class CarRentalPartnerController {
     public ResponseEntity<ResBusinessPartnerDTO> registerBusinessPartner(@RequestPart("businessPartnerInfo") ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
                                                                          @RequestParam(value = "avatar", required = false) MultipartFile avatar,
                                                                          @RequestParam(value = "businessLicense", required = false) List<MultipartFile> licenses,
-                                                                         @RequestParam(value = "businessImages", required = false) List<MultipartFile> images) throws ApplicationException {
+                                                                         @RequestParam(value = "businessImages", required = false) List<MultipartFile> images) throws Exception {
 
 
         ResBusinessPartnerDTO resBusinessPartnerDTO = this.carRentalPartnerService.registerBusPartner(reqCarRentalPartnerDTO, avatar, licenses, images);
@@ -41,7 +41,7 @@ public class CarRentalPartnerController {
 
     @GetMapping("/car-rental-partners/{id}")
     @PreAuthorize("hasAuthority('VIEW_REGISTER_BUSINESS_PARTNER')")
-    public ResponseEntity<ResCarRentalPartnerDTO> getCarRentalPartnerById(@PathVariable Integer id) throws IdInvalidException {
+    public ResponseEntity<ResCarRentalPartnerDTO> getCarRentalPartnerById(@PathVariable Integer id) throws Exception {
         CarRentalPartner carRentalPartner = this.carRentalPartnerService.getCarRentalPartnerByBusinessPartnerId(id);
         ResCarRentalPartnerDTO resCarRentalPartnerDTO = this.carRentalPartnerService.convertoCarRentalPartnerDTO(carRentalPartner);
         return ResponseEntity.status(HttpStatus.OK).body(resCarRentalPartnerDTO);

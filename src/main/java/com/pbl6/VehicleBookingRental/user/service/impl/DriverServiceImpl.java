@@ -9,10 +9,9 @@ import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccount;
+import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResGeneralDriverInfoDTO;
-import com.pbl6.VehicleBookingRental.user.repository.BankAccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.DriverRepository;
@@ -54,6 +53,7 @@ public class DriverServiceImpl implements DriverService {
     private final VehicleTypeRepo vehicleTypeRepo;
     private final BankAccountService bankAccountService;
 
+
     @Override
     public ResGeneralDriverInfoDTO registerDriver(ReqDriveDTO reqDriveDTO,
                                                   MultipartFile avatarOfDriver,
@@ -61,7 +61,7 @@ public class DriverServiceImpl implements DriverService {
                                                   List<MultipartFile> driverLicenseImages,
                                                   List<MultipartFile> vehicleRegistrations,
                                                   List<MultipartFile> vehicleImages,
-                                                  List<MultipartFile> vehicleInsuranceImages) throws ApplicationException{
+                                                  List<MultipartFile> vehicleInsuranceImages) throws Exception {
         String username = SecurityUtil.getCurrentLogin().isPresent()?
                 SecurityUtil.getCurrentLogin().get() : "";
         Account account = this.accountService.handleGetAccountByUsername(username);
@@ -123,7 +123,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public ResDriverDTO convertoResDriverDTO(ResGeneralDriverInfoDTO resGeneralDriverInfoDTO, Driver driver) {
+    public ResDriverDTO convertoResDriverDTO(ResGeneralDriverInfoDTO resGeneralDriverInfoDTO, Driver driver) throws Exception {
         ResDriverDTO resDriverDTO = new ResDriverDTO();
         resDriverDTO.setGeneralDriverInfo(resGeneralDriverInfoDTO.getGeneralDriverInfo());
 
@@ -164,13 +164,13 @@ public class DriverServiceImpl implements DriverService {
         relativeDTO.setPhoneOfRelative(driver.getPhoneNumberOfRelative());
         relativeDTO.setRelationship(driver.getRelationship());
 
-        ResBankAccount resBankAccount = new ResBankAccount();
-        Account account = driver.getAccount();
-        BankAccount bankAccount = driver.getAccount().getBankAccounts().get(0);
-        resBankAccount.setAccountNumber(bankAccount.getAccountNumber());
-        resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
-        resBankAccount.setBankName(bankAccount.getBankName());
-        resBankAccount.setIdAccount(bankAccount.getAccount().getId());
+        ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(driver.getAccount());
+////        Account account = driver.getAccount();
+//        BankAccount bankAccount = driver.getAccount().getBankAccounts().get(0);
+//        resBankAccount.setAccountNumber(bankAccount.getAccountNumber());
+//        resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
+//        resBankAccount.setBankName(bankAccount.getBankName());
+//        resBankAccount.setIdAccount(bankAccount.getAccount().getId());
 
         resDriverDTO.setCitizen(citizenDTO);
         resDriverDTO.setDriverLicense(driverLicenseDTO);

@@ -1,6 +1,5 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
-import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
@@ -16,7 +15,7 @@ import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleReposito
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.DriverRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
-import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepo;
+import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepository;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.BankAccountService;
 import com.pbl6.VehicleBookingRental.user.service.DriverService;
@@ -51,7 +50,7 @@ public class DriverServiceImpl implements DriverService {
     private final ImageRepository imageRepository;
     private final RoleRepository roleRepository;
     private final AccountRoleRepository accountRoleRepository;
-    private final VehicleTypeRepo vehicleTypeRepo;
+    private final VehicleTypeRepository vehicleTypeRepo;
     private final BankAccountService bankAccountService;
 
 

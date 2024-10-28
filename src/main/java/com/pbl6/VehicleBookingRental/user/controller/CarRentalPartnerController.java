@@ -47,17 +47,6 @@ public class CarRentalPartnerController {
         return ResponseEntity.status(HttpStatus.OK).body(resCarRentalPartnerDTO);
     }
 
-//    @PutMapping("car-rental-partners/verify/{id}")
-//    public ResponseEntity<ResponseInfo<String>> verifyRegister(@PathVariable Integer id, @RequestParam("partnerType") String partnerType) throws IdInValidException {
-//        this.businessPartnerService.verifyRegister(id, partnerType);
-//        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đăng ký thành công đối tác: " + partnerType));
-//    }
-//
-//    @DeleteMapping("car-rental-partners/cancel-partnership/{id}")
-//    public ResponseEntity<ResponseInfo<String>> cancel(@PathVariable Integer id, @RequestParam("partnerType") String partnerType) throws IdInValidException {
-//        this.businessPartnerService.cancelPartnership(id, partnerType);
-//        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác thành công: " + partnerType));
-//    }
 
 
 }

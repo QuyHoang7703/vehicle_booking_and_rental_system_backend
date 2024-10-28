@@ -24,6 +24,7 @@ import com.pbl6.VehicleBookingRental.user.service.ImageService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.transaction.Transactional;
@@ -67,6 +68,9 @@ public class DriverServiceImpl implements DriverService {
         Account account = this.accountService.handleGetAccountByUsername(username);
         if(account == null) {
             throw new UsernameNotFoundException("Username not found");
+        }
+        if(this.isRegisteredDriver(account.getId())){
+            throw new ApplicationException("Driver already registered");
         }
         this.accountService.handleUpdateAccount(null, reqDriveDTO.getAccountInfo());
 //        if(account.getName() == null || account.getPhoneNumber() == null
@@ -164,13 +168,7 @@ public class DriverServiceImpl implements DriverService {
         relativeDTO.setPhoneOfRelative(driver.getPhoneNumberOfRelative());
         relativeDTO.setRelationship(driver.getRelationship());
 
-        ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(driver.getAccount());
-////        Account account = driver.getAccount();
-//        BankAccount bankAccount = driver.getAccount().getBankAccounts().get(0);
-//        resBankAccount.setAccountNumber(bankAccount.getAccountNumber());
-//        resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
-//        resBankAccount.setBankName(bankAccount.getBankName());
-//        resBankAccount.setIdAccount(bankAccount.getAccount().getId());
+        ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(driver.getAccount().getId(), PartnerTypeEnum.DRIVER);
 
         resDriverDTO.setCitizen(citizenDTO);
         resDriverDTO.setDriverLicense(driverLicenseDTO);
@@ -236,6 +234,11 @@ public class DriverServiceImpl implements DriverService {
                 .collect(Collectors.toList());
         res.setResult(generalDriverInfoDTOList);
         return res;
+    }
+
+    @Override
+    public boolean isRegisteredDriver(int accountId) {
+        return this.driverRepository.existsByAccount_Id(accountId);
     }
 
     @Override

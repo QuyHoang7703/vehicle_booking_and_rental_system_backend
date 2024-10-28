@@ -28,5 +28,6 @@ public interface DriverService {
     void cancelDriver(int id) throws IdInvalidException;
     Driver getDriverById(int id) throws IdInvalidException;
     ResultPaginationDTO getAllDrivers(Specification<Driver> specification, Pageable pageable);
+    boolean isRegisteredDriver(int accountId);
 
 }

@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.domain;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,8 +30,8 @@ public class BankAccount {
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String aesKey;
-
-
+    @Enumerated(EnumType.STRING)
+    private PartnerTypeEnum partnerType;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

@@ -7,6 +7,8 @@ import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccoun
 import com.pbl6.VehicleBookingRental.user.repository.BankAccountRepository;
 import com.pbl6.VehicleBookingRental.user.service.BankAccountService;
 import com.pbl6.VehicleBookingRental.user.util.EncryptionUtil;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +43,7 @@ public class BankAccountServiceImpl implements BankAccountService {
         bankAccount.setAccountHolderName(reqBankAccount.getAccountHolderName());
         bankAccount.setBankName(reqBankAccount.getBankName());
         bankAccount.setAesKey(encryptedAESKey);
+        bankAccount.setPartnerType(reqBankAccount.getPartnerType());
         bankAccount.setAccount(account);
 
         this.bankAccountRepository.save(bankAccount);
@@ -49,9 +52,10 @@ public class BankAccountServiceImpl implements BankAccountService {
     }
 
     @Override
-    public ResBankAccountDTO convertoResBankAccountDTO(Account account) throws Exception {
+    public ResBankAccountDTO convertoResBankAccountDTO(int accountId, PartnerTypeEnum partnerType) throws Exception {
         ResBankAccountDTO resBankAccount = new ResBankAccountDTO();
-        BankAccount bankAccount = account.getBankAccounts().get(0);
+        BankAccount bankAccount = this.bankAccountRepository.findByAccount_IdAndPartnerType(accountId, partnerType)
+                .orElseThrow(() -> new ApplicationException("Bank account not found"));
         PrivateKey privateKeyRSE = this.encryptionUtil.getPrivateKeyFromString(privateKeyString);
         SecretKey secretKeyAES = this.encryptionUtil.decryptAESKey(bankAccount.getAesKey(), privateKeyRSE);
         String decryptedAccountNumber = this.encryptionUtil.decrypt(bankAccount.getAccountNumber(), secretKeyAES);

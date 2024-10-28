@@ -39,14 +39,5 @@ public class BusPartnerController {
         return ResponseEntity.status(HttpStatus.OK).body(resBusinessPartnerDTO);
     }
 
-//    @GetMapping("/bus-partners/{id}")
-//    @PreAuthorize("hasAuthority('VIEW_REGISTER_BUSINESS_PARTNER')")
-//    public ResponseEntity<ResBusPartnerDTO> getBusPartnerById(@PathVariable Integer id) throws IdInvalidException {
-//        BusPartner busPartner = this.busPartnerService.getBusPartnerByBusinessPartnerId(id);
-//        ResBusPartnerDTO resBusPartnerDTO = this.busPartnerService.convertToResBusPartnerDTO(busPartner);
-//        return ResponseEntity.status(HttpStatus.OK).body(resBusPartnerDTO);
-//    }
-
-
 
 }

@@ -14,6 +14,7 @@ import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
@@ -143,7 +144,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
 //        resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
 //        resBankAccount.setBankName(bankAccount.getBankName());
 //        resBankAccount.setIdAccount(account.getId());
-        ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(carRentalPartner.getBusinessPartner().getAccount());
+        ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(carRentalPartner.getBusinessPartner().getAccount().getId(), PartnerTypeEnum.CAR_RENTAL_PARTNER);
 
         carRentalPartnerInfo.setBankAccount(resBankAccount);
 

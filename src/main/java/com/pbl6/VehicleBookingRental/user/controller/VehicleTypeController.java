@@ -35,9 +35,9 @@ public class VehicleTypeController {
         return ResponseEntity.status(HttpStatus.OK).body(this.vehicleTypeService.updateVehicleType(vehicleType));
     }
 
-    @DeleteMapping("/vehicle-types/{id}")
+    @DeleteMapping("/vehicle-types")
     @ApiMessage("Deleted Vehicle Type")
-    public ResponseEntity<Void> deleteVehicleTypeById(@PathVariable("id") int id) throws IdInvalidException {
+    public ResponseEntity<Void> deleteVehicleTypeById(@RequestParam("idVehicleType") int id) throws IdInvalidException {
         VehicleType vehicleType = this.vehicleTypeService.findVehicleTypeById(id);
         if(vehicleType == null) {
             throw new IdInvalidException("Id vehicle type is invalid with id = " + id);
@@ -46,8 +46,8 @@ public class VehicleTypeController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @GetMapping("/vehicle-types/{id}")
-    public ResponseEntity<VehicleType> fetchById(@PathVariable("id") int id) throws IdInvalidException {
+    @GetMapping("/vehicle-types")
+    public ResponseEntity<VehicleType> fetchById(@RequestParam("idVehicleType") int id) throws IdInvalidException {
         VehicleType vehicleType = this.vehicleTypeService.findVehicleTypeById(id);
         if(vehicleType == null) {
             throw new IdInvalidException("Id vehicle type is invalid with id = " + id);
@@ -55,7 +55,7 @@ public class VehicleTypeController {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleType);
     }
 
-    @GetMapping("/vehicle-types")
+    @GetMapping("/vehicle-types-all")
     @ApiMessage("All vehicle types")
     public ResponseEntity<ResultPaginationDTO> fetchAllVehicleType(@Filter Specification<VehicleType> specification, Pageable pageable) {
         ResultPaginationDTO res = this.vehicleTypeService.getAllVehicleTypes(specification, pageable);

@@ -7,9 +7,11 @@ import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqDeactivateAccount;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqUpdatePasswordDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResDeactivateAccount;
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
@@ -19,11 +21,10 @@ import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,7 @@ public class AccountService {
     private final AccountRoleRepository accountRoleRepository;
     private final RoleService roleSerivice;
     private final S3Service s3Service;
+    private final AccountRoleService accountRoleService;
 
 
     public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInvalidException, IOException {
@@ -153,20 +155,39 @@ public class AccountService {
          return this.accountRepository.save(accountUpdate);
     }
 
-    public void handleActivateAccount(int id) {
+    public void handleActivateAccount(int id) throws ApplicationException {
         Account accountDb = this.fetchAccountById(id);
         if(!accountDb.isActive()){
             accountDb.setActive(true);
             this.accountRepository.save(accountDb);
+            AccountRole accountRole = this.accountRoleService.getAccountRole(accountDb.getEmail(), "USER");
+            accountRole.setLockReason(null);
+            this.accountRoleRepository.save(accountRole);
+        }
+        else{
+            throw new ApplicationException("You already activated this account");
         }
     }
 
-    public void handleDeactivateAccount(int id) {
-        Account accountDb = this.fetchAccountById(id);
+    public void handleDeactivateAccount(ReqDeactivateAccount reqDeactivateAccount) throws Exception {
+        Account accountDb = this.fetchAccountById(reqDeactivateAccount.getId());
         if(accountDb.isActive()){
             accountDb.setActive(false);
             this.accountRepository.save(accountDb);
+            Role roleUser = this.roleRepository.findByName("USER")
+                    .orElseThrow(() -> new ApplicationException("Role not found"));
+            AccountRole accountRole = this.accountRoleRepository.findByAccount_IdAndRole_Id(accountDb.getId(), roleUser.getId())
+                    .orElseThrow(() -> new ApplicationException("AccountRole not found"));
+            accountRole.setLockReason(reqDeactivateAccount.getLockReason());
+            this.accountRoleRepository.save(accountRole);
+            Context context = new Context();
+            context.setVariable("cssContent", this.emailService.loadCssFromFile());
+            context.setVariable("lockReason", reqDeactivateAccount.getLockReason());
+            this.emailService.sendEmail(accountDb.getEmail(), "Thông báo khóa tài khoản người dùng", "deactivate_account", context);
+        }else{
+            throw new ApplicationException("You already lock this account");
         }
+
     }
     
     public Account handleGetAccountByUsername(String username) {
@@ -351,6 +372,17 @@ public class AccountService {
 
         return savedAccount;
     }
+
+    public ResDeactivateAccount getInfoDeactivatedAccount(String email) throws ApplicationException {
+        AccountRole accountRole = this.accountRoleService.getAccountRole(email, "USER");
+        ResDeactivateAccount res = new ResDeactivateAccount();
+        res.setLockReason(accountRole.getLockReason());
+        res.setTimeCancel(accountRole.getTimeCancel());
+        return res;
+
+    }
+
+
 
 
 

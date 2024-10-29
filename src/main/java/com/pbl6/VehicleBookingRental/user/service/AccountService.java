@@ -28,7 +28,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
 
+import java.io.IOException;
 import java.util.List;
 
 import java.util.Optional;
@@ -53,7 +55,7 @@ public class AccountService {
     private final S3Service s3Service;
 
 
-    public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInvalidException {
+    public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInvalidException, IOException {
         Account account = new Account();
         account.setEmail(registerDTO.getEmail());
         account.setPassword(registerDTO.getPassword());
@@ -100,7 +102,6 @@ public class AccountService {
 //        if(account.getLockReason()!=null){
 //
 //        }
-
         List<String> roles = this.roleSerivice.getNameRolesByAccountID(account.getId());
         accountInfoDTO.setRoles(roles);
 
@@ -172,7 +173,6 @@ public class AccountService {
         return this.accountRepository.findByEmail(username)
                     .or(() -> this.accountRepository.findByPhoneNumber(username))
                     .orElse(null);
-      
     }
 
 
@@ -215,10 +215,15 @@ public class AccountService {
         return String.valueOf(otpValue);
     }
 
-    public void sendVerificationEmail(String email, String otp) {
+    public void sendVerificationEmail(String email, String otp) throws IOException {
         String subject = "Email verification";
         String body = "Your verification OTP is: " + otp;
-        this.emailService.sendEmail(email, subject, body);
+        Context context = new Context();
+        context.setVariable("email", email);
+        context.setVariable("otp", otp);
+        context.setVariable("cssContent", this.emailService.loadCssFromFile());
+        this.emailService.sendEmail(email, subject, "otp_email", context);
+//        this.emailService.sendEmail(email, subject, body);
     }
 
     public void verify(String email, String otp) throws IdInvalidException {
@@ -244,7 +249,7 @@ public class AccountService {
         }
     }
 
-    public void resendOtp(String email) {
+    public void resendOtp(String email) throws IOException {
         String otp = this.generateOTP();
         String otpDecoded = this.passwordEncoder.encode(otp);
         Optional<Account> optionalAccount = this.accountRepository.findByEmail(email);

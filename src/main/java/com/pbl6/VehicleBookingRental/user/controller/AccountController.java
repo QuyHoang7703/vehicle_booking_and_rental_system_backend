@@ -45,7 +45,6 @@ import java.util.List;
 @Slf4j
 public class AccountController {
     private final AccountService accountService;
-    private final S3Service s3Service;
     private final RoleService roleService;
     private final FilterSpecificationConverter filterSpecificationConverter;
     private final FilterBuilder filterBuilder;
@@ -58,7 +57,6 @@ public class AccountController {
         Account currentAccount = this.accountService.handleGetAccountByUsername(username);
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(currentAccount));
     }
-
 
     @GetMapping("/accounts")
     @PreAuthorize("hasRole('ADMIN')")
@@ -74,15 +72,6 @@ public class AccountController {
         Specification<Account> finalSpec = spec.and(roleNotAdminSpec);
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts(finalSpec, pageable));
     }
-
-//    @PutMapping("/account")
-//    public ResponseEntity<ResAccountInfoDTO> updateAccount(@RequestBody Account account) throws IdInvalidException {
-//        if(this.accountService.fetchAccountById(account.getId()) ==null) {
-//            throw new IdInvalidException("Account with id = " + account.getId() + " is not exist");
-//        }
-//        Account updateAccount = this.accountService.handleUpdateAccount(account);
-//        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(updateAccount));
-//    }
 
     @PutMapping("/accounts/activate")
     @PreAuthorize("hasRole('ADMIN')")
@@ -108,7 +97,6 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-
     @PutMapping(value="/accounts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiMessage("Updated information for account")
     public ResponseEntity<ResAccountInfoDTO> updateInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file
@@ -132,6 +120,15 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã thay đổi mật khẩu"));
     }
 
-
+    @GetMapping("/account-detail-user")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ApiMessage("fetch account info user")
+    public ResponseEntity<ResAccountInfoDTO> getAccountInfoUser(@RequestParam("username") String username) throws ApplicationException {
+        Account currentAccount = this.accountService.handleGetAccountByUsername(username);
+        if(currentAccount==null) {
+            throw new ApplicationException("Username not found");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(currentAccount));
+    }
 
 }

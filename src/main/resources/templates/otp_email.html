@@ -5,99 +5,25 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xác Nhận OTP</title>
-    {% comment %} <link rel="stylesheet" type="text/css" th:href="@{static/css/styles.css}" /> {% endcomment %}
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f0f4f8;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: #333333;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .header {
-            background-color: #D34714; /* Màu tiêu đề */
-            color: #ffffff;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: normal;
-        }
-        
-        .body {
-            padding: 30px 20px;
-        }
-        
-        .body p {
-            font-size: 16px;
-            margin: 0 0 15px;
-        }
-        
-        .body .otp-code {
-            font-size: 24px;
-            font-weight: bold;
-            color: #D34714; /* Màu mã OTP */
-            text-align: center;
-            margin: 20px 0;
-        }
-        
-        .footer {
-            background-color: #f7f7f7;
-            padding: 20px;
-            text-align: center;
-            font-size: 14px;
-            color: #999999;
-        }
-        
-        .footer p {
-            margin: 0;
-        }
-        
-        .footer a {
-            color: #D34714; /* Màu liên kết */
-            text-decoration: none;
-        }
-        
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <style th:text="${cssContent}"></style>
+
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Xác Nhận OTP</h1>
-        </div>
-        <div class="body">
-            <p>Chào <span th:text="${userName}">[Người Dùng]</span>,</p>
-            <p>Chúng tôi đã gửi mã xác nhận OTP đến địa chỉ email hoặc số điện thoại của bạn. Vui lòng nhập mã OTP bên dưới:</p>
-            <form th:action="@{/verify-otp}" method="post">
-                <div class="form-group">
-                    <label for="otp">Mã OTP:</label>
-                    <input type="text" id="otp" name="otp" required />
-                </div>
-                <button type="submit" class="cta-button">Xác Nhận</button>
-            </form>
-            <p class="highlight">Mã OTP chỉ có hiệu lực trong 5 phút.</p>
-        </div>
-        <div class="footer">
-            <p>Cảm ơn bạn,</p>
-            <p>Đội Ngũ Hỗ Trợ của Công Ty</p>
-            <p>Cần giúp đỡ? <a href="mailto:support@yourcompany.com">Liên hệ với đội hỗ trợ của chúng tôi</a></p>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>Xác Nhận Đăng Ký</h1>
     </div>
+    <div class="body">
+        <p>Chào <span th:text="${email}">[Người Dùng]</span>,</p>
+        <p>Mã OTP của bạn để xác nhận đăng ký là:</p>
+        <p class="otp-code" th:text="${otp}">123456</p>
+        <p>Mã OTP chỉ có hiệu lực trong 5 phút. Vui lòng nhập mã này để hoàn tất quá trình đăng ký của bạn.</p>
+    </div>
+    <div class="footer">
+        <p>Cảm ơn bạn,</p>
+        <p>Đội Ngũ Hỗ Trợ của Công Ty</p>
+        <p>Cần giúp đỡ? <a href="mailto:support@yourcompany.com">Liên hệ với đội hỗ trợ của chúng tôi</a></p>
+    </div>
+</div>
 </body>
 </html>

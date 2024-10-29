@@ -44,6 +44,8 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -65,7 +67,7 @@ public class AuthController {
 
     @PostMapping("auth/register")
     @ApiMessage("Register a new user")
-    public ResponseEntity<ResponseInfo<String>> createUser(@RequestBody ReqRegisterDTO registerDTO) throws IdInvalidException {
+    public ResponseEntity<ResponseInfo<String>> createUser(@RequestBody ReqRegisterDTO registerDTO) throws Exception {
         if(this.accountService.checkAvailableUsername(registerDTO.getEmail())){
             Account account = this.accountService.handleGetAccountByUsername(registerDTO.getEmail());
             if(!account.isVerified()) {
@@ -105,7 +107,7 @@ public class AuthController {
     }
 
     @PostMapping("/auth/resend_otp")
-    public ResponseEntity<ResponseInfo<String>> resendOTP(@RequestParam String email) throws IdInvalidException {
+    public ResponseEntity<ResponseInfo<String>> resendOTP(@RequestParam String email) throws IdInvalidException, IOException {
         // if(this.userService.checkAvailableEmail(email)){
         //     throw new IdInValidException("Email not found");
         // }
@@ -113,7 +115,6 @@ public class AuthController {
         return ResponseEntity.ok(new ResponseInfo<>("Gửi lại OTP"));
 
     }
-
 
     @PostMapping("/auth/login")
     @ApiMessage("Login successfully")
@@ -154,7 +155,6 @@ public class AuthController {
                             .header(HttpHeaders.SET_COOKIE, resCookies.toString())
                             .body(res);
     }
-
 
     @GetMapping("/auth/refresh")
     @ApiMessage("Refresh token")
@@ -218,14 +218,14 @@ public class AuthController {
 
     @GetMapping("/auth/forgot-password")
     @ApiMessage("Send request restore password")
-    public ResponseEntity<ResponseInfo<String>> sendRequestForgotPassword(@RequestParam("email") String email) throws IdInvalidException {
+    public ResponseEntity<ResponseInfo<String>> sendRequestForgotPassword(@RequestParam("email") String email) throws IdInvalidException, IOException {
         this.tokenService.createToken(email);
        
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Yêu cầu của bạn đã được gửi tới email"));
     }
 
     @GetMapping("/auth/verify-token")
-    @ApiMessage("Send request restore password")
+    @ApiMessage("Checked token")
     public ResponseEntity<ResponseInfo<Boolean>> checkValidToken(@RequestParam("token") String token) {
         
        

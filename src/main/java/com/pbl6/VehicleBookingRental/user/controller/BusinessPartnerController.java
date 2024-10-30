@@ -61,7 +61,7 @@ public class BusinessPartnerController {
 
     @DeleteMapping("business-partner/cancel-partnership")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseInfo<String>> cancelPartnership(@RequestBody ReqCancelPartner reqCancelPartner) throws IdInvalidException, ApplicationException {
+    public ResponseEntity<ResponseInfo<String>> cancelPartnership(@RequestBody ReqCancelPartner reqCancelPartner) throws Exception {
         int formRegisterId = reqCancelPartner.getFormRegisterId();
         PartnerTypeEnum partnerType = reqCancelPartner.getPartnerType();
         BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(formRegisterId, partnerType);

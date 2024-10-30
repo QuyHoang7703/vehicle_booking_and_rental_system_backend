@@ -1,5 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -11,6 +13,8 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -57,8 +61,15 @@ public class EmailService {
     }
 
     public String loadCssFromFile() throws IOException {
-        Path cssPath = Paths.get("src/main/resources/static/css/styles.css");
-        String cssContent  = Files.readString(cssPath);
+//        Path cssPath = Paths.get("src/main/resources/static/css/styles.css");
+        //        String cssContent  = Files.readString(cssPath);
+        Resource resource = new ClassPathResource("static/css/styles.css");
+        String cssContent;
+        try (InputStream inputStream = resource.getInputStream()) {
+            cssContent = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+
+
 //        System.out.println(cssContent );
         return cssContent ;
     }

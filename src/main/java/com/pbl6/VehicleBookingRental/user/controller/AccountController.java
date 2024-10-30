@@ -8,10 +8,12 @@ import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqDeactivateAccount;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqUpdatePasswordDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
 
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResDeactivateAccount;
 import com.pbl6.VehicleBookingRental.user.service.RoleService;
 import com.pbl6.VehicleBookingRental.user.service.S3Service;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
@@ -76,7 +78,7 @@ public class AccountController {
     @PutMapping("/accounts/activate")
     @PreAuthorize("hasRole('ADMIN')")
     @ApiMessage("Activated the account")
-    public ResponseEntity<Void> activateAccount(@RequestParam("idAccount") int id) throws IdInvalidException {
+    public ResponseEntity<Void> activateAccount(@RequestParam("idAccount") int id) throws Exception {
         Account account = this.accountService.fetchAccountById(id);
         if(account==null) {
             throw new IdInvalidException("Account with id = " + id + " is not exist");
@@ -88,12 +90,13 @@ public class AccountController {
     @PutMapping("/accounts/deactivate")
     @PreAuthorize("hasRole('ADMIN')")
     @ApiMessage("Deactivated the account")
-    public ResponseEntity<Void> deactivateAccount(@RequestParam("idAccount") int id) throws IdInvalidException {
-        Account account = this.accountService.fetchAccountById(id);
+    public ResponseEntity<Void> deactivateAccount(@RequestBody ReqDeactivateAccount reqDeactivateAccount) throws Exception {
+        int idAccount = reqDeactivateAccount.getId();
+        Account account = this.accountService.fetchAccountById(idAccount);
         if(account==null) {
-            throw new IdInvalidException("Account with id = " + id + " is not exist");
+            throw new IdInvalidException("Account with id = " + idAccount + " is not exist");
         }
-        this.accountService.handleDeactivateAccount(id);
+        this.accountService.handleDeactivateAccount(reqDeactivateAccount);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
@@ -129,6 +132,12 @@ public class AccountController {
             throw new ApplicationException("Username not found");
         }
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(currentAccount));
+    }
+
+    @GetMapping("/reason-lock-account")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResDeactivateAccount> getReasonLockAccount(@RequestParam("email") String email) throws ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.getInfoDeactivatedAccount(email));
     }
 
 }

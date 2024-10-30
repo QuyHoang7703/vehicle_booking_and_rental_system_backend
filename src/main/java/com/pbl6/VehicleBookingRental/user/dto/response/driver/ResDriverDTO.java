@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.dto.response.driver;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.LicenseTypeEnum;
@@ -11,11 +12,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResDriverDTO {
     private ResGeneralDriverInfoDTO.GeneralDriverInfo generalDriverInfo;
     private CitizenDTO citizen;
@@ -25,6 +28,8 @@ public class ResDriverDTO {
     private ResBankAccountDTO bankAccount;
     @Enumerated(EnumType.STRING)
     private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
+    private String cancelReason;
+    private Instant timeCancel;
 
     @Data
     @AllArgsConstructor

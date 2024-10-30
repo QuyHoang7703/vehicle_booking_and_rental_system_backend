@@ -115,6 +115,8 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         // Tạo và trả về ResBusPartnerDTO
         ResBusPartnerDTO resBusPartnerDTO = new ResBusPartnerDTO();
         resBusPartnerDTO.setBusinessInfo(resBusinessPartnerDTO.getBusinessInfo());
+        resBusPartnerDTO.setCancelReason(resBusinessPartnerDTO.getCancelReason());
+        resBusPartnerDTO.setTimeCancel(resBusinessPartnerDTO.getTimeCancel());
         resBusPartnerDTO.setBusPartnerInfo(busPartnerInfo);
 
         return resBusPartnerDTO;

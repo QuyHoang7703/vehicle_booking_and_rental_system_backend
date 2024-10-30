@@ -7,8 +7,11 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelDriver;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCancelDriver;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResGeneralDriverInfoDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
@@ -16,10 +19,7 @@ import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.DriverRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepository;
-import com.pbl6.VehicleBookingRental.user.service.AccountService;
-import com.pbl6.VehicleBookingRental.user.service.BankAccountService;
-import com.pbl6.VehicleBookingRental.user.service.DriverService;
-import com.pbl6.VehicleBookingRental.user.service.ImageService;
+import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
@@ -35,6 +35,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
 
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +53,8 @@ public class DriverServiceImpl implements DriverService {
     private final AccountRoleRepository accountRoleRepository;
     private final VehicleTypeRepository vehicleTypeRepo;
     private final BankAccountService bankAccountService;
+    private final AccountRoleService accountRoleService;
+    private final EmailService emailService;
 
 
     @Override
@@ -169,6 +172,14 @@ public class DriverServiceImpl implements DriverService {
 
         ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(driver.getAccount().getId(), PartnerTypeEnum.DRIVER);
 
+        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail()
+                , String.valueOf(PartnerTypeEnum.DRIVER));
+        if(accountRole != null) {
+            resDriverDTO.setCancelReason(accountRole.getLockReason());
+            resDriverDTO.setTimeCancel(accountRole.getTimeCancel());
+
+        }
+
         resDriverDTO.setCitizen(citizenDTO);
         resDriverDTO.setDriverLicense(driverLicenseDTO);
         resDriverDTO.setVehicle(vehicleDTO);
@@ -181,33 +192,52 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void verifyDriver(int id) throws IdInvalidException {
+    public void verifyDriver(int id) throws IdInvalidException, ApplicationException {
         Driver driver = this.driverRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Id is invalid"));
         driver.setApprovalStatus(ApprovalStatusEnum.APPROVED);
         this.driverRepository.save(driver);
-        Account account = driver.getAccount();
-        Role role = this.roleRepository.findByName("DRIVER")
-                .orElseThrow(() -> new RuntimeException("Role is invalid"));
-        AccountRole accountRole = new AccountRole();
-        accountRole.setRole(role);
-        accountRole.setAccount(account);
-        accountRole.setActive(true);
-        this.accountRoleRepository.save(accountRole);
+        AccountRole accountRoleDb = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.DRIVER));
+        if (accountRoleDb != null) {
+            accountRoleDb.setActive(true);
+            accountRoleDb.setLockReason(null);
+            this.accountRoleRepository.save(accountRoleDb);
+        }else{
+            Account account = driver.getAccount();
+            Role role = this.roleRepository.findByName("DRIVER")
+                    .orElseThrow(() -> new RuntimeException("Role is invalid"));
+            AccountRole accountRole = new AccountRole();
+            accountRole.setRole(role);
+            accountRole.setAccount(account);
+            accountRole.setActive(true);
+            accountRole.setTimeCancel(null);
+            this.accountRoleRepository.save(accountRole);
+        }
 
     }
 
     @Override
     @Transactional
-    public void cancelDriver(int id) throws IdInvalidException {
+    public void cancelDriver(ReqCancelPartner reqCancelPartner) throws Exception {
+        int id = reqCancelPartner.getFormRegisterId();;
         Driver driver = this.driverRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Id is invalid"));
         driver.setApprovalStatus(ApprovalStatusEnum.PENDING_APPROVAL);
         this.driverRepository.save(driver);
         Role role = this.roleRepository.findByName("DRIVER")
                 .orElseThrow(() -> new RuntimeException("Role is invalid"));
-        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(driver.getAccount(), role);
-        log.info("Deleted account " + driver.getAccount().getEmail() + "with role " + role.getName());
+        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(reqCancelPartner.getPartnerType()));
+        accountRole.setActive(false);
+        accountRole.setLockReason(reqCancelPartner.getReasonCancel());
+
+        this.accountRoleRepository.save(accountRole);
+        Context context = new Context();
+        context.setVariable("cssContent", this.emailService.loadCssFromFile());
+//        context.setVariable("partnerType", reqCancelPartner.getPartnerType());
+        context.setVariable("reasonCancel", reqCancelPartner.getReasonCancel());
+        this.emailService.sendEmail(driver.getAccount().getEmail(), "Thông báo dừng việc hợp tác đối tác", "cancel_partner", context);
+//        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(driver.getAccount(), role);
+//        log.info("Deleted account " + driver.getAccount().getEmail() + "with role " + role.getName());
 //        this.driverRepository.deleteById(id);
 
     }
@@ -238,6 +268,18 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public boolean isRegisteredDriver(int accountId) {
         return this.driverRepository.existsByAccount_Id(accountId);
+    }
+
+    @Override
+    public ResCancelDriver getInfoCancelDriver(int idDriver) throws IdInvalidException, ApplicationException {
+        Driver driver = this.driverRepository.findById(idDriver)
+                .orElseThrow(() -> new IdInvalidException("Driver ID is invalid"));
+        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.DRIVER));
+        ResCancelDriver resCancelDriver = new ResCancelDriver();
+        resCancelDriver.setLockReason(accountRole.getLockReason());
+        resCancelDriver.setTimeCancel(accountRole.getTimeCancel());
+
+        return resCancelDriver;
     }
 
     @Override

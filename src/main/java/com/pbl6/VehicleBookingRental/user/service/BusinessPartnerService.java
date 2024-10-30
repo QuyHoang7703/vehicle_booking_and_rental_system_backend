@@ -12,7 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 public interface BusinessPartnerService {
     boolean isRegistered(int accountId, PartnerTypeEnum partnerType);
-    ResBusinessPartnerDTO convertToResBusinessPartnerDTO(BusinessPartner businessPartner);
+    ResBusinessPartnerDTO convertToResBusinessPartnerDTO(BusinessPartner businessPartner) throws ApplicationException;
     void verifyRegister(int id, PartnerTypeEnum partnerType) throws IdInvalidException, ApplicationException;
     void cancelPartnership(ReqCancelPartner reqCancelPartner) throws Exception;
     ResultPaginationDTO handleFetchAllBusinessPartner(Specification<BusinessPartner> specification, Pageable pageable);

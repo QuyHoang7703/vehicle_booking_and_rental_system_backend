@@ -6,6 +6,9 @@ import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,8 +28,10 @@ public class ResBusinessPartnerDTO {
         private ApprovalStatusEnum approvalStatus;
         private String avatar;
         private AccountInfo accountInfo;
-        private String cancelReason;
     }
+    private String cancelReason;
+    private Instant timeCancel;
+
 //    private ResBankAccount resBankAccount;
 
 

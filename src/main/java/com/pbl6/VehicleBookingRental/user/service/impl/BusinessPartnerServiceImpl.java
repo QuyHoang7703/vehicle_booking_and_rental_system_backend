@@ -21,6 +21,7 @@ import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     private final BusinessPartnerRepository businessPartnerRepository;
     private final RoleRepository roleRepository;
@@ -45,7 +47,7 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     }
 
     @Override
-    public ResBusinessPartnerDTO convertToResBusinessPartnerDTO(BusinessPartner businessPartner) {
+    public ResBusinessPartnerDTO convertToResBusinessPartnerDTO(BusinessPartner businessPartner) throws ApplicationException {
         ResBusinessPartnerDTO resBusinessPartnerDTO = new ResBusinessPartnerDTO();
         ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = new ResBusinessPartnerDTO.BusinessPartnerInfo();
         businessPartnerInfo.setId(businessPartner.getId());
@@ -57,6 +59,15 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         businessPartnerInfo.setPartnerType(businessPartner.getPartnerType());
         businessPartnerInfo.setApprovalStatus(businessPartner.getApprovalStatus());
         businessPartnerInfo.setAvatar(businessPartner.getAvatar());
+//
+        AccountRole accountRole = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail()
+                , String.valueOf(businessPartner.getPartnerType()));
+        if(accountRole != null) {
+            resBusinessPartnerDTO.setCancelReason(accountRole.getLockReason());
+            resBusinessPartnerDTO.setTimeCancel(accountRole.getTimeCancel());
+
+        }
+        log.info("reason: " + resBusinessPartnerDTO.getCancelReason());
 
         AccountInfo accountInfo = new AccountInfo();
         accountInfo.setId(businessPartner.getAccount().getId());
@@ -127,7 +138,13 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         meta.setTotal(businessPartnerPage.getTotalElements());
         resultPaginationDTO.setMeta(meta);
 
-        List<ResBusinessPartnerDTO> resBusinessPartnerDTOList = businessPartnerPage.getContent().stream().map(item -> convertToResBusinessPartnerDTO(item))
+        List<ResBusinessPartnerDTO> resBusinessPartnerDTOList = businessPartnerPage.getContent().stream().map(item -> {
+                    try {
+                        return convertToResBusinessPartnerDTO(item);
+                    } catch (ApplicationException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .collect(Collectors.toList());
 
         resultPaginationDTO.setResult(resBusinessPartnerDTOList);

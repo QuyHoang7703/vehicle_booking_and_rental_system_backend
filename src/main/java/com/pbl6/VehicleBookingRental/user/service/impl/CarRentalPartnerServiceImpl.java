@@ -3,6 +3,7 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCarRentalPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
@@ -39,6 +40,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     private final BusinessPartnerService businessPartnerService;
     private final BankAccountService bankAccountService;
     private final ImageRepository imageRepository;
+    private final AccountRoleService accountRoleService;
     @Override
     public ResBusinessPartnerDTO registerBusPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
                                                     MultipartFile avatar,
@@ -106,14 +108,16 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
         ResBusinessPartnerDTO resBusinessPartnerDTO = this.businessPartnerService.convertToResBusinessPartnerDTO(carRentalPartner.getBusinessPartner());
         // Tạo BusinessPartnerInfo từ BusPartner
 //        ResBusinessPartnerDTO.BusinessPartnerInfo businessPartnerInfo = createBusinessPartnerInfo(carRentalPartner);
-
         // Tạo CarRentalPartner từ CarRentalPartner
         ResCarRentalPartnerDTO.CarRentalPartnerInfo carRentalPartnerInfo = createCarRentalPartnerInfo(carRentalPartner);
 
         // Tạo và trả về ResCarRentalPartnerDTO
         ResCarRentalPartnerDTO resCarRentalPartnerDTO = new ResCarRentalPartnerDTO();
+
         resCarRentalPartnerDTO.setBusinessInfo(resBusinessPartnerDTO.getBusinessInfo());
         resCarRentalPartnerDTO.setCarRentalPartnerInfo(carRentalPartnerInfo);
+        resCarRentalPartnerDTO.setCancelReason(resBusinessPartnerDTO.getCancelReason());
+        resCarRentalPartnerDTO.setTimeCancel(resBusinessPartnerDTO.getTimeCancel());
 
         return resCarRentalPartnerDTO;
     }
@@ -137,13 +141,6 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
         List<String> policiesList = Arrays.asList(policiesString.split("!"));
         carRentalPartnerInfo.setPolicies(policiesList);
 
-//        ResBankAccountDTO resBankAccount = new ResBankAccountDTO();
-//        Account account = carRentalPartner.getBusinessPartner().getAccount();
-//        BankAccount bankAccount = account.getBankAccounts().get(0);
-//        resBankAccount.setAccountNumber(bankAccount.getAccountNumber());
-//        resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
-//        resBankAccount.setBankName(bankAccount.getBankName());
-//        resBankAccount.setIdAccount(account.getId());
         ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(carRentalPartner.getBusinessPartner().getAccount().getId(), PartnerTypeEnum.CAR_RENTAL_PARTNER);
 
         carRentalPartnerInfo.setBankAccount(resBankAccount);

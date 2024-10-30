@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.List;
 @Data
 @AllArgsConstructor
@@ -22,4 +23,7 @@ public class ResCarRentalPartnerDTO extends ResBusinessPartnerDTO{
         private List<String> urlImages;
         private ResBankAccountDTO bankAccount;
     }
+
+//    private String cancelReason;
+//    private Instant timeCancel;
 }

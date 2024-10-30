@@ -3,7 +3,10 @@ package com.pbl6.VehicleBookingRental.user.service;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelDriver;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCancelDriver;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResGeneralDriverInfoDTO;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
@@ -24,10 +27,11 @@ public interface DriverService {
                                            List<MultipartFile> vehicleInsuranceImages) throws Exception;
     ResGeneralDriverInfoDTO convertToResGeneralDriverInfoDTO(Account account, Driver driver);
     ResDriverDTO convertoResDriverDTO(ResGeneralDriverInfoDTO resGeneralDriverInfoDTO, Driver driver) throws Exception;
-    void verifyDriver(int id) throws IdInvalidException;
-    void cancelDriver(int id) throws IdInvalidException;
+    void verifyDriver(int id) throws IdInvalidException, ApplicationException;
+    void cancelDriver(ReqCancelPartner reqCancelPartner) throws Exception;
     Driver getDriverById(int id) throws IdInvalidException;
     ResultPaginationDTO getAllDrivers(Specification<Driver> specification, Pageable pageable);
     boolean isRegisteredDriver(int accountId);
+    ResCancelDriver getInfoCancelDriver(int idDriver) throws IdInvalidException, ApplicationException;
 
 }

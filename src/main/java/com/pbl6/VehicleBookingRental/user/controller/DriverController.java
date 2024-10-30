@@ -3,7 +3,11 @@ package com.pbl6.VehicleBookingRental.user.controller;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelDriver;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResDeactivateAccount;
+import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCancelDriver;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResGeneralDriverInfoDTO;
 import com.pbl6.VehicleBookingRental.user.service.DriverService;
@@ -45,7 +49,7 @@ public class DriverController {
 
     @PutMapping("/drivers/verify")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseInfo<String>> verifyDriver(@RequestParam("formRegisterId") int id) throws IdInvalidException {
+    public ResponseEntity<ResponseInfo<String>> verifyDriver(@RequestParam("formRegisterId") int id) throws Exception {
         Driver driver = this.driverService.getDriverById(id);
         if(driver.getApprovalStatus() == ApprovalStatusEnum.APPROVED){
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã duyệt đơn đăng ký này rồi"));
@@ -56,12 +60,12 @@ public class DriverController {
 
     @DeleteMapping("/drivers/cancel-partnership")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseInfo<String>> cancelDriver(@RequestParam("formRegisterId") int id) throws IdInvalidException {
-        Driver driver = this.driverService.getDriverById(id);
+    public ResponseEntity<ResponseInfo<String>> cancelDriver(@RequestBody ReqCancelPartner reqCancelPartner) throws Exception {
+        Driver driver = this.driverService.getDriverById(reqCancelPartner.getFormRegisterId());
         if(driver.getApprovalStatus() == ApprovalStatusEnum.PENDING_APPROVAL){
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã hủy đơn đăng ký này rồi"));
         }
-        this.driverService.cancelDriver(id);
+        this.driverService.cancelDriver(reqCancelPartner);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác tài xế" ));
     }
 
@@ -79,4 +83,12 @@ public class DriverController {
         ResultPaginationDTO resultPaginationDTO = this.driverService.getAllDrivers(specification, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resultPaginationDTO);
     }
+
+    @GetMapping("drivers/reason-cancel-driver")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResCancelDriver> getCancelReasonDriver(@RequestParam("idDriver") int idDriver) throws ApplicationException, IdInvalidException {
+//        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.getInfoDeactivatedAccount(email));
+        return ResponseEntity.status(HttpStatus.OK).body(this.driverService.getInfoCancelDriver(idDriver));
+    }
+
 }

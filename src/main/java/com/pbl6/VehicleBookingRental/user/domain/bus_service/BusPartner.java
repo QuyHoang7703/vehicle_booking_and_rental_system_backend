@@ -21,7 +21,7 @@ public class BusPartner {
     private int id ;
     private String description ;
     private String urlFanpage;
-    private String policy;
+//    private String policy;
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "business_partner_id")

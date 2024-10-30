@@ -108,8 +108,9 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         this.accountRoleRepository.save(accountRole);
         Context context = new Context();
         context.setVariable("cssContent", this.emailService.loadCssFromFile());
-        context.setVariable("partnerType", reqCancelPartner.getPartnerType());
+//        context.setVariable("partnerType", reqCancelPartner.getPartnerType());
         context.setVariable("reasonCancel", reqCancelPartner.getReasonCancel());
+        this.emailService.sendEmail(account.getEmail(), "Thông báo dừng việc hợp tác đối tác", "cancel_partner", context);
 
 //        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(account, role);
 //        this.accountRoleRepository.deleteAccountRolesByAccount_IdAndRole_Id(account.getId(), role.getId());

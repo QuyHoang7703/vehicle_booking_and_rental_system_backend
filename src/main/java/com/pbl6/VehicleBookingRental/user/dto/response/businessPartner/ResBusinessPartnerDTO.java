@@ -25,6 +25,7 @@ public class ResBusinessPartnerDTO {
         private ApprovalStatusEnum approvalStatus;
         private String avatar;
         private AccountInfo accountInfo;
+        private String cancelReason;
     }
 //    private ResBankAccount resBankAccount;
 

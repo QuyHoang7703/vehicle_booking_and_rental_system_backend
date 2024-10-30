@@ -12,9 +12,12 @@ import java.util.Optional;
 
 @Repository
 public interface AccountRoleRepository extends JpaRepository<AccountRole, Integer> {
-    List<AccountRole> findByAccountId(int id);
+    List<AccountRole> findByAccount_IdAndActive(int id, boolean active);
     @Transactional
     void deleteAccountRolesByAccountAndRole(Account account, Role role);
     Optional<AccountRole> findByAccount_IdAndRole_Id(int idAccount, int roleId);
+    @Transactional
+    void deleteAccountRolesByAccount_IdAndRole_Id(int accountId, int roleId);
+
 
 }

@@ -5,6 +5,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCarRentalPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.service.BusPartnerService;
@@ -13,6 +14,7 @@ import com.pbl6.VehicleBookingRental.user.service.CarRentalPartnerService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +47,7 @@ public class BusinessPartnerController {
 
     @PutMapping("business-partner/verify")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseInfo<String>> verifyRegister(@RequestParam("formRegisterId") int id, @RequestParam("partnerType") PartnerTypeEnum partnerType) throws IdInvalidException {
+    public ResponseEntity<ResponseInfo<String>> verifyRegister(@RequestParam("formRegisterId") int id, @RequestParam("partnerType") PartnerTypeEnum partnerType) throws Exception {
         BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(id, partnerType);
         if (businessPartner == null) {
             throw new IdInvalidException("Không tìm thấy đơn đăng ký đối tác (" + partnerType + ") với id: " + id );
@@ -59,15 +61,17 @@ public class BusinessPartnerController {
 
     @DeleteMapping("business-partner/cancel-partnership")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseInfo<String>> cancelPartnership(@RequestParam("formRegisterId") int id, @RequestParam("partnerType") PartnerTypeEnum partnerType) throws IdInvalidException {
-        BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(id, partnerType);
+    public ResponseEntity<ResponseInfo<String>> cancelPartnership(@RequestBody ReqCancelPartner reqCancelPartner) throws IdInvalidException, ApplicationException {
+        int formRegisterId = reqCancelPartner.getFormRegisterId();
+        PartnerTypeEnum partnerType = reqCancelPartner.getPartnerType();
+        BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(formRegisterId, partnerType);
         if (businessPartner == null) {
-            throw new IdInvalidException("Không tìm thấy đơn đăng ký đối tác (" + partnerType + ") với id: " + id );
+            throw new IdInvalidException("Không tìm thấy đơn đăng ký đối tác (" + partnerType + ") với id: " + formRegisterId );
         }
         if(businessPartner.getApprovalStatus()==ApprovalStatusEnum.PENDING_APPROVAL){
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã hủy đơn đăng ký này rồi"));
         }
-        this.businessPartnerService.cancelPartnership(id, partnerType);
+        this.businessPartnerService.cancelPartnership(reqCancelPartner);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác thành công: " + partnerType));
     }
 

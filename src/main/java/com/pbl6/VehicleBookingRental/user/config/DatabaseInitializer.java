@@ -80,6 +80,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             AccountRole accountRole = new AccountRole();
             accountRole.setAccount(accoundAdmin);
             accountRole.setRole(this.roleRepository.findByName("ADMIN").get());
+            accountRole.setActive(true);
             this.accountRoleRepository.save(accountRole);
             log.info(">>> Create account admin successfully");
         }

@@ -192,6 +192,7 @@ public class DriverServiceImpl implements DriverService {
         AccountRole accountRole = new AccountRole();
         accountRole.setRole(role);
         accountRole.setAccount(account);
+        accountRole.setActive(true);
         this.accountRoleRepository.save(accountRole);
 
     }
@@ -208,7 +209,6 @@ public class DriverServiceImpl implements DriverService {
         this.accountRoleRepository.deleteAccountRolesByAccountAndRole(driver.getAccount(), role);
         log.info("Deleted account " + driver.getAccount().getEmail() + "with role " + role.getName());
 //        this.driverRepository.deleteById(id);
-
 
     }
 

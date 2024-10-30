@@ -7,13 +7,17 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
+import com.pbl6.VehicleBookingRental.user.service.AccountRoleService;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
+import com.pbl6.VehicleBookingRental.user.service.EmailService;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.context.Context;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +36,8 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     private final BusinessPartnerRepository businessPartnerRepository;
     private final RoleRepository roleRepository;
     private final AccountRoleRepository accountRoleRepository;
+    private final AccountRoleService accountRoleService;
+    private final EmailService emailService;
 
     @Override
     public boolean isRegistered(int accountId, PartnerTypeEnum partnerType) {
@@ -61,33 +68,51 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     }
 
     @Override
-    public void verifyRegister(int id, PartnerTypeEnum partnerType) throws IdInvalidException {
+    public void verifyRegister(int id, PartnerTypeEnum partnerType) throws IdInvalidException, ApplicationException {
+        // Change approval status in business partner form
         BusinessPartner businessPartner = this.businessPartnerRepository.findById(id)
                 .orElseThrow(()-> new IdInvalidException("Id is invalid"));
         businessPartner.setApprovalStatus(ApprovalStatusEnum.APPROVED);
         this.businessPartnerRepository.save(businessPartner);
-        Account account = businessPartner.getAccount();
-        Role role = this.roleRepository.findByName(String.valueOf(partnerType))
-                .orElseThrow(()-> new IdInvalidException("Role is invalid"));
-        AccountRole accountRole = new AccountRole();
-        accountRole.setRole(role);
-        accountRole.setAccount(account);
-        this.accountRoleRepository.save(accountRole);
+
+        // Update status active in AccountRole, check accountRole is available?
+        AccountRole accountRoleDb = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail(), String.valueOf(partnerType));
+        if (accountRoleDb != null) {
+            accountRoleDb.setActive(true);
+            accountRoleDb.setLockReason(null);
+            this.accountRoleRepository.save(accountRoleDb);
+        }else{
+            Account account = businessPartner.getAccount();
+            Role role = this.roleRepository.findByName(String.valueOf(partnerType))
+                    .orElseThrow(()-> new IdInvalidException("Role is invalid"));
+            AccountRole accountRole = new AccountRole();
+            accountRole.setRole(role);
+            accountRole.setAccount(account);
+            accountRole.setActive(true);
+            this.accountRoleRepository.save(accountRole);
+        }
     }
 
     @Override
     @Transactional
-    public void cancelPartnership(int id, PartnerTypeEnum partnerType) throws IdInvalidException {
-        BusinessPartner businessPartner = this.businessPartnerRepository.findById(id)
+    public void cancelPartnership(ReqCancelPartner reqCancelPartner) throws Exception {
+        BusinessPartner businessPartner = this.businessPartnerRepository.findById(reqCancelPartner.getFormRegisterId())
                 .orElseThrow(()-> new IdInvalidException("Id is invalid"));
         businessPartner.setApprovalStatus(ApprovalStatusEnum.PENDING_APPROVAL);
         this.businessPartnerRepository.save(businessPartner);
-        Account account = businessPartner.getAccount();
-        List<AccountRole> accountRole = account.getAccountRole();
-        Role role = this.roleRepository.findByName(String.valueOf(partnerType))
-                .orElseThrow(()-> new IdInvalidException("Role is invalid"));
 
-        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(account, role);
+        Account account = businessPartner.getAccount();
+        AccountRole accountRole = this.accountRoleService.getAccountRole(account.getEmail(), String.valueOf(reqCancelPartner.getPartnerType()));
+        accountRole.setActive(false);
+        accountRole.setLockReason(reqCancelPartner.getReasonCancel());
+        this.accountRoleRepository.save(accountRole);
+        Context context = new Context();
+        context.setVariable("cssContent", this.emailService.loadCssFromFile());
+        context.setVariable("partnerType", reqCancelPartner.getPartnerType());
+        context.setVariable("reasonCancel", reqCancelPartner.getReasonCancel());
+
+//        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(account, role);
+//        this.accountRoleRepository.deleteAccountRolesByAccount_IdAndRole_Id(account.getId(), role.getId());
     }
 
     @Override

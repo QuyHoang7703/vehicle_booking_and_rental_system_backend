@@ -2,10 +2,7 @@ package com.pbl6.VehicleBookingRental.user.domain.account;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.Date;
@@ -40,7 +37,7 @@ public class Role {
 
         this.updateAt = Instant.now();
     }
-
+    @ToString.Exclude
     @OneToMany(mappedBy = "role", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<AccountRole> accountRole;

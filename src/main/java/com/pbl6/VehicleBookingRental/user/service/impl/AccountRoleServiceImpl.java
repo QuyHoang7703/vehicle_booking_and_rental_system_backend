@@ -25,11 +25,11 @@ public class AccountRoleServiceImpl implements AccountRoleService {
             throw new ApplicationException("Account not found");
         }
 
-        Role role = this.roleRepository.findByName("USER")
+        Role role = this.roleRepository.findByName(roleName)
                 .orElseThrow(()-> new ApplicationException("Role not found"));
 
         AccountRole accountRole = this.accountRoleRepository.findByAccount_IdAndRole_Id(account.getId(), role.getId())
-                .orElseThrow(()-> new ApplicationException("Role not found"));
+                .orElse(null);
 
         return accountRole;
     }

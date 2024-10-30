@@ -13,6 +13,5 @@ import java.time.Instant;
 public class ReqDeactivateAccount {
     private int id;
     private String lockReason;
-    @JsonFormat()
-    private Instant deactivationDate;
+//    private Instant deactivationDate;
 }

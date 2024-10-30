@@ -30,7 +30,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public List<String> getNameRolesByAccountID(int idAccount) {
-        List<AccountRole> accountRoles = this.accountRoleRepository.findByAccountId(idAccount);
+        List<AccountRole> accountRoles = this.accountRoleRepository.findByAccount_IdAndActive(idAccount, true);
         List<String> roles = accountRoles.stream().map(accountRole -> accountRole.getRole().getName())
                                                     .collect(Collectors.toList());
         return roles;

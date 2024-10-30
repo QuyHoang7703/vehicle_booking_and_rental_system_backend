@@ -134,7 +134,7 @@ public class AccountController {
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.convertToResAccountInfoDTO(currentAccount));
     }
 
-    @GetMapping("/reason-lock-account")
+    @GetMapping("accounts/reason-lock-account")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResDeactivateAccount> getReasonLockAccount(@RequestParam("email") String email) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.getInfoDeactivatedAccount(email));

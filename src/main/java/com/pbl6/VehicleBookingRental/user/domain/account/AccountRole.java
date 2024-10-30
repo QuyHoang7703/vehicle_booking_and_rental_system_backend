@@ -28,6 +28,8 @@ public class AccountRole {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String lockReason;
 
+    private boolean active;
+
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;

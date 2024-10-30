@@ -32,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import java.util.Optional;
@@ -263,6 +264,7 @@ public class AccountService {
                 AccountRole accountRole = new AccountRole();
                 accountRole.setAccount(account);
                 accountRole.setRole(userRole);
+                accountRole.setActive(true);
                 this.accountRoleRepository.save(accountRole);
             }else {
                 throw new IdInvalidException("OTP is expired");
@@ -377,8 +379,10 @@ public class AccountService {
         AccountRole accountRole = this.accountRoleService.getAccountRole(email, "USER");
         ResDeactivateAccount res = new ResDeactivateAccount();
         res.setLockReason(accountRole.getLockReason());
+//        res.setTimeCancel(res.getTimeCancelFormatted(accountRole.getTimeCancel()));
         res.setTimeCancel(accountRole.getTimeCancel());
         return res;
+
 
     }
 

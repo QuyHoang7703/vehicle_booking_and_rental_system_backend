@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xác Nhận OTP</title>
+  <style th:text="${cssContent}"></style>
+
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Thông Báo Khóa Tài Khoản</h1>
+  </div>
+  <div class="body">
+    <p>Rất tiếc, tài khoản của bạn đã bị khóa do:</p>
+    <p th:text="${lockReason}">Lý do sẽ hiển thị ở đây</p>
+    <p>Vui lòng liên hệ với bộ phận hỗ trợ nếu bạn cần thêm thông tin.</p>
+  </div>
+  <div class="footer">
+    <p>Cần giúp đỡ? <a href="mailto:support@yourcompany.com">Liên hệ với đội hỗ trợ của chúng tôi</a></p>
+  </div>
+</div>
+</body>
+</html>

@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.businessPartner;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
@@ -12,6 +13,7 @@ import java.time.Instant;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResBusinessPartnerDTO {
     private BusinessPartnerInfo businessInfo;
     @Data

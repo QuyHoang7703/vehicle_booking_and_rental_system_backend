@@ -62,7 +62,6 @@ public class BusTypeServiceImpl implements BusTypeService {
     }
 
 
-
     @Override
     public void deleteById(int id) throws IdInvalidException, ApplicationException {
         BusType busTypeDb = this.busTypeRepository.findById(id)

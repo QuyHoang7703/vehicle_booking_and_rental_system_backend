@@ -1,15 +1,5 @@
 package com.pbl6.VehicleBookingRental.user.domain.bus_service;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.util.List;
@@ -22,9 +12,10 @@ import java.time.Instant;
 public class Bus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private int id;
     private String licensePlate;
     private Instant createAt;
+    private Instant updateAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name="bus_utilities", joinColumns = @JoinColumn(name = "bus_id"), inverseJoinColumns = @JoinColumn(name ="utility_id"))
@@ -34,10 +25,18 @@ public class Bus {
     @JoinColumn(name = "bus_type_id")
     private BusType busType;
 
+    @ManyToOne
+    @JoinColumn(name="bus_partner_id")
+    private BusPartner busPartner;
+
     @PrePersist
     public void handleBeforeCreated(){
-
         this.createAt = Instant.now();
+    }
+
+    @PreUpdate
+    public void handleBeforeUpdated(){
+        this.updateAt = Instant.now();
     }
 
 }

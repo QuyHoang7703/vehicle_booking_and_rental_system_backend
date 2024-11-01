@@ -122,6 +122,12 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         return resBusPartnerDTO;
     }
 
+    @Override
+    public BusPartner findById(int id) throws IdInvalidException {
+        return this.busPartnerRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidException("BusPartner not found"));
+    }
+
 
     private ResBusPartnerDTO.BusPartnerInfo createBusPartnerInfo(BusPartner busPartner) throws Exception {
         ResBusPartnerDTO.BusPartnerInfo busPartnerInfo = new ResBusPartnerDTO.BusPartnerInfo();

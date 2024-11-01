@@ -136,6 +136,7 @@ public class AuthController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         log.info("authentication: " + authentication);
+        log.info("principal: " + authentication.getPrincipal());
         log.info("Username from authentication: " + authentication.getName());
 
         ResLoginDTO res = this.accountService.convertToResLoginDTO(account);

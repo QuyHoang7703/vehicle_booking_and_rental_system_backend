@@ -13,4 +13,5 @@ import java.util.Optional;
 public interface BusinessPartnerRepository extends JpaRepository<BusinessPartner, Integer>, JpaSpecificationExecutor<BusinessPartner> {
     Optional<BusinessPartner> findByIdAndPartnerType(int id, PartnerTypeEnum partnerType);
     boolean existsByAccount_IdAndPartnerType(int accountId, PartnerTypeEnum partnerType);
+    Optional<BusinessPartner> findByAccount_IdAndPartnerType(int accountId, PartnerTypeEnum partnerType);
 }

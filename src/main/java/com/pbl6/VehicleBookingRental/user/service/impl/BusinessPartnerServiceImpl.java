@@ -13,8 +13,10 @@ import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleReposito
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.service.AccountRoleService;
+import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
 import com.pbl6.VehicleBookingRental.user.service.EmailService;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
@@ -40,6 +42,7 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     private final AccountRoleRepository accountRoleRepository;
     private final AccountRoleService accountRoleService;
     private final EmailService emailService;
+    private final AccountService accountService;
 
     @Override
     public boolean isRegistered(int accountId, PartnerTypeEnum partnerType) {
@@ -155,6 +158,18 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     public BusinessPartner fetchByIdAndPartnerType(int id, PartnerTypeEnum partnerType) {
         return this.businessPartnerRepository.findByIdAndPartnerType(id, partnerType).orElse(null);
     }
+
+    @Override
+    public BusinessPartner getCurrentBusinessPartner(PartnerTypeEnum partnerType) throws ApplicationException {
+        String username = SecurityUtil.getCurrentLogin().isPresent()
+                ? SecurityUtil.getCurrentLogin().get() : "";
+        Account account = this.accountService.handleGetAccountByUsername(username);
+        BusinessPartner businessPartner = this.businessPartnerRepository.findByAccount_IdAndPartnerType(account.getId(), partnerType)
+                .orElseThrow(() -> new ApplicationException("Business Partner don't exist"));
+        return businessPartner;
+    }
+
+
 
 
 }

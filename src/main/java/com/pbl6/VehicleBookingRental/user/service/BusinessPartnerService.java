@@ -17,5 +17,7 @@ public interface BusinessPartnerService {
     void cancelPartnership(ReqCancelPartner reqCancelPartner) throws Exception;
     ResultPaginationDTO handleFetchAllBusinessPartner(Specification<BusinessPartner> specification, Pageable pageable);
     BusinessPartner fetchByIdAndPartnerType(int id, PartnerTypeEnum partnerType);
+    BusinessPartner getCurrentBusinessPartner(PartnerTypeEnum partnerType) throws ApplicationException;
+
 
 }

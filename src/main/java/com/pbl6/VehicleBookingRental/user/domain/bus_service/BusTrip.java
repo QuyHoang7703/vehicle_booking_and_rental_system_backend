@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.Date;
 @Entity
 @Table(name = "bus_trip")
@@ -16,14 +17,12 @@ public class BusTrip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
     private String  departure_location ;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date departure_time ;
+    private Instant departure_time ;
     private String destination ;
     private double duration_journey ;
     private double price_ticket;
     private String status ;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date update_status_at ;
+    private Instant update_status_at ;
     private double discount_percentage;
     private int available_seat ;
     private double rating_total;

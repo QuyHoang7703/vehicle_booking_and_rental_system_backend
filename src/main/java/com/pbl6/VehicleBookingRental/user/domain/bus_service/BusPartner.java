@@ -26,6 +26,14 @@ public class BusPartner {
     @JsonIgnore
     @JoinColumn(name = "business_partner_id")
     private BusinessPartner businessPartner;
+
+    @OneToMany(mappedBy = "busPartner")
+    @JsonIgnore
+    private List<Bus> buses;
+
+    @OneToMany(mappedBy = "busPartner")
+    @JsonIgnore
+    private List<BusType> busTypes;
 //    @OneToMany
 //    private List<Images> images;
 

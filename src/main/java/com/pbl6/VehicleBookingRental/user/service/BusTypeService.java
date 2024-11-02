@@ -11,8 +11,8 @@ import org.springframework.data.jpa.domain.Specification;
 public interface BusTypeService {
     ResBusType convertToResBusType(BusType busType);
     ResBusType createBusType(BusType busType) throws Exception;
-    ResBusType updateBusType(BusType busType) throws IdInvalidException;
-    ResBusType findById(int id) throws IdInvalidException;
+    ResBusType updateBusType(BusType busType) throws IdInvalidException, ApplicationException;
+    ResBusType findById(int id) throws IdInvalidException, ApplicationException;
     void deleteById(int id) throws IdInvalidException, ApplicationException;
-    ResultPaginationDTO getAllBusTypes(Specification<BusType> specification, Pageable pageable);
+    ResultPaginationDTO getAllBusTypes(Specification<BusType> specification, Pageable pageable) throws ApplicationException;
 }

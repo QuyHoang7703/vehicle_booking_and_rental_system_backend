@@ -8,6 +8,7 @@ import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
 import com.pbl6.VehicleBookingRental.user.service.S3Service;
 import com.pbl6.VehicleBookingRental.user.service.UtilityService;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,12 @@ public class UtilitySeviceImpl implements UtilityService {
     private final UtilityRepository utilityRepository;
     private final BusinessPartnerService businessPartnerService;
     private final S3Service s3Service;
+
+    @Override
+    public Utility findById(int id) throws IdInvalidException {
+        return this.utilityRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidException("This utility is not available"));
+    }
 
     @Override
     public Utility createUtility(Utility reqUtility, MultipartFile utilityImage) throws ApplicationException {

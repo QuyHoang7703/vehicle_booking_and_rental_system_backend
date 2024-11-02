@@ -1,4 +1,5 @@
 package com.pbl6.VehicleBookingRental.user.domain.bus_service;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ public class Bus {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name="bus_utilities", joinColumns = @JoinColumn(name = "bus_id"), inverseJoinColumns = @JoinColumn(name ="utility_id"))
+    @JsonIgnore
     private List<Utility> utilities;
 
     @ManyToOne
@@ -27,6 +29,7 @@ public class Bus {
 
     @ManyToOne
     @JoinColumn(name="bus_partner_id")
+    @JsonIgnore
     private BusPartner busPartner;
 
     @PrePersist

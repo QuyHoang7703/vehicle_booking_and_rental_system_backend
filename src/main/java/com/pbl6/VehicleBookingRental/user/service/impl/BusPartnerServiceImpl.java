@@ -13,6 +13,7 @@ import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPar
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
@@ -63,7 +64,7 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         businessPartner.setPhoneOfRepresentative(reqBusPartnerDTO.getPhoneOfRepresentative());
         businessPartner.setAddress(reqBusPartnerDTO.getAddress());
         businessPartner.setPartnerType(reqBusPartnerDTO.getPartnerType());
-
+        businessPartner.setApprovalStatus(ApprovalStatusEnum.PENDING_APPROVAL);
         List<String> policies = reqBusPartnerDTO.getPolicies();
         String policiesAsString = String.join("!", policies);
         businessPartner.setPolicy(policiesAsString);

@@ -38,7 +38,7 @@ public class BusinessPartnerController {
     @ApiMessage("Get all register business partner forms")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResultPaginationDTO> getAllBusinessPartners(@Filter Specification<BusinessPartner> spec,
-                                                                      @PageableDefault(size = 10) Pageable pageable) {
+                                                                      @PageableDefault Pageable pageable) {
         ResultPaginationDTO resultPaginationDTO = this.businessPartnerService.handleFetchAllBusinessPartner(spec, pageable);
 
         
@@ -68,7 +68,7 @@ public class BusinessPartnerController {
         if (businessPartner == null) {
             throw new IdInvalidException("Không tìm thấy đơn đăng ký đối tác (" + partnerType + ") với id: " + formRegisterId );
         }
-        if(businessPartner.getApprovalStatus()==ApprovalStatusEnum.PENDING_APPROVAL){
+        if(businessPartner.getApprovalStatus()==ApprovalStatusEnum.CANCEL){
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã hủy đơn đăng ký này rồi"));
         }
         this.businessPartnerService.cancelPartnership(reqCancelPartner);

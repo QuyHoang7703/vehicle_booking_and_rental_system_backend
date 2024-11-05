@@ -31,7 +31,7 @@ public class BusTypeController {
     }
 
     @GetMapping("/bus-types")
-    public ResponseEntity<ResBusType> fetchById(@RequestParam("idBusType") int idBusType) throws IdInvalidException {
+    public ResponseEntity<ResBusType> fetchById(@RequestParam("idBusType") int idBusType) throws IdInvalidException, ApplicationException {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.busTypeService.findById(idBusType));
     }
 
@@ -48,14 +48,9 @@ public class BusTypeController {
     }
 
     @GetMapping("/bus-types-all")
-    public ResponseEntity<ResultPaginationDTO> fetchAllBusType(@Filter Specification<BusType> spec, Pageable pageable,
-                                                               @RequestParam("idBusPartner") int idBusPartner) throws ApplicationException {
-        Specification<BusType> newSpec = (root, query, criteriaBuilder) ->{
-            Join<BusType, BusPartner> busPartnerJoin = root.join("busPartner");
-            return criteriaBuilder.equal(busPartnerJoin.get("id"), idBusPartner);
-        };
-        Specification<BusType> finalSpec = spec.and(newSpec);
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTypeService.getAllBusTypes(finalSpec, pageable));
+    public ResponseEntity<ResultPaginationDTO> fetchAllBusType(@Filter Specification<BusType> spec, Pageable pageable) throws ApplicationException {
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTypeService.getAllBusTypes(spec, pageable));
     }
 
 }

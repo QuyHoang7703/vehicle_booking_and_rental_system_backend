@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.domain.bus_service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -19,10 +20,12 @@ public class Utility {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    private String name;
     private String description;
     private String image;
 
     @ManyToMany(mappedBy = "utilities", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Bus> buses;
 
 }

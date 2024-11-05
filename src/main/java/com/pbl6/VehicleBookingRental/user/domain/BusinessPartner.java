@@ -7,15 +7,14 @@ import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "business_partner")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class BusinessPartner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,8 +27,8 @@ public class BusinessPartner {
     private String address;
 //    @Enumerated(EnumType.STRING)
     private PartnerTypeEnum partnerType;
-    @Enumerated(EnumType.STRING)
-    private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
+//    @Enumerated(EnumType.STRING)
+    private ApprovalStatusEnum approvalStatus;
     @Column(columnDefinition = "MEDIUMTEXT")
     private String avatar;
     @Column(columnDefinition = "MEDIUMTEXT")
@@ -47,5 +46,6 @@ public class BusinessPartner {
     @OneToOne(mappedBy = "businessPartner",cascade = CascadeType.ALL)
     @JsonIgnore
     private BusPartner busPartner;
+
 
 }

@@ -24,6 +24,7 @@ public class BusType {
 
     @ManyToOne
     @JoinColumn(name="busPartnerId")
+    @JsonIgnore
     BusPartner busPartner;
 
 

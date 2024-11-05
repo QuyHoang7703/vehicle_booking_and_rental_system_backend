@@ -1,50 +1,93 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
-import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Utility;
+import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.repository.busPartner.UtilityRepository;
+import com.pbl6.VehicleBookingRental.user.repository.UtilityRepository;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
+import com.pbl6.VehicleBookingRental.user.service.S3Service;
 import com.pbl6.VehicleBookingRental.user.service.UtilityService;
-import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
-import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UtilitySeviceImpl implements UtilityService {
     private final UtilityRepository utilityRepository;
     private final BusinessPartnerService businessPartnerService;
+    private final S3Service s3Service;
 
     @Override
-    public Utility createUtility(Utility reqUtility) throws ApplicationException {
-        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
-//        reqUtility.set
-
-        return null;
+    public Utility findById(int id) throws IdInvalidException {
+        return this.utilityRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidException("This utility is not available"));
     }
 
     @Override
-    public Utility updateUtility(Utility reqUtility) {
-        return null;
+    public Utility createUtility(Utility reqUtility, MultipartFile utilityImage) throws ApplicationException {
+        Utility utilityDb = this.utilityRepository.findByName(reqUtility.getName())
+                .orElse(null);
+        if(utilityDb != null){
+            throw new ApplicationException("This utility already exists");
+        }
+        if(utilityImage != null){
+            String urlUtilityImage = this.s3Service.uploadFile(utilityImage);
+            reqUtility.setImage(urlUtilityImage);
+        }
+        return this.utilityRepository.save(reqUtility);
     }
 
     @Override
-    public void deleteUtility(int idUtility) {
+    public Utility updateUtility(Utility reqUtility, MultipartFile utilityImage) throws ApplicationException {
+        Utility utilityDb = this.getUtility(reqUtility.getId());
+        utilityDb.setName(reqUtility.getName());
+        utilityDb.setDescription(reqUtility.getDescription());
 
+        if(utilityImage != null){
+            if(utilityDb.getImage() != null){
+                this.s3Service.deleteFile(utilityDb.getImage());
+            }
+            String urlUtilityImage = this.s3Service.uploadFile(utilityImage);
+            utilityDb.setImage(urlUtilityImage);
+        }
+        return this.utilityRepository.save(utilityDb);
     }
 
     @Override
-    public Utility getUtility(int idUtility) {
-        return null;
+    public void deleteUtility(int idUtility) throws ApplicationException {
+        Utility utilityDb = this.getUtility(idUtility);
+        this.s3Service.deleteFile(utilityDb.getImage());
+
+        this.utilityRepository.delete(utilityDb);
+    }
+
+    @Override
+    public Utility getUtility(int idUtility) throws ApplicationException {
+        return this.utilityRepository.findById(idUtility)
+                .orElseThrow(() -> new ApplicationException("Id of utility not found"));
     }
 
     @Override
     public ResultPaginationDTO getAllUtility(Specification<Utility> specification, Pageable pageable) {
-        return null;
+        Page<Utility> utilityPage = utilityRepository.findAll(specification, pageable);
+        ResultPaginationDTO res = new ResultPaginationDTO();
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(utilityPage.getTotalPages());
+        meta.setTotal(utilityPage.getTotalElements());
+
+        List<Utility> utilityList = utilityPage.getContent();
+        res.setResult(utilityList);
+
+        return res;
     }
 }

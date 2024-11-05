@@ -9,5 +9,8 @@ public enum ImageOfObjectEnum {
     DRIVER_LICENSE,
     VEHICLE_REGISTRATION,
     VEHICLE_IMAGES,
-    VEHICLE_INSURANCE
+    VEHICLE_INSURANCE,
+
+    // BUS PARTNER
+    BUS
 }

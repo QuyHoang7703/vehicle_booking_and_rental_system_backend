@@ -112,7 +112,7 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     public void cancelPartnership(ReqCancelPartner reqCancelPartner) throws Exception {
         BusinessPartner businessPartner = this.businessPartnerRepository.findById(reqCancelPartner.getFormRegisterId())
                 .orElseThrow(()-> new IdInvalidException("Id is invalid"));
-        businessPartner.setApprovalStatus(ApprovalStatusEnum.PENDING_APPROVAL);
+        businessPartner.setApprovalStatus(ApprovalStatusEnum.CANCEL);
         this.businessPartnerRepository.save(businessPartner);
 
         Account account = businessPartner.getAccount();

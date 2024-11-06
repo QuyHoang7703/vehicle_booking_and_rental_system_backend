@@ -15,12 +15,11 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // cho phép các URL nào có thể kết nối tới backend
-//        configuration.setAllowedOrigins(
-//                Arrays.asList("http://localhost:3000", "http://localhost:4173",
-//                        "http://localhost:5173", "https://vehicle-booking-and-rental-system.vercel.app",
-//                        "http://localhost:51"));
         configuration.setAllowedOrigins(
-                Arrays.asList("*"));
+                Arrays.asList("http://localhost:3000", "http://localhost:4173",
+                        "http://localhost:5173", "https://vehicle-booking-and-rental-system.vercel.app"));
+//        configuration.setAllowedOrigins(
+//                Arrays.asList("*"));
 
         // các method nào đc kết nối
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));

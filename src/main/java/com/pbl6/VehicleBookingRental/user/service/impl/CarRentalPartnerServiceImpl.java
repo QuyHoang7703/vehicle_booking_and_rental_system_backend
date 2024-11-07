@@ -14,6 +14,7 @@ import com.pbl6.VehicleBookingRental.user.repository.businessPartner.CarRentalPa
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
@@ -64,6 +65,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
         businessPartner.setPhoneOfRepresentative(reqCarRentalPartnerDTO.getPhoneOfRepresentative());
         businessPartner.setAddress(reqCarRentalPartnerDTO.getAddress());
         businessPartner.setPartnerType(reqCarRentalPartnerDTO.getPartnerType());
+        businessPartner.setApprovalStatus(ApprovalStatusEnum.PENDING_APPROVAL);
         businessPartner.setAccount(account);
         List<String> policies = reqCarRentalPartnerDTO.getPolicies();
         String policiesAsString = String.join("!", policies);

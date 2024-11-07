@@ -34,7 +34,7 @@ public class BusPartner {
     @OneToMany(mappedBy = "busPartner")
     @JsonIgnore
     private List<BusType> busTypes;
-//    @OneToMany
-//    private List<Images> images;
+
+
 
 }

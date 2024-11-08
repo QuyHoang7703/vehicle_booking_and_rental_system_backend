@@ -18,11 +18,13 @@ public class VehicleRentalOrderController {
 
     @Autowired
     private VehicleRentalOrdersInterface vehicleRentalOrdersInterface;
+
     @PostMapping("/ordering")
     public ResponseEntity<?> orderingVehicleService(@RequestBody VehicleRentalOrdersDTO vehicleRentalOrdersDTO){
         RestResponse<String> restResponse = new RestResponse<>();
         restResponse.setStatusCode(200);
         boolean result = vehicleRentalOrdersInterface.save_order(vehicleRentalOrdersDTO);
+        vehicleRentalOrdersInterface.update_amount(vehicleRentalOrdersDTO.getVehicle_rental_service_id(),vehicleRentalOrdersDTO.getAmount());
         if(result){
             restResponse.setMessage("Ordering successfully !");
         }else{

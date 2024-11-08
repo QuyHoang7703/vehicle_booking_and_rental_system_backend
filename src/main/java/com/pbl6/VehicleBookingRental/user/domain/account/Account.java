@@ -14,6 +14,7 @@ import com.pbl6.VehicleBookingRental.user.domain.Voucher.VoucherAccount;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Booking;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
+import com.pbl6.VehicleBookingRental.user.domain.chat.ConversationAccount;
 import com.pbl6.VehicleBookingRental.user.domain.notification.NotificationAccount;
 
 import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
@@ -103,4 +104,6 @@ public class Account {
 
     @OneToMany(mappedBy = "account",cascade = CascadeType.ALL)
     private List<CarRentalOrders> carRentalOrdersList;
+    @OneToMany(mappedBy = "account",cascade = CascadeType.ALL)
+    private List<ConversationAccount> conversationAccounts;
 }

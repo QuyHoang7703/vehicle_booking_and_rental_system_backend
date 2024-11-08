@@ -18,10 +18,11 @@ public class PickupLocationServiceImpl implements PickupLocationService {
     }
 
     @Override
-    public PickupLocation updatePickupLocation(int pickupLocationId) throws IdInvalidException {
-        PickupLocation pickupLocation = this.pickupLocationRepository.findById(pickupLocationId)
+    public PickupLocation updatePickupLocation(PickupLocation pickupLocation) throws IdInvalidException {
+        PickupLocation pickupLocationDb = this.pickupLocationRepository.findById(pickupLocation.getId())
                 .orElseThrow(() -> new IdInvalidException("Pickup location not found"));
-        return this.pickupLocationRepository.save(pickupLocation);
+        pickupLocationDb.setName(pickupLocation.getName());
+        return this.pickupLocationRepository.save(pickupLocationDb);
     }
 
     @Override

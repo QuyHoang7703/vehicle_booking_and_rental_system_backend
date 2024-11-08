@@ -221,7 +221,7 @@ public class DriverServiceImpl implements DriverService {
         int id = reqCancelPartner.getFormRegisterId();;
         Driver driver = this.driverRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Id is invalid"));
-        driver.setApprovalStatus(ApprovalStatusEnum.PENDING_APPROVAL);
+        driver.setApprovalStatus(ApprovalStatusEnum.CANCEL);
         this.driverRepository.save(driver);
         Role role = this.roleRepository.findByName("DRIVER")
                 .orElseThrow(() -> new RuntimeException("Role is invalid"));

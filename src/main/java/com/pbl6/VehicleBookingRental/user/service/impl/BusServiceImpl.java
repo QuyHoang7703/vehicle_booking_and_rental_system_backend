@@ -8,7 +8,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusType;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Utility;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBus;
+import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBus;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetail;
 import com.pbl6.VehicleBookingRental.user.repository.UtilityRepository;
@@ -42,7 +42,7 @@ public class BusServiceImpl implements BusService {
     private final S3Service s3Service;
 
     @Override
-    public Bus createBus(ReqBus reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException {
+    public Bus createBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException {
         if(this.busRepository.existsByLicensePlate(reqBus.getLicensePlate())) {
             throw new ApplicationException("Bus is available");
         }
@@ -73,7 +73,7 @@ public class BusServiceImpl implements BusService {
     }
 
     @Override
-    public Bus updateBus(ReqBus reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException {
+    public Bus updateBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException {
         Bus busDb = this.busRepository.findById(reqBus.getId())
                 .orElseThrow(() -> new IdInvalidException("Bus not found"));
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);

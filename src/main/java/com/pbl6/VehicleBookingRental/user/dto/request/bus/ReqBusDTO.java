@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReqBus {
+public class ReqBusDTO {
     private int id;
     private String licensePlate;
     private List<Utility> utilities;

@@ -24,8 +24,8 @@ public class DropOffLocationController {
     }
 
     @PutMapping("/dropOffLocations")
-    public ResponseEntity<DropOffLocation> updateDropOffLocation(@RequestParam("dropOffLocationId") int dropOffLocationId) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.dropOffLocaionSevice.updateDropOffLocation(dropOffLocationId));
+    public ResponseEntity<DropOffLocation> updateDropOffLocation(@RequestBody DropOffLocation dropOffLocation) throws IdInvalidException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.dropOffLocaionSevice.updateDropOffLocation(dropOffLocation));
     }
 
     @DeleteMapping("/dropOffLocations")

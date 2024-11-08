@@ -5,6 +5,6 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 
 public interface DropOffLocaionSevice {
     DropOffLocation createDropOffLocation(DropOffLocation dropOffLocation);
-    DropOffLocation updateDropOffLocation(int dropOffLocationId) throws IdInvalidException;
+    DropOffLocation updateDropOffLocation(DropOffLocation dropOffLocation) throws IdInvalidException;
     void deleteDropOffLocation(int dropOffLocationId) throws IdInvalidException;
 }

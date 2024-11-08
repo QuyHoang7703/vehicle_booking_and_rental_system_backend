@@ -23,8 +23,8 @@ public class PickupLocationController {
     }
 
     @PutMapping("/pickupLocations")
-    public ResponseEntity<PickupLocation> updatePickupLocation(@RequestParam("pickupLocationId") int pickupLocationId) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.pickupLocationService.updatePickupLocation(pickupLocationId));
+    public ResponseEntity<PickupLocation> updatePickupLocation(@RequestBody PickupLocation pickupLocation) throws IdInvalidException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.pickupLocationService.updatePickupLocation(pickupLocation));
     }
 
     @DeleteMapping("/pickupLocations")

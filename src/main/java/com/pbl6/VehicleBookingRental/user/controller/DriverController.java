@@ -60,7 +60,7 @@ public class DriverController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResponseInfo<String>> cancelDriver(@RequestBody ReqCancelPartner reqCancelPartner) throws Exception {
         Driver driver = this.driverService.getDriverById(reqCancelPartner.getFormRegisterId());
-        if(driver.getApprovalStatus() == ApprovalStatusEnum.PENDING_APPROVAL){
+        if(driver.getApprovalStatus() == ApprovalStatusEnum.CANCEL){
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã hủy đơn đăng ký này rồi"));
         }
         this.driverService.cancelDriver(reqCancelPartner);

@@ -18,10 +18,11 @@ public class DropOffLocationServiceImpl implements DropOffLocaionSevice {
     }
 
     @Override
-    public DropOffLocation updateDropOffLocation(int dropOffLocationId) throws IdInvalidException {
-        DropOffLocation pickupLocation = this.dropOffLocationRepository.findById(dropOffLocationId)
+    public DropOffLocation updateDropOffLocation(DropOffLocation dropOffLocation) throws IdInvalidException {
+        DropOffLocation dropOffLocationDb = this.dropOffLocationRepository.findById(dropOffLocation.getId())
                 .orElseThrow(() -> new IdInvalidException("Drop off location not found"));
-        return this.dropOffLocationRepository.save(pickupLocation);
+        dropOffLocationDb.setName(dropOffLocation.getName());
+        return this.dropOffLocationRepository.save(dropOffLocationDb);
 
     }
 

@@ -29,9 +29,9 @@ public class BusPartnerController {
 
     @PostMapping(value ="/bus-partners")
     public ResponseEntity<ResBusinessPartnerDTO> registerBusinessPartner(@RequestPart("businessPartnerInfo") ReqBusPartnerDTO reqBusPartnerDTO,
-                                                                         @RequestParam(value = "avatar", required = false) MultipartFile avatar,
-                                                                         @RequestParam(value = "businessLicense", required = false) List<MultipartFile> licenses,
-                                                                         @RequestParam(value = "businessImages", required = false) List<MultipartFile> images) throws Exception {
+                                                                         @RequestParam(value = "avatar") MultipartFile avatar,
+                                                                         @RequestParam(value = "businessLicense") List<MultipartFile> licenses,
+                                                                         @RequestParam(value = "businessImages") List<MultipartFile> images) throws Exception {
 
         ResBusinessPartnerDTO resBusinessPartnerDTO = this.busPartnerService.registerBusPartner(reqBusPartnerDTO, avatar, licenses, images);
 

@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -24,6 +25,8 @@ public class JacksonConfig {
 
         objectMapper.registerModule(new JavaTimeModule()); // Đăng ký module cho Java 8 Time API
         objectMapper.registerModule(module);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
 
         return objectMapper;
     }

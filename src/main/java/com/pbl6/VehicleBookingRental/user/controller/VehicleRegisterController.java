@@ -26,13 +26,13 @@ public class VehicleRegisterController {
                                                      @RequestParam("status")String status,
                                                      @RequestParam("car_rental_partner_id") int car_rental_partner_id)
     {
-        System.out.println(service_type+status);
+
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.get_all_by_service_type(service_type,status,car_rental_partner_id));
     }
     @PostMapping("/register")
     public ResponseEntity<?> register_vehicle(
             @RequestBody VehicleRegister vehicleRegister,
-                @RequestParam("service_type") int service_type,
+            @RequestParam("service_type") int service_type,
             @RequestParam("no_driver_price") double no_driver_price,
             @RequestParam("driver_price") double driver_price,
             @RequestParam("vehicle_type_id") int vehicle_type_id,
@@ -117,7 +117,7 @@ public class VehicleRegisterController {
             @RequestParam(required = false) String vehicle_type
     )
     {
-        System.out.println(location+manufacturer+vehicle_type);
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.filter_by_vehicle_attribute(location,manufacturer,vehicle_type));
     }
+
 }

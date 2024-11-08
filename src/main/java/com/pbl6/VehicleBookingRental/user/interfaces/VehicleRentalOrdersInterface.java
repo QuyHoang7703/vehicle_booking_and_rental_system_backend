@@ -5,5 +5,6 @@ import org.springframework.stereotype.Repository;
 
 public interface VehicleRentalOrdersInterface {
     public boolean save_order(VehicleRentalOrdersDTO vehicleRentalOrdersDTO);
+    public boolean update_amount(int vehicle_rental_service_id, int amount);
 
 }

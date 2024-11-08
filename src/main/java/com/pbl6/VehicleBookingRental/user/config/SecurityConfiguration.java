@@ -84,7 +84,7 @@ public class SecurityConfiguration {
                 // .antMatcher("/secured/**")
                 .authorizeHttpRequests(
                         authz -> authz
-                                .requestMatchers("/", "/api/v1/auth/**", "/identity/auth/outbound/authentication").permitAll()
+                                .requestMatchers("/", "/api/v1/auth/**", "/identity/auth/outbound/authentication","/ws/**").permitAll()
                                 .requestMatchers("/api/v1/auth/logout").authenticated()
                                 .anyRequest().authenticated()
                                 )

@@ -26,7 +26,7 @@ public class CarRentalOrders {
     private String status;
     private double voucher_value;
     private double voucher_percentage;
-    private double amount;
+    private int amount;
     private double car_deposit;
     private double reservation_fee;
     private double price;
@@ -45,6 +45,6 @@ public class CarRentalOrders {
     @JsonIgnore
     @JoinColumn(name ="account_id")
     private Account account;
-
+    
 
 }

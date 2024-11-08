@@ -32,7 +32,7 @@ public class VehicleRegister {
     private String ulties;
     private String policy;
     private double rating_total;
-    private double amount;
+    private int amount;
 
 
     @OneToMany(mappedBy = "vehicleRegister", cascade = CascadeType.ALL)

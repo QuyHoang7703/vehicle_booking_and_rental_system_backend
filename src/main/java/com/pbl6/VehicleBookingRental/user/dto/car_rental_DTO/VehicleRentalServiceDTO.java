@@ -21,7 +21,7 @@ public class VehicleRentalServiceDTO {
     private String ulties;
     private String policy;
     private double rating_total;
-    private double amount;
+    private int amount;
     private int vehicle_register_id;
     private int vehicle_type_id;
 }

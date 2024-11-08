@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.domain.notification;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,7 +23,8 @@ public class Notification {
 
     @Column(length = 255)
     private String title;
-
+    @Column(name="type")
+    private NotificationTypeEnum type;
     @Column(columnDefinition = "TEXT")
     private String message;
 

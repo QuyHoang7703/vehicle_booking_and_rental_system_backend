@@ -1,14 +1,24 @@
 package com.pbl6.VehicleBookingRental.user.controller;
 
+import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
+import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResDriverDTO;
-import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
+import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCancelDriver;
+import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResGeneralDriverInfoDTO;
 import com.pbl6.VehicleBookingRental.user.service.DriverService;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
+import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,22 +31,62 @@ public class DriverController {
     private final DriverService driverService;
 
     @PostMapping("/drivers")
-    public ResponseEntity<ResDriverDTO> registerDriver(@RequestPart("driverInfo") ReqDriveDTO driveDTO,
-                                                 @RequestParam("citizenImages") List<MultipartFile> citizenImages,
-                                                 @RequestParam("driverImages") List<MultipartFile> driverImages) {
-        ResDriverDTO resDriverDTO = driverService.registerDriver(driveDTO, citizenImages, driverImages);
-        return ResponseEntity.status(HttpStatus.OK).body(resDriverDTO);
+    public ResponseEntity<ResGeneralDriverInfoDTO> registerDriver(@RequestPart("driverInfo") ReqDriveDTO reqDriveDTO,
+                                                                  @RequestParam("avatarOfDriver") MultipartFile avatarOfDriver,
+                                                                  @RequestParam("citizenImages") List<MultipartFile> citizenImages,
+                                                                  @RequestParam("driverLicenseImages") List<MultipartFile> driverLicenseImages,
+                                                                  @RequestParam("vehicleRegistration") List<MultipartFile> vehicleRegistration,
+                                                                  @RequestParam("vehicleImages") List<MultipartFile> vehicleImages,
+                                                                  @RequestParam("vehicleInsurance") List<MultipartFile> vehicleInsurance) throws Exception {
+        ResGeneralDriverInfoDTO driverInfo = driverService.registerDriver(reqDriveDTO
+                , avatarOfDriver, citizenImages
+                , driverLicenseImages, vehicleRegistration
+                , vehicleImages, vehicleInsurance);
+        return ResponseEntity.status(HttpStatus.OK).body(driverInfo);
     }
 
-    @PutMapping("/drivers/verify/{id}")
-    public ResponseEntity<ResponseInfo<String>> verifyDriver(@PathVariable int id) throws IdInValidException {
+    @PutMapping("/drivers/verify")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseInfo<String>> verifyDriver(@RequestParam("formRegisterId") int id) throws Exception {
+        Driver driver = this.driverService.getDriverById(id);
+        if(driver.getApprovalStatus() == ApprovalStatusEnum.APPROVED){
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã duyệt đơn đăng ký này rồi"));
+        }
         this.driverService.verifyDriver(id);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã đăng ký thành công đối tác tài xế" ));
     }
 
-    @DeleteMapping("/drivers/cancel-partnership/{id}")
-    public ResponseEntity<ResponseInfo<String>> cancelDriver(@PathVariable int id) throws IdInValidException {
-        this.driverService.cancelDriver(id);
+    @DeleteMapping("/drivers/cancel-partnership")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseInfo<String>> cancelDriver(@RequestBody ReqCancelPartner reqCancelPartner) throws Exception {
+        Driver driver = this.driverService.getDriverById(reqCancelPartner.getFormRegisterId());
+        if(driver.getApprovalStatus() == ApprovalStatusEnum.PENDING_APPROVAL){
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã hủy đơn đăng ký này rồi"));
+        }
+        this.driverService.cancelDriver(reqCancelPartner);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác tài xế" ));
     }
+
+    @GetMapping("/drivers/detail")
+    public ResponseEntity<ResDriverDTO> getDriverRegisterForm(@RequestParam("formRegisterId") int formRegisterId) throws Exception {
+        Driver driver = this.driverService.getDriverById(formRegisterId);
+        ResGeneralDriverInfoDTO resGeneralDriverInfoDTO = this.driverService.convertToResGeneralDriverInfoDTO(driver.getAccount(), driver);
+        ResDriverDTO resDriverDTO = this.driverService.convertoResDriverDTO(resGeneralDriverInfoDTO, driver);
+        return ResponseEntity.status(HttpStatus.OK).body(resDriverDTO);
+    }
+
+    @GetMapping("/drivers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResultPaginationDTO> fetchAllDrivers(@Filter Specification<Driver> specification, Pageable pageable) {
+        ResultPaginationDTO resultPaginationDTO = this.driverService.getAllDrivers(specification, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(resultPaginationDTO);
+    }
+
+    @GetMapping("drivers/reason-cancel-driver")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResCancelDriver> getCancelReasonDriver(@RequestParam("idDriver") int idDriver) throws ApplicationException, IdInvalidException {
+//        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.getInfoDeactivatedAccount(email));
+        return ResponseEntity.status(HttpStatus.OK).body(this.driverService.getInfoCancelDriver(idDriver));
+    }
+
 }

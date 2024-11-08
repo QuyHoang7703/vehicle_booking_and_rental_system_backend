@@ -1,13 +1,19 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.businessPartner;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResBusinessPartnerDTO {
     private BusinessPartnerInfo businessInfo;
     @Data
@@ -23,5 +29,12 @@ public class ResBusinessPartnerDTO {
         private PartnerTypeEnum partnerType;
         private ApprovalStatusEnum approvalStatus;
         private String avatar;
+        private AccountInfo accountInfo;
     }
+    private String cancelReason;
+    private Instant timeCancel;
+
+//    private ResBankAccount resBankAccount;
+
+
 }

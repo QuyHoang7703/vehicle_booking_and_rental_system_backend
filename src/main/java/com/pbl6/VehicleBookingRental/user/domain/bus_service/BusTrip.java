@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.Date;
+import java.util.List;
+
 @Entity
 @Table(name = "bus_trip")
 @AllArgsConstructor
@@ -15,17 +18,32 @@ public class BusTrip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
-    private String  departure_location ;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date departure_time ;
+    private String  departureLocation ;
+    private Instant departureTime ;
     private String destination ;
-    private double duration_journey ;
-    private double price_ticket;
-    private String status ;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date update_status_at ;
-    private double discount_percentage;
-    private int available_seat ;
-    private double rating_total;
+    private double durationJourney ;
+    private double priceTicket;
+//    private String status ;
+    private Instant updateAt ;
+    private double discountPercentage;
+    private int availableSeats ;
+    private double ratingTotal;
+
+    @ManyToOne
+    @JoinColumn(name = "bus_partner_id")
+    private BusPartner busPartner;
+
+    @ManyToOne
+    @JoinColumn(name= "bus_id")
+    private Bus bus ;
+
+    @OneToMany(mappedBy = "busTrip")
+    private List<BreakDay> breakDayList;
+
+    @OneToMany(mappedBy = "busTrip")
+    private List<PickupLocation> pickupLocationList;
+
+    @OneToMany(mappedBy = "busTrip")
+    private List<DropOffLocation> dropOffLocationList;
 
 }

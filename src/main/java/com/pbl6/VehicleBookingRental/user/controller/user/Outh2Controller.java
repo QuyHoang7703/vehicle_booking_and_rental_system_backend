@@ -4,7 +4,9 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.Outh2Serrvice;
+import com.pbl6.VehicleBookingRental.user.service.RoleService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -26,6 +30,7 @@ public class Outh2Controller {
     private final Outh2Serrvice outh2Serrvice;
     private final SecurityUtil securityUtil;
     private final AccountService accountService;
+    private final RoleService roleService;
     @Value("${pbl6.jwt.access-token-validity-in-seconds}")
     private long accessTokenExpiration;
 
@@ -33,41 +38,30 @@ public class Outh2Controller {
     private long refreshTokenExpiration;
     @PostMapping("/outbound/authentication")
 
-    public ResponseEntity<ResLoginDTO> outBoundAuthenticate(@RequestParam("code") String code){
+    public ResponseEntity<ResLoginDTO> outBoundAuthenticate(@RequestParam("code") String code) throws ApplicationException {
         Account account =this.outh2Serrvice.getToken(code);
         ResLoginDTO resLoginDTO = new ResLoginDTO();
         ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
         accountLogin.setId(account.getId());
-        accountLogin.setUsername(account.getEmail());
+        accountLogin.setEmail(account.getEmail());
         accountLogin.setName(account.getName());
         accountLogin.setAvatar(account.getAvatar());
+        accountLogin.setActive(account.isActive());
+        List<String> roleNames = this.roleService.getNameRolesByAccountID(account.getId());
+        accountLogin.setRoles(roleNames);
 
         resLoginDTO.setAccountLogin(accountLogin);
         String accessToken = this.securityUtil.createAccessToken(account.getEmail(), resLoginDTO);
         resLoginDTO.setAccessToken(accessToken);
 
         //Save access token into Cookie
-        ResponseCookie accCookies = ResponseCookie
-                .from("access_token", accessToken)
-                // .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(accessTokenExpiration)
-                // .domain("example.com")
-                .build();
+        ResponseCookie accCookies = this.securityUtil.createAccessCookie("access_token", accessToken, accessTokenExpiration);
 
 
         // Create refresh token
         String refresh_token = this.securityUtil.createRefreshToken(account.getEmail(), resLoginDTO);
         this.accountService.updateRefreshToken(refresh_token, account.getEmail());
-        ResponseCookie resCookies = ResponseCookie
-                .from("refresh_token", refresh_token)
-                .httpOnly(true)
-                .secure(true)
-                .path("/")
-                .maxAge(refreshTokenExpiration)
-                // .domain("example.com")
-                .build();
+        ResponseCookie resCookies = this.securityUtil.createAccessCookie("refresh_token", refresh_token, refreshTokenExpiration);
 
         log.info("Access token: " + accessToken);
         log.info("Refresh token: " + refresh_token);

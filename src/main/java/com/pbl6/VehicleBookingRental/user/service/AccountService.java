@@ -7,24 +7,32 @@ import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqAccountInfoDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqChangePasswordDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqDeactivateAccount;
+import com.pbl6.VehicleBookingRental.user.dto.request.account.ReqUpdatePasswordDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.register.ReqRegisterDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.account.ResDeactivateAccount;
 import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
-import jakarta.mail.Multipart;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.thymeleaf.context.Context;
 
-import java.util.Collections;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import java.util.Optional;
@@ -47,9 +55,10 @@ public class AccountService {
     private final AccountRoleRepository accountRoleRepository;
     private final RoleService roleSerivice;
     private final S3Service s3Service;
+    private final AccountRoleService accountRoleService;
 
 
-    public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInValidException {
+    public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInvalidException, IOException {
         Account account = new Account();
         account.setEmail(registerDTO.getEmail());
         account.setPassword(registerDTO.getPassword());
@@ -68,7 +77,7 @@ public class AccountService {
         ResLoginDTO res = new ResLoginDTO();
         ResLoginDTO.AccountLogin accountLogin = new ResLoginDTO.AccountLogin();
         accountLogin.setId(account.getId());
-        accountLogin.setUsername(account.getEmail());
+        accountLogin.setEmail(account.getEmail());
         accountLogin.setName(account.getName());
         accountLogin.setAvatar(account.getAvatar());
 //        accountLogin.setBirthDay(account.getBirthDay());
@@ -92,8 +101,10 @@ public class AccountService {
         accountInfoDTO.setPhoneNumber(account.getPhoneNumber());
         accountInfoDTO.setGender(account.getGender());
         accountInfoDTO.setAvatar(account.getAvatar());
-        accountInfoDTO.setActive(true);
-
+        accountInfoDTO.setActive(account.isActive());
+//        if(account.getLockReason()!=null){
+//
+//        }
         List<String> roles = this.roleSerivice.getNameRolesByAccountID(account.getId());
         accountInfoDTO.setRoles(roles);
 
@@ -126,31 +137,64 @@ public class AccountService {
         return null;
     }
 
-    public Account handleUpdateAccount(Account reqAccount) {
-        int id = reqAccount.getId();
-        Account accountUpdate = this.fetchAccountById(id);
-        if(accountUpdate != null) {
-            accountUpdate.setName(reqAccount.getName());
-            accountUpdate.setPhoneNumber(reqAccount.getPhoneNumber());
-            accountUpdate.setGender(reqAccount.getGender());
-            accountUpdate.setAvatar(reqAccount.getAvatar());
-            accountUpdate.setBirthDay(reqAccount.getBirthDay());
-            // accountUpdate.setLockReason(reqAccount.getLockReason());
-             return this.accountRepository.save(accountUpdate);
+    public Account handleUpdateAccount(MultipartFile file, ReqAccountInfoDTO reqAccountInfoDTO) {
+        Account accountUpdate = this.handleGetAccountByUsername(reqAccountInfoDTO.getUsername());
+        if(accountUpdate == null) {
+            throw new UsernameNotFoundException("Username not found");
         }
-        return null;
+        accountUpdate.setName(reqAccountInfoDTO.getName());
+        accountUpdate.setPhoneNumber(reqAccountInfoDTO.getPhoneNumber());
+        accountUpdate.setGender(reqAccountInfoDTO.getGender());
+        accountUpdate.setBirthDay(reqAccountInfoDTO.getBirthDay());
+        // accountUpdate.setLockReason(reqAccount.getLockReason());
+        if(file != null) {
+            String urlAvatar = this.s3Service.uploadFile(file);
+//            this.s3Service.deleteFile(account.getAvatar());
+            accountUpdate.setAvatar(urlAvatar);
 
+        }
+         return this.accountRepository.save(accountUpdate);
     }
 
-    public void handleDeleteAccount(int id) {
-        this.accountRepository.deleteById(id);
+    public void handleActivateAccount(int id) throws ApplicationException {
+        Account accountDb = this.fetchAccountById(id);
+        if(!accountDb.isActive()){
+            accountDb.setActive(true);
+            this.accountRepository.save(accountDb);
+            AccountRole accountRole = this.accountRoleService.getAccountRole(accountDb.getEmail(), "USER");
+            accountRole.setLockReason(null);
+            this.accountRoleRepository.save(accountRole);
+        }
+        else{
+            throw new ApplicationException("You already activated this account");
+        }
+    }
+
+    public void handleDeactivateAccount(ReqDeactivateAccount reqDeactivateAccount) throws Exception {
+        Account accountDb = this.fetchAccountById(reqDeactivateAccount.getId());
+        if(accountDb.isActive()){
+            accountDb.setActive(false);
+            this.accountRepository.save(accountDb);
+            Role roleUser = this.roleRepository.findByName("USER")
+                    .orElseThrow(() -> new ApplicationException("Role not found"));
+            AccountRole accountRole = this.accountRoleRepository.findByAccount_IdAndRole_Id(accountDb.getId(), roleUser.getId())
+                    .orElseThrow(() -> new ApplicationException("AccountRole not found"));
+            accountRole.setLockReason(reqDeactivateAccount.getLockReason());
+            this.accountRoleRepository.save(accountRole);
+            Context context = new Context();
+            context.setVariable("cssContent", this.emailService.loadCssFromFile());
+            context.setVariable("lockReason", reqDeactivateAccount.getLockReason());
+            this.emailService.sendEmail(accountDb.getEmail(), "Thông báo khóa tài khoản người dùng", "deactivate_account", context);
+        }else{
+            throw new ApplicationException("You already lock this account");
+        }
+
     }
     
     public Account handleGetAccountByUsername(String username) {
         return this.accountRepository.findByEmail(username)
                     .or(() -> this.accountRepository.findByPhoneNumber(username))
                     .orElse(null);
-      
     }
 
 
@@ -193,13 +237,18 @@ public class AccountService {
         return String.valueOf(otpValue);
     }
 
-    public void sendVerificationEmail(String email, String otp) {
+    public void sendVerificationEmail(String email, String otp) throws IOException {
         String subject = "Email verification";
         String body = "Your verification OTP is: " + otp;
-        this.emailService.sendEmail(email, subject, body);
+        Context context = new Context();
+        context.setVariable("email", email);
+        context.setVariable("otp", otp);
+        context.setVariable("cssContent", this.emailService.loadCssFromFile());
+        this.emailService.sendEmail(email, subject, "otp_email", context);
+//        this.emailService.sendEmail(email, subject, body);
     }
 
-    public void verify(String email, String otp) throws IdInValidException{
+    public void verify(String email, String otp) throws IdInvalidException {
         Optional<Account> optionalAccount = this.accountRepository.findByEmail(email);
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
@@ -215,14 +264,15 @@ public class AccountService {
                 AccountRole accountRole = new AccountRole();
                 accountRole.setAccount(account);
                 accountRole.setRole(userRole);
+                accountRole.setActive(true);
                 this.accountRoleRepository.save(accountRole);
             }else {
-                throw new IdInValidException("OTP is expired");
+                throw new IdInvalidException("OTP is expired");
             }
         }
     }
 
-    public void resendOtp(String email) {
+    public void resendOtp(String email) throws IOException {
         String otp = this.generateOTP();
         String otpDecoded = this.passwordEncoder.encode(otp);
         Optional<Account> optionalAccount = this.accountRepository.findByEmail(email);
@@ -246,13 +296,13 @@ public class AccountService {
         return account.isActive();
     }
 
-    public void handleChangePassword(ReqChangePasswordDTO changePasswordDTO) throws IdInValidException {
+    public void handleChangePassword(ReqChangePasswordDTO changePasswordDTO) throws IdInvalidException {
         Optional<Account> optionalAccount = this.accountRepository.findByToken(changePasswordDTO.getToken());
         if(!optionalAccount.isPresent()) {
-            throw new IdInValidException("Token không hợp lệ");
+            throw new IdInvalidException("Token không hợp lệ");
         }
         if(!changePasswordDTO.getPassword().equals(changePasswordDTO.getConfirmPassword())) {
-            throw new IdInValidException("Mật khẩu không trùng khớp");
+            throw new IdInvalidException("Mật khẩu không trùng khớp");
         }
         Account account = optionalAccount.get();
        
@@ -264,21 +314,76 @@ public class AccountService {
 
     }
 
-    public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInValidException {
-        Account account = this.accountRepository.findById(reqAccountInfoDTO.getId())
-                .orElseThrow(()-> new IdInValidException("Account not found"));
+    public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInvalidException {
+        String username = SecurityUtil.getCurrentLogin().isPresent()?
+                SecurityUtil.getCurrentLogin().get() : "";
+        Account account = this.handleGetAccountByUsername(username);
         account.setName(reqAccountInfoDTO.getName());
         account.setBirthDay(reqAccountInfoDTO.getBirthDay());
         account.setGender(reqAccountInfoDTO.getGender());
         account.setPhoneNumber(reqAccountInfoDTO.getPhoneNumber());
         if(avatar != null) {
             String urlAvatar = this.s3Service.uploadFile(avatar);
-            this.s3Service.deleteFile(account.getAvatar());
+            if(account.getAvatar()!=null) {
+                this.s3Service.deleteFile(account.getAvatar());
+            }
             account.setAvatar(urlAvatar);
         }
         this.accountRepository.save(account);
 
         return this.convertToResAccountInfoDTO(account);
+    }
+
+    public void createAccountWithRole(Account account, String roleName) throws ApplicationException {
+        Role role = this.roleRepository.findByName(roleName)
+                .orElseThrow(()-> new ApplicationException("Role not found"));
+        AccountRole accountRole = new AccountRole();
+        accountRole.setAccount(account);
+        accountRole.setRole(role);
+        this.accountRoleRepository.save(accountRole);
+    }
+
+    public void updatePassword(ReqUpdatePasswordDTO reqUpdatePasswordDTO) throws ApplicationException {
+        String username = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : "";
+        Account account = this.handleGetAccountByUsername(username);
+        String currentPass = account.getPassword();
+        if(!passwordEncoder.matches(reqUpdatePasswordDTO.getCurrentPassword(), account.getPassword())) {
+            throw new ApplicationException("Mật khẩu hiện tại không chính xác");
+        }
+        if(reqUpdatePasswordDTO.getNewPassword().equals(reqUpdatePasswordDTO.getCurrentPassword())) {
+            throw new ApplicationException("Mật khẩu mới không được trùng với mật khẩu hiện tại");
+        }
+        if(!reqUpdatePasswordDTO.getNewPassword().equals(reqUpdatePasswordDTO.getConfirmPassword())) {
+            throw new ApplicationException("Mật khẩu không trùng khớp");
+        }
+        account.setPassword(passwordEncoder.encode(reqUpdatePasswordDTO.getNewPassword()));
+        this.accountRepository.save(account);
+    }
+
+    public Account registerAccountAdmin(ReqRegisterDTO reqRegisterDTO) throws ApplicationException {
+        if(!reqRegisterDTO.getPassword().equals(reqRegisterDTO.getConfirmPassword())) {
+            throw new ApplicationException("Mật khẩu không trùng khớp");
+        }
+        Account account = new Account();
+        account.setEmail(reqRegisterDTO.getEmail());
+        account.setPassword(this.passwordEncoder.encode(reqRegisterDTO.getPassword()));
+        account.setActive(true);
+        account.setVerified(true);
+        Account savedAccount = this.accountRepository.save(account);
+        this.createAccountWithRole(savedAccount, "ADMIN");
+
+        return savedAccount;
+    }
+
+    public ResDeactivateAccount getInfoDeactivatedAccount(String email) throws ApplicationException {
+        AccountRole accountRole = this.accountRoleService.getAccountRole(email, "USER");
+        ResDeactivateAccount res = new ResDeactivateAccount();
+        res.setLockReason(accountRole.getLockReason());
+//        res.setTimeCancel(res.getTimeCancelFormatted(accountRole.getTimeCancel()));
+        res.setTimeCancel(accountRole.getTimeCancel());
+        return res;
+
+
     }
 
 

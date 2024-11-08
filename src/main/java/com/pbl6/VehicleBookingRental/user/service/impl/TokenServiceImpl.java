@@ -7,8 +7,12 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.service.EmailService;
 import com.pbl6.VehicleBookingRental.user.service.TokenService;
-import com.pbl6.VehicleBookingRental.user.util.error.IdInValidException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.UUID;
 import java.time.Instant;
@@ -22,12 +26,12 @@ public class TokenServiceImpl implements TokenService{
     private final AccountRepository accountRepository;
 
     @Override
-    public void createToken(String email) throws IdInValidException {
+    public void createToken(String email) throws IdInvalidException, IOException {
         Optional<Account> optionalAccount = this.accountRepository.findByEmail(email);
         if(optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
-            if((account.isActive() || account.isVerified())==false) {
-                throw new IdInValidException("Tài khoản này đã bị kháo");
+            if(!(account.isActive() || account.isVerified())) {
+                throw new IdInvalidException("Tài khoản này đã bị kháo");
             }
       
             String token = UUID.randomUUID().toString();
@@ -39,7 +43,7 @@ public class TokenServiceImpl implements TokenService{
             this.sendRequestForgotPassword(email, account.getName(), token);
             System.out.println(">>>>>>> Token: " + token);
         }else{
-            throw new IdInValidException("Email này chưa được đăng ký trong hệ thống");
+            throw new IdInvalidException("Email này chưa được đăng ký trong hệ thống");
         }
     }
 
@@ -61,20 +65,25 @@ public class TokenServiceImpl implements TokenService{
     }
 
     @Override
-    public void sendRequestForgotPassword(String email, String name, String token) {
+    public void sendRequestForgotPassword(String email, String name, String token) throws IOException {
         String subject = "Yêu cầu đặt lại mật khẩu";
 
-        
         // Tạo liên kết chứa token để người dùng nhấn vào => chuyển đến fe xử lý
         String resetPasswordLink = "http://localhost:3000/reset-password?token=" + token;
 
         // Tạo nội dung email từ template HTML
         Context context = new Context();
-        context.setVariable("userName", name);
+        if(name==null) {
+            context.setVariable("userName", email);
+        }else{
+            context.setVariable("userName", name);
+        }
         context.setVariable("resetPasswordLink", resetPasswordLink);
+        context.setVariable("cssContent", this.emailService.loadCssFromFile());
 
-        this.emailService.sendEmail2(email, subject, "reset_password_email", context);
+        this.emailService.sendEmail(email, subject, "reset_password_email", context);
     
     }
+
 
 }

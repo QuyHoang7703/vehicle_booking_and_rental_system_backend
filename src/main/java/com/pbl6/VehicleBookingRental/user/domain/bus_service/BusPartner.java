@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Images;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -14,19 +12,29 @@ import java.util.List;
 @Table(name = "bus_partner")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+//@Data
+@Getter
+@Setter
 public class BusPartner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
     private String description ;
     private String urlFanpage;
-    private String policy;
+//    private String policy;
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "business_partner_id")
     private BusinessPartner businessPartner;
-//    @OneToMany
-//    private List<Images> images;
+
+    @OneToMany(mappedBy = "busPartner")
+    @JsonIgnore
+    private List<Bus> buses;
+
+    @OneToMany(mappedBy = "busPartner")
+    @JsonIgnore
+    private List<BusType> busTypes;
+
+
 
 }

@@ -9,11 +9,8 @@ import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.CarRentalPartnerRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRegisterRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
-import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepo;
+import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,7 +24,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     @Autowired
     private VehicleRentalServiceRepo vehicleRentalServiceRepo;
     @Autowired
-    private  VehicleTypeRepo vehicleTypeRepo;
+    private VehicleTypeRepository vehicleTypeRepo;
     @Autowired
     private CarRentalPartnerRepo carRentalPartnerRepo;
 

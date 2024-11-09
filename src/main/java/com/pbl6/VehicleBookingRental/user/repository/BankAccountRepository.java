@@ -11,4 +11,5 @@ import java.util.Optional;
 @Repository
 public interface BankAccountRepository extends JpaRepository<BankAccount, Integer>, JpaSpecificationExecutor<BankAccount> {
     Optional<BankAccount> findByAccount_IdAndPartnerType(int account_id, PartnerTypeEnum partnerType);
+
 }

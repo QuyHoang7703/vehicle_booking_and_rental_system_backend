@@ -8,9 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReqCancelPartner {
+public class ReqPartnerAction {
     private int formRegisterId;
-    private String reasonCancel;
+    private String reason;
     private PartnerTypeEnum partnerType;
 
 }

@@ -7,7 +7,7 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqPartnerAction;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
@@ -109,21 +109,21 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
 
     @Override
     @Transactional
-    public void cancelPartnership(ReqCancelPartner reqCancelPartner) throws Exception {
-        BusinessPartner businessPartner = this.businessPartnerRepository.findById(reqCancelPartner.getFormRegisterId())
+    public void cancelPartnership(ReqPartnerAction reqPartnerAction) throws Exception {
+        BusinessPartner businessPartner = this.businessPartnerRepository.findById(reqPartnerAction.getFormRegisterId())
                 .orElseThrow(()-> new IdInvalidException("Id is invalid"));
         businessPartner.setApprovalStatus(ApprovalStatusEnum.CANCEL);
         this.businessPartnerRepository.save(businessPartner);
 
         Account account = businessPartner.getAccount();
-        AccountRole accountRole = this.accountRoleService.getAccountRole(account.getEmail(), String.valueOf(reqCancelPartner.getPartnerType()));
+        AccountRole accountRole = this.accountRoleService.getAccountRole(account.getEmail(), String.valueOf(reqPartnerAction.getPartnerType()));
         accountRole.setActive(false);
-        accountRole.setLockReason(reqCancelPartner.getReasonCancel());
+        accountRole.setLockReason(reqPartnerAction.getReason());
         this.accountRoleRepository.save(accountRole);
         Context context = new Context();
         context.setVariable("cssContent", this.emailService.loadCssFromFile());
 //        context.setVariable("partnerType", reqCancelPartner.getPartnerType());
-        context.setVariable("reasonCancel", reqCancelPartner.getReasonCancel());
+        context.setVariable("reasonCancel", reqPartnerAction.getReason());
         this.emailService.sendEmail(account.getEmail(), "Thông báo dừng việc hợp tác đối tác", "cancel_partner", context);
 
 //        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(account, role);

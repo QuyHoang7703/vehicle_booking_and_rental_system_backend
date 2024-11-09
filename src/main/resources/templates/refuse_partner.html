@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông Báo Từ Chối Hợp Tác</title>
+  <style th:text="${cssContent}"></style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Thông Báo Từ Chối Hợp Tác Đối Tác</h1>
+  </div>
+  <div class="body">
+    <p>Kính gửi Quý Đối Tác,</p>
+    <p>Chúng tôi rất cảm ơn bạn đã quan tâm và đăng ký hợp tác với chúng tôi. Tuy nhiên, sau khi xem xét, chúng tôi nhận thấy rằng hồ sơ của bạn chưa đáp ứng đủ các điều kiện để trở thành đối tác.</p>
+    <p th:text="${reasonRefuse}">Lý do chi tiết sẽ hiển thị ở đây (nếu có)</p>
+    <p>Chúng tôi hy vọng có cơ hội hợp tác trong tương lai khi điều kiện của bạn phù hợp hơn với yêu cầu của chúng tôi.</p>
+    <p>Nếu bạn có bất kỳ câu hỏi nào hoặc cần thêm thông tin, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.</p>
+  </div>
+  <div class="footer">
+    <p>Cần giúp đỡ? <a href="mailto:support@yourcompany.com">Liên hệ với đội hỗ trợ của chúng tôi</a></p>
+  </div>
+</div>
+</body>
+</html>

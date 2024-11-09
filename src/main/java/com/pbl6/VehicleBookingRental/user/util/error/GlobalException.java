@@ -1,6 +1,8 @@
 package com.pbl6.VehicleBookingRental.user.util.error;
 
 import com.pbl6.VehicleBookingRental.user.domain.RestResponse;
+import org.hibernate.JDBCException;
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,6 +23,14 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalException {
+//    @ExceptionHandler(JDBCException.class)
+//    public ResponseEntity<RestResponse<Object>> handleSqlExceptionHelper(JDBCException ex) {
+//        RestResponse<Object> res = new RestResponse<Object>();
+//        res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+//        res.setMessage(ex.getMessage());
+//        res.setError("Internal Server Error 1");
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+//    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RestResponse<Object>> handleAllException(Exception ex) {

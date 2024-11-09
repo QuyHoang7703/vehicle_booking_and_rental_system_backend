@@ -9,6 +9,7 @@ import com.pbl6.VehicleBookingRental.user.service.BankAccountService;
 import com.pbl6.VehicleBookingRental.user.util.EncryptionUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,5 +67,12 @@ public class BankAccountServiceImpl implements BankAccountService {
 
         return resBankAccount;
 
+    }
+
+    @Override
+    public void deleteBankAccount(int accountId, PartnerTypeEnum partnerType) throws IdInvalidException {
+        BankAccount bankAccount = this.bankAccountRepository.findByAccount_IdAndPartnerType(accountId, partnerType)
+                .orElseThrow(() -> new IdInvalidException("Bank account not found"));
+        this.bankAccountRepository.delete(bankAccount);
     }
 }

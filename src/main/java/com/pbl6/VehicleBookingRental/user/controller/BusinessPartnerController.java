@@ -5,7 +5,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqPartnerAction;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCarRentalPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.service.BusPartnerService;
@@ -14,7 +14,6 @@ import com.pbl6.VehicleBookingRental.user.service.CarRentalPartnerService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
-import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
@@ -61,9 +60,9 @@ public class BusinessPartnerController {
 
     @DeleteMapping("business-partner/cancel-partnership")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseInfo<String>> cancelPartnership(@RequestBody ReqCancelPartner reqCancelPartner) throws Exception {
-        int formRegisterId = reqCancelPartner.getFormRegisterId();
-        PartnerTypeEnum partnerType = reqCancelPartner.getPartnerType();
+    public ResponseEntity<ResponseInfo<String>> cancelPartnership(@RequestBody ReqPartnerAction reqPartnerAction) throws Exception {
+        int formRegisterId = reqPartnerAction.getFormRegisterId();
+        PartnerTypeEnum partnerType = reqPartnerAction.getPartnerType();
         BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(formRegisterId, partnerType);
         if (businessPartner == null) {
             throw new IdInvalidException("Không tìm thấy đơn đăng ký đối tác (" + partnerType + ") với id: " + formRegisterId );
@@ -71,7 +70,7 @@ public class BusinessPartnerController {
         if(businessPartner.getApprovalStatus()==ApprovalStatusEnum.CANCEL){
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã hủy đơn đăng ký này rồi"));
         }
-        this.businessPartnerService.cancelPartnership(reqCancelPartner);
+        this.businessPartnerService.cancelPartnership(reqPartnerAction);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác thành công: " + partnerType));
     }
 

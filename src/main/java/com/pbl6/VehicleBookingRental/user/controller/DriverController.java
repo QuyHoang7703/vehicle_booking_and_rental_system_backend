@@ -3,7 +3,7 @@ package com.pbl6.VehicleBookingRental.user.controller;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqPartnerAction;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCancelDriver;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
@@ -56,14 +56,14 @@ public class DriverController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã đăng ký thành công đối tác tài xế" ));
     }
 
-    @DeleteMapping("/drivers/cancel-partnership")
+    @PutMapping("/drivers/cancel-partnership")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseInfo<String>> cancelDriver(@RequestBody ReqCancelPartner reqCancelPartner) throws Exception {
-        Driver driver = this.driverService.getDriverById(reqCancelPartner.getFormRegisterId());
+    public ResponseEntity<ResponseInfo<String>> cancelDriver(@RequestBody ReqPartnerAction reqPartnerAction) throws Exception {
+        Driver driver = this.driverService.getDriverById(reqPartnerAction.getFormRegisterId());
         if(driver.getApprovalStatus() == ApprovalStatusEnum.CANCEL){
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Bạn đã hủy đơn đăng ký này rồi"));
         }
-        this.driverService.cancelDriver(reqCancelPartner);
+        this.driverService.cancelDriver(reqPartnerAction);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đã hủy đối tác tài xế" ));
     }
 
@@ -88,5 +88,14 @@ public class DriverController {
 //        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.getInfoDeactivatedAccount(email));
         return ResponseEntity.status(HttpStatus.OK).body(this.driverService.getInfoCancelDriver(idDriver));
     }
+
+    @DeleteMapping("/drivers/refuse-register")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseInfo<String>> refuseRegisterDriver(@RequestBody ReqPartnerAction reqPartnerAction) throws Exception {
+        this.driverService.refuseRegisterDriver(reqPartnerAction);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Refused this register"));
+    }
+
+
 
 }

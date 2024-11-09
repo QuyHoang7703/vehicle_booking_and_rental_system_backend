@@ -12,4 +12,5 @@ public interface DriverRepository extends JpaRepository<Driver, Integer>, JpaSpe
     void deleteById(int id);
     Optional<Driver> findById(int id);
     boolean existsByAccount_Id(int id);
+
 }

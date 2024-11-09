@@ -1,5 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
+import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
@@ -7,7 +9,7 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.domain.bookingcar.Driver;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCancelPartner;
+import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqPartnerAction;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqDriveDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResCancelDriver;
@@ -36,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -217,23 +220,23 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     @Transactional
-    public void cancelDriver(ReqCancelPartner reqCancelPartner) throws Exception {
-        int id = reqCancelPartner.getFormRegisterId();;
+    public void cancelDriver(ReqPartnerAction reqPartnerAction) throws Exception {
+        int id = reqPartnerAction.getFormRegisterId();;
         Driver driver = this.driverRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Id is invalid"));
         driver.setApprovalStatus(ApprovalStatusEnum.CANCEL);
         this.driverRepository.save(driver);
         Role role = this.roleRepository.findByName("DRIVER")
                 .orElseThrow(() -> new RuntimeException("Role is invalid"));
-        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(reqCancelPartner.getPartnerType()));
+        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(reqPartnerAction.getPartnerType()));
         accountRole.setActive(false);
-        accountRole.setLockReason(reqCancelPartner.getReasonCancel());
+        accountRole.setLockReason(reqPartnerAction.getReason());
 
         this.accountRoleRepository.save(accountRole);
         Context context = new Context();
         context.setVariable("cssContent", this.emailService.loadCssFromFile());
 //        context.setVariable("partnerType", reqCancelPartner.getPartnerType());
-        context.setVariable("reasonCancel", reqCancelPartner.getReasonCancel());
+        context.setVariable("reasonCancel", reqPartnerAction.getReason());
         this.emailService.sendEmail(driver.getAccount().getEmail(), "Thông báo dừng việc hợp tác đối tác", "cancel_partner", context);
 //        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(driver.getAccount(), role);
 //        log.info("Deleted account " + driver.getAccount().getEmail() + "with role " + role.getName());
@@ -279,6 +282,21 @@ public class DriverServiceImpl implements DriverService {
         resCancelDriver.setTimeCancel(accountRole.getTimeCancel());
 
         return resCancelDriver;
+    }
+
+    @Transactional
+    @Override
+    public void refuseRegisterDriver(ReqPartnerAction reqPartnerAction) throws IdInvalidException, IOException {
+        Driver driver = this.driverRepository.findById(reqPartnerAction.getFormRegisterId())
+                .orElseThrow(() -> new IdInvalidException("Driver ID is invalid"));
+//        List<Images> imagesOfRegister = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.AVATAR_OF_DRIVER), driver.getAccount().getId());
+////        this.i
+        this.driverRepository.delete(driver);
+        this.bankAccountService.deleteBankAccount(driver.getAccount().getId(), PartnerTypeEnum.DRIVER);
+        Context context = new Context();
+        context.setVariable("cssContent", this.emailService.loadCssFromFile());
+        context.setVariable("reasonRefuse", reqPartnerAction.getReason());
+        this.emailService.sendEmail(driver.getAccount().getEmail(), "Thông báo việc từ chối hợp tác", "refuse_partner", context);
     }
 
     @Override

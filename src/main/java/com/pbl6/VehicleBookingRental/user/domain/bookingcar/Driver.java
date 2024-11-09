@@ -8,9 +8,7 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.LicenseTypeEnum;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -19,7 +17,8 @@ import java.util.List;
 @Table(name = "driver")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class Driver {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,8 +45,7 @@ public class Driver {
     private String phoneNumberOfRelative;
     private String relationship;
 
-
-    @Enumerated(EnumType.STRING)
+//    @Enumerated(EnumType.STRING)
     private ApprovalStatusEnum approvalStatus;
 
     @OneToMany(mappedBy = "driver",cascade = CascadeType.ALL)

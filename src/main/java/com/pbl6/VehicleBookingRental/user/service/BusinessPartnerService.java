@@ -10,14 +10,17 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.io.IOException;
+
 public interface BusinessPartnerService {
     boolean isRegistered(int accountId, PartnerTypeEnum partnerType);
     ResBusinessPartnerDTO convertToResBusinessPartnerDTO(BusinessPartner businessPartner) throws ApplicationException;
-    void verifyRegister(int id, PartnerTypeEnum partnerType) throws IdInvalidException, ApplicationException;
+    void verifyRegister(int id, PartnerTypeEnum partnerType) throws IdInvalidException, ApplicationException, IOException;
     void cancelPartnership(ReqPartnerAction reqPartnerAction) throws Exception;
     ResultPaginationDTO handleFetchAllBusinessPartner(Specification<BusinessPartner> specification, Pageable pageable);
     BusinessPartner fetchByIdAndPartnerType(int id, PartnerTypeEnum partnerType);
     BusinessPartner getCurrentBusinessPartner(PartnerTypeEnum partnerType) throws ApplicationException;
-
+    void refuseOrDeleteRegisterBusinessPartner(ReqPartnerAction reqPartnerAction) throws IdInvalidException, ApplicationException, IOException;
+    BusinessPartner getBusinessPartnerById(int id) throws IdInvalidException;
 
 }

@@ -12,10 +12,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusine
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
-import com.pbl6.VehicleBookingRental.user.service.AccountRoleService;
-import com.pbl6.VehicleBookingRental.user.service.AccountService;
-import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
-import com.pbl6.VehicleBookingRental.user.service.EmailService;
+import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
@@ -30,6 +27,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +41,8 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     private final AccountRoleService accountRoleService;
     private final EmailService emailService;
     private final AccountService accountService;
+    private final ImageService imageService;
+    private final BankAccountService bankAccountService;
 
     @Override
     public boolean isRegistered(int accountId, PartnerTypeEnum partnerType) {
@@ -66,8 +66,9 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         AccountRole accountRole = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail()
                 , String.valueOf(businessPartner.getPartnerType()));
         if(accountRole != null) {
+            resBusinessPartnerDTO.setTimeBecomePartner(accountRole.getTimeBecomePartner());
             resBusinessPartnerDTO.setCancelReason(accountRole.getLockReason());
-            resBusinessPartnerDTO.setTimeCancel(accountRole.getTimeCancel());
+            resBusinessPartnerDTO.setTimeUpdate(accountRole.getTimeUpdate());
 
         }
         log.info("reason: " + resBusinessPartnerDTO.getCancelReason());
@@ -82,7 +83,7 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     }
 
     @Override
-    public void verifyRegister(int id, PartnerTypeEnum partnerType) throws IdInvalidException, ApplicationException {
+    public void verifyRegister(int id, PartnerTypeEnum partnerType) throws IdInvalidException, ApplicationException, IOException {
         // Change approval status in business partner form
         BusinessPartner businessPartner = this.businessPartnerRepository.findById(id)
                 .orElseThrow(()-> new IdInvalidException("Id is invalid"));
@@ -90,7 +91,8 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         this.businessPartnerRepository.save(businessPartner);
 
         // Update status active in AccountRole, check accountRole is available?
-        AccountRole accountRoleDb = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail(), String.valueOf(partnerType));
+        String email = businessPartner.getAccount().getEmail();
+        AccountRole accountRoleDb = this.accountRoleService.getAccountRole(email, String.valueOf(partnerType));
         if (accountRoleDb != null) {
             accountRoleDb.setActive(true);
             accountRoleDb.setLockReason(null);
@@ -105,6 +107,15 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
             accountRole.setActive(true);
             this.accountRoleRepository.save(accountRole);
         }
+
+        // Send accepted request register to user
+        Context context = new Context();
+        context.setVariable("cssContent", this.emailService.loadCssFromFile());
+        context.setVariable("email", email);
+        String partner = String.valueOf(partnerType).equals("BUS_PARTNER") ? "nhà xe" : "cho thuê xe";
+        context.setVariable("partner", partner);
+        this.emailService.sendEmail(email, "Xác nhận trở thành đối tác", "verify_partner", context);
+        log.info("Sent email verification");
     }
 
     @Override
@@ -114,17 +125,20 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
                 .orElseThrow(()-> new IdInvalidException("Id is invalid"));
         businessPartner.setApprovalStatus(ApprovalStatusEnum.CANCEL);
         this.businessPartnerRepository.save(businessPartner);
-
+        PartnerTypeEnum partnerType = businessPartner.getPartnerType();
         Account account = businessPartner.getAccount();
-        AccountRole accountRole = this.accountRoleService.getAccountRole(account.getEmail(), String.valueOf(reqPartnerAction.getPartnerType()));
+        String email = account.getEmail();
+        AccountRole accountRole = this.accountRoleService.getAccountRole(email, String.valueOf(partnerType));
         accountRole.setActive(false);
         accountRole.setLockReason(reqPartnerAction.getReason());
         this.accountRoleRepository.save(accountRole);
         Context context = new Context();
         context.setVariable("cssContent", this.emailService.loadCssFromFile());
 //        context.setVariable("partnerType", reqCancelPartner.getPartnerType());
+        String partner = String.valueOf(partnerType).equals("BUS_PARTNER") ? "nhà xe" : "cho thuê xe";
+        context.setVariable("partner", partner);
         context.setVariable("reasonCancel", reqPartnerAction.getReason());
-        this.emailService.sendEmail(account.getEmail(), "Thông báo dừng việc hợp tác đối tác", "cancel_partner", context);
+        this.emailService.sendEmail(email, "Thông báo dừng việc hợp tác đối tác", "cancel_partner", context);
 
 //        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(account, role);
 //        this.accountRoleRepository.deleteAccountRolesByAccount_IdAndRole_Id(account.getId(), role.getId());
@@ -169,7 +183,66 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         return businessPartner;
     }
 
+    @Override
+    public void refuseOrDeleteRegisterBusinessPartner(ReqPartnerAction reqPartnerAction) throws IdInvalidException, ApplicationException, IOException {
+        BusinessPartner businessPartner = this.businessPartnerRepository.findById(reqPartnerAction.getFormRegisterId())
+                .orElseThrow(() -> new IdInvalidException("Business partner not found"));
 
+//        PartnerTypeEnum partnerType = reqPartnerAction.getPartnerType();
+            PartnerTypeEnum partnerType = businessPartner.getPartnerType();
+//        if(partnerType.equals(PartnerTypeEnum.BUS_PARTNER)){
+//            this.imageService.deleteImages(businessPartner.getBusPartner().getId(), String.valueOf(partnerType));
+//        }
+//        else{
+//            this.imageService.deleteImages(businessPartner.getCarRentalPartner().getId(), String.valueOf(partnerType));
+//        }
+        this.bankAccountService.deleteBankAccount(businessPartner.getAccount().getId(), businessPartner.getPartnerType());
+        this.imageService.deleteImages(businessPartner.getId(), String.valueOf(partnerType));
+        this.businessPartnerRepository.delete(businessPartner);
 
+        // Delete accountRole in delete business partner
+        AccountRole accountRole = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail(), String.valueOf(partnerType));
+        if(accountRole != null){
+            this.accountRoleRepository.delete(accountRole);
+        }
+        if(reqPartnerAction.isRefuse()){
+            Context context = new Context();
+            context.setVariable("cssContent", this.emailService.loadCssFromFile());
+            String email = businessPartner.getAccount().getEmail();
+            String partner = String.valueOf(partnerType).equals("BUS_PARTNER") ? "nhà xe" : "cho thuê xe";
+            context.setVariable("partner", partner);
+            context.setVariable("reasonCancel", reqPartnerAction.getReason());
+            this.emailService.sendEmail(email, "Thông báo từ chối hợp tác", "refuse_partner", context);
+        }
 
+//        if (reqPartnerAction.getPartnerType().equals(PartnerTypeEnum.BUS_PARTNER)) {
+//            this.imageService.deleteImages(businessPartner.getBusPartner().getId(), String.valueOf(PartnerTypeEnum.BUS_PARTNER));
+//            this.businessPartnerRepository.delete(businessPartner);
+//            this.bankAccountService.deleteBankAccount(businessPartner.getAccount().getId(), PartnerTypeEnum.BUS_PARTNER);
+//
+//            // Delete accountRole in delete business partner
+//            AccountRole accountRole = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.BUS_PARTNER));
+//            if(accountRole != null){
+//                this.accountRoleRepository.delete(accountRole);
+//            }
+//
+//        } else if (reqPartnerAction.getPartnerType().equals(PartnerTypeEnum.CAR_RENTAL_PARTNER)) {
+//            this.imageService.deleteImages(businessPartner.getCarRentalPartner().getId(), String.valueOf(PartnerTypeEnum.CAR_RENTAL_PARTNER));
+//            this.businessPartnerRepository.delete(businessPartner);
+//            this.bankAccountService.deleteBankAccount(businessPartner.getAccount().getId(), PartnerTypeEnum.CAR_RENTAL_PARTNER);
+//
+//            // Delete accountRole in delete business partner
+//            AccountRole accountRole = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.CAR_RENTAL_PARTNER));
+//            if(accountRole != null){
+//                this.accountRoleRepository.delete(accountRole);
+//            }
+//        }
+
+    }
+
+    @Override
+    public BusinessPartner getBusinessPartnerById(int id) throws IdInvalidException {
+        return this.businessPartnerRepository.findById(id)
+                .orElseThrow(() -> new IdInvalidException("Business partner not found"));
+    }
 }

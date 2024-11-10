@@ -95,7 +95,7 @@ public class Account {
     @JsonIgnore
     private List<BusinessPartner> businessPartners;
 
-    @OneToOne( mappedBy = "account",cascade = CascadeType.ALL)
+    @OneToOne( mappedBy = "account")
     @JsonIgnore
     private Driver driver;
 

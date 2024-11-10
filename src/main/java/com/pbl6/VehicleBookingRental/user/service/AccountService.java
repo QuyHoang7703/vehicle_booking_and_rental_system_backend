@@ -380,7 +380,7 @@ public class AccountService {
         ResDeactivateAccount res = new ResDeactivateAccount();
         res.setLockReason(accountRole.getLockReason());
 //        res.setTimeCancel(res.getTimeCancelFormatted(accountRole.getTimeCancel()));
-        res.setTimeCancel(accountRole.getTimeCancel());
+        res.setTimeCancel(accountRole.getTimeUpdate());
         return res;
 
 

@@ -20,10 +20,10 @@ public class AccountRole {
     private int id;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private Instant timeCancel;
+    private Instant timeUpdate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private Instant timeRegister;
+    private Instant timeBecomePartner;
 
     @Column(columnDefinition = "MEDIUMTEXT")
     private String lockReason;
@@ -40,13 +40,12 @@ public class AccountRole {
 
     @PrePersist
     public void handleBeforeCreated(){
-
-        this.timeRegister = Instant.now();
+        this.timeBecomePartner = Instant.now();
     }
 
     @PreUpdate
     public void handleBeforeModified(){
-        this.timeCancel = Instant.now();
+        this.timeUpdate = Instant.now();
     }
 
 }

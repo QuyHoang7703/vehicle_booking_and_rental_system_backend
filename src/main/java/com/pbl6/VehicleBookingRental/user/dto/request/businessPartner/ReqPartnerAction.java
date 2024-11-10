@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class ReqPartnerAction {
     private int formRegisterId;
     private String reason;
-    private PartnerTypeEnum partnerType;
+//    private PartnerTypeEnum partnerType;
+    private boolean refuse;
 
 }

@@ -46,8 +46,9 @@ public class BusinessPartnerController {
 
     @PutMapping("business-partner/verify")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseInfo<String>> verifyRegister(@RequestParam("formRegisterId") int id, @RequestParam("partnerType") PartnerTypeEnum partnerType) throws Exception {
-        BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(id, partnerType);
+    public ResponseEntity<ResponseInfo<String>> verifyRegister(@RequestParam("formRegisterId") int id) throws Exception {
+        BusinessPartner businessPartner = this.businessPartnerService.getBusinessPartnerById(id);
+        PartnerTypeEnum partnerType = businessPartner.getPartnerType();
         if (businessPartner == null) {
             throw new IdInvalidException("Không tìm thấy đơn đăng ký đối tác (" + partnerType + ") với id: " + id );
         }
@@ -58,12 +59,14 @@ public class BusinessPartnerController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Đăng ký thành công đối tác: " + partnerType));
     }
 
-    @DeleteMapping("business-partner/cancel-partnership")
+    @PutMapping("business-partner/cancel-partnership")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResponseInfo<String>> cancelPartnership(@RequestBody ReqPartnerAction reqPartnerAction) throws Exception {
         int formRegisterId = reqPartnerAction.getFormRegisterId();
-        PartnerTypeEnum partnerType = reqPartnerAction.getPartnerType();
-        BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(formRegisterId, partnerType);
+//        PartnerTypeEnum partnerType = reqPartnerAction.getPartnerType();
+//        BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(formRegisterId, partnerType);
+        BusinessPartner businessPartner = this.businessPartnerService.getBusinessPartnerById(formRegisterId);
+        PartnerTypeEnum partnerType = businessPartner.getPartnerType();
         if (businessPartner == null) {
             throw new IdInvalidException("Không tìm thấy đơn đăng ký đối tác (" + partnerType + ") với id: " + formRegisterId );
         }
@@ -76,7 +79,9 @@ public class BusinessPartnerController {
 
     @GetMapping("business-partner/detail")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Object> getBusPartnerById(@RequestParam("formRegisterId") int id, @RequestParam("partnerType") PartnerTypeEnum partnerType) throws Exception {
+    public ResponseEntity<Object> getBusPartnerById(@RequestParam("formRegisterId") int id) throws Exception {
+        BusinessPartner businessPartner = this.businessPartnerService.getBusinessPartnerById(id);
+        PartnerTypeEnum partnerType = businessPartner.getPartnerType();
         if(partnerType == PartnerTypeEnum.BUS_PARTNER){
             BusPartner busPartner = this.busPartnerService.getBusPartnerByBusinessPartnerId(id);
             ResBusPartnerDTO resBusPartnerDTO = this.busPartnerService.convertToResBusPartnerDTO(busPartner);
@@ -90,5 +95,12 @@ public class BusinessPartnerController {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid partnerType provided.");
 
+    }
+
+    @DeleteMapping("business-partner/refuse-register")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseInfo<String>> refuseBusinessPartner(@RequestBody ReqPartnerAction reqPartnerAction) throws Exception {
+        this.businessPartnerService.refuseOrDeleteRegisterBusinessPartner(reqPartnerAction);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Refused this register"));
     }
 }

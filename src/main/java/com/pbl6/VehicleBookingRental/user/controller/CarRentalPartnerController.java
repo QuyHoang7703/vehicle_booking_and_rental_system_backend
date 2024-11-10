@@ -33,20 +33,10 @@ public class CarRentalPartnerController {
                                                                          @RequestParam(value = "businessImages", required = false) List<MultipartFile> images) throws Exception {
 
 
-        ResBusinessPartnerDTO resBusinessPartnerDTO = this.carRentalPartnerService.registerBusPartner(reqCarRentalPartnerDTO, avatar, licenses, images);
+        ResBusinessPartnerDTO resBusinessPartnerDTO = this.carRentalPartnerService.registerCarRentalPartner(reqCarRentalPartnerDTO, avatar, licenses, images);
 
 
         return ResponseEntity.status(HttpStatus.OK).body(resBusinessPartnerDTO);
     }
-
-//    @GetMapping("/car-rental-partners/{id}")
-//    @PreAuthorize("hasAuthority('VIEW_REGISTER_BUSINESS_PARTNER')")
-//    public ResponseEntity<ResCarRentalPartnerDTO> getCarRentalPartnerById(@PathVariable Integer id) throws Exception {
-//        CarRentalPartner carRentalPartner = this.carRentalPartnerService.getCarRentalPartnerByBusinessPartnerId(id);
-//        ResCarRentalPartnerDTO resCarRentalPartnerDTO = this.carRentalPartnerService.convertoCarRentalPartnerDTO(carRentalPartner);
-//        return ResponseEntity.status(HttpStatus.OK).body(resCarRentalPartnerDTO);
-//    }
-
-
 
 }

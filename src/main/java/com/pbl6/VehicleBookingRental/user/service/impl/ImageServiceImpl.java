@@ -17,7 +17,7 @@ public class ImageServiceImpl implements ImageService {
     private final ImageRepository imageRepository;
 
     @Override
-    public List<String> uploadAndSaveImages(List<MultipartFile> files, String ownerType, int ownerId) {
+    public List<String> uploadAndSaveImages(List<MultipartFile> files, String ownerType, int ownerId, String ownerGroup) {
         if(files != null && !files.isEmpty()) {
             List<String> urlFiles = this.s3Service.uploadFiles(files);
 
@@ -26,10 +26,24 @@ public class ImageServiceImpl implements ImageService {
                 image.setPathImage(url);
                 image.setOwnerType(ownerType);
                 image.setOwnerId(ownerId);
+                image.setOwnerGroup(ownerGroup);
                 this.imageRepository.save(image);
             }
         }
 
         return null;
+    }
+
+    @Override
+    public void deleteImages(int ownerId, String ownerGroup) {
+        List<Images> imagesList = this.imageRepository.findByOwnerIdAndOwnerGroup(ownerId, ownerGroup);
+
+        // Delete urls of images on s3 aws
+        List<String> urlImages = imagesList.stream().map(Images::getPathImage).toList();
+        this.s3Service.deleteFiles(urlImages);
+
+        //Delete data images in database
+        this.imageRepository.deleteAll(imagesList);
+
     }
 }

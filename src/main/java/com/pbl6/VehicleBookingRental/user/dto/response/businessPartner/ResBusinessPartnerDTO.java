@@ -31,8 +31,9 @@ public class ResBusinessPartnerDTO {
         private String avatar;
         private AccountInfo accountInfo;
     }
+    private Instant timeBecomePartner;
+    private Instant timeUpdate;
     private String cancelReason;
-    private Instant timeCancel;
 
 //    private ResBankAccount resBankAccount;
 

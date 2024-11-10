@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface CarRentalPartnerService {
-    public ResBusinessPartnerDTO registerBusPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
+    public ResBusinessPartnerDTO registerCarRentalPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
                                                     MultipartFile avatar,
                                                     List<MultipartFile> licenses,
                                                     List<MultipartFile> images) throws Exception;

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Báo Chúc Mừng Hợp Tác Thành Công</title>
+    <style th:text="${cssContent}"></style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Chúc Mừng Bạn Đã Trở Thành Đối Tác</h1>
+    </div>
+    <div class="body">
+        <p>Chào <span th:text="${email}">[Người Dùng]</span>,</p>
+        <p>Chúng tôi vui mừng thông báo rằng hồ sơ của bạn đã đáp ứng đủ điều kiện để trở thành đối tác <span th:text="${partner}">[Loại đối tác]</span> của chúng tôi. Chúng tôi trân trọng sự quan tâm và mong muốn hợp tác của bạn.</p>
+        <p>Trong thời gian tới, chúng tôi sẽ liên hệ để hoàn tất các thủ tục cần thiết. Vui lòng chuẩn bị các tài liệu và thông tin cần thiết để giúp quá trình diễn ra thuận lợi.</p>
+        <p>Chúng tôi mong chờ hợp tác và xây dựng mối quan hệ bền chặt, cùng nhau phát triển.</p>
+        <p>Nếu bạn có bất kỳ câu hỏi nào hoặc cần thêm thông tin, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.</p>
+    </div>
+    <div class="footer">
+        <p>Cần giúp đỡ? <a href="mailto:support@yourcompany.com">Liên hệ với đội hỗ trợ của chúng tôi</a></p>
+    </div>
+</div>
+</body>
+</html>

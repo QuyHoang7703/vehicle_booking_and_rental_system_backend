@@ -10,6 +10,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResDriverDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.driver.ResGeneralDriverInfoDTO;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,12 +28,13 @@ public interface DriverService {
                                            List<MultipartFile> vehicleInsuranceImages) throws Exception;
     ResGeneralDriverInfoDTO convertToResGeneralDriverInfoDTO(Account account, Driver driver);
     ResDriverDTO convertoResDriverDTO(ResGeneralDriverInfoDTO resGeneralDriverInfoDTO, Driver driver) throws Exception;
-    void verifyDriver(int id) throws IdInvalidException, ApplicationException;
+    void verifyDriver(int id) throws IdInvalidException, ApplicationException, IOException;
     void cancelDriver(ReqPartnerAction reqPartnerAction) throws Exception;
     Driver getDriverById(int id) throws IdInvalidException;
     ResultPaginationDTO getAllDrivers(Specification<Driver> specification, Pageable pageable);
     boolean isRegisteredDriver(int accountId);
     ResCancelDriver getInfoCancelDriver(int idDriver) throws IdInvalidException, ApplicationException;
-    void refuseRegisterDriver(ReqPartnerAction reqPartnerAction) throws IdInvalidException, IOException;
+    @Transactional
+    void refuseOrDeleteRegisterDriver(ReqPartnerAction reqPartnerAction) throws IdInvalidException, IOException, ApplicationException;
 
 }

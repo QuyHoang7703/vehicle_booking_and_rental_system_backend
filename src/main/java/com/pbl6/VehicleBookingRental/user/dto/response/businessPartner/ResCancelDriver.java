@@ -7,5 +7,5 @@ import java.time.Instant;
 public class ResCancelDriver {
     private String lockReason;
 
-    private Instant timeCancel;
+    private Instant timeUpdate;
 }

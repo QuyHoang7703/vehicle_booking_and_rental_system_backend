@@ -43,7 +43,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     private final ImageRepository imageRepository;
     private final AccountRoleService accountRoleService;
     @Override
-    public ResBusinessPartnerDTO registerBusPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
+    public ResBusinessPartnerDTO registerCarRentalPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
                                                     MultipartFile avatar,
                                                     List<MultipartFile> licenses,
                                                     List<MultipartFile> images) throws Exception {
@@ -86,8 +86,8 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
 //        businessPartner.setBusPartner(carRentalPartner);
 
         // Add business license images for bus partner
-        this.imageService.uploadAndSaveImages(licenses, String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE), savedCarRentalPartner.getId());
-        this.imageService.uploadAndSaveImages(images, String.valueOf(ImageOfObjectEnum.CAR_RENTAL_PARTNER), savedCarRentalPartner.getId());
+        this.imageService.uploadAndSaveImages(licenses, String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE), savedCarRentalPartner.getBusinessPartner().getId(), String.valueOf(PartnerTypeEnum.CAR_RENTAL_PARTNER));
+        this.imageService.uploadAndSaveImages(images, String.valueOf(ImageOfObjectEnum.CAR_RENTAL_PARTNER), savedCarRentalPartner.getBusinessPartner().getId(), String.valueOf(PartnerTypeEnum.CAR_RENTAL_PARTNER));
 
         ResBusinessPartnerDTO resBusinessPartnerDTO = this.businessPartnerService.convertToResBusinessPartnerDTO(savedBusinessPartner);
 
@@ -118,8 +118,9 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
 
         resCarRentalPartnerDTO.setBusinessInfo(resBusinessPartnerDTO.getBusinessInfo());
         resCarRentalPartnerDTO.setCarRentalPartnerInfo(carRentalPartnerInfo);
+        resCarRentalPartnerDTO.setTimeBecomePartner(resBusinessPartnerDTO.getTimeBecomePartner());
         resCarRentalPartnerDTO.setCancelReason(resBusinessPartnerDTO.getCancelReason());
-        resCarRentalPartnerDTO.setTimeCancel(resBusinessPartnerDTO.getTimeCancel());
+        resCarRentalPartnerDTO.setTimeUpdate(resBusinessPartnerDTO.getTimeUpdate());
 
         return resCarRentalPartnerDTO;
     }
@@ -130,12 +131,12 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
         carRentalPartnerInfo.setClientType(carRentalPartner.getClientType());
 
         List<String> urlLicenses = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE),
-                        carRentalPartner.getId()).stream().map(image -> image.getPathImage())
+                        carRentalPartner.getBusinessPartner().getId()).stream().map(image -> image.getPathImage())
                 .collect(Collectors.toList());
         carRentalPartnerInfo.setUrlLicenses(urlLicenses);
 
         List<String> urlImages = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.CAR_RENTAL_PARTNER),
-                        carRentalPartner.getId()).stream().map(image -> image.getPathImage())
+                        carRentalPartner.getBusinessPartner().getId()).stream().map(image -> image.getPathImage())
                 .collect(Collectors.toList());
         carRentalPartnerInfo.setUrlImages(urlImages);
 

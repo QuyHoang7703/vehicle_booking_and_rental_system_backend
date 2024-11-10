@@ -110,22 +110,28 @@ public class DriverServiceImpl implements DriverService {
 
         List<String> urlAvatarOfDriver = this.imageService.uploadAndSaveImages(Collections.singletonList(avatarOfDriver)
                 , String.valueOf(ImageOfObjectEnum.AVATAR_OF_DRIVER)
-                , savedDriver.getId());
+                , savedDriver.getId()
+                , String.valueOf(PartnerTypeEnum.DRIVER));
         List<String> urlCitizenImages = this.imageService.uploadAndSaveImages(citizenImages
                 , String.valueOf(ImageOfObjectEnum.CITIZEN_IDENTIFICATION)
-                , savedDriver.getId());
+                , savedDriver.getId()
+                , String.valueOf(PartnerTypeEnum.DRIVER));
         List<String> urlDriverLicense = this.imageService.uploadAndSaveImages(driverLicenseImages
                 , String.valueOf(ImageOfObjectEnum.DRIVER_LICENSE)
-                , savedDriver.getId());
+                , savedDriver.getId()
+                , String.valueOf(PartnerTypeEnum.DRIVER));
         List<String> urlVehicleRegistration = this.imageService.uploadAndSaveImages(vehicleRegistrations
                 , String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTRATION)
-                , savedDriver.getId());
+                , savedDriver.getId()
+                , String.valueOf(PartnerTypeEnum.DRIVER));
         List<String> urlVehicleImages = this.imageService.uploadAndSaveImages(vehicleImages
                 , String.valueOf(ImageOfObjectEnum.VEHICLE_IMAGES)
-                , savedDriver.getId());
+                , savedDriver.getId()
+                , String.valueOf(PartnerTypeEnum.DRIVER));
         List<String> urlVehicleInsurance = this.imageService.uploadAndSaveImages(vehicleInsuranceImages
                 , String.valueOf(ImageOfObjectEnum.VEHICLE_INSURANCE)
-                , savedDriver.getId());
+                , savedDriver.getId()
+                , String.valueOf(PartnerTypeEnum.DRIVER));
 
         return this.convertToResGeneralDriverInfoDTO(account, savedDriver);
     }
@@ -177,8 +183,9 @@ public class DriverServiceImpl implements DriverService {
         AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail()
                 , String.valueOf(PartnerTypeEnum.DRIVER));
         if(accountRole != null) {
+            resDriverDTO.setTimeBecomePartner(accountRole.getTimeBecomePartner());
             resDriverDTO.setCancelReason(accountRole.getLockReason());
-            resDriverDTO.setTimeCancel(accountRole.getTimeCancel());
+            resDriverDTO.setTimeUpdate(accountRole.getTimeUpdate());
 
         }
 
@@ -194,12 +201,13 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public void verifyDriver(int id) throws IdInvalidException, ApplicationException {
+    public void verifyDriver(int id) throws IdInvalidException, ApplicationException, IOException {
         Driver driver = this.driverRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Id is invalid"));
         driver.setApprovalStatus(ApprovalStatusEnum.APPROVED);
+        String email = driver.getAccount().getEmail();
         this.driverRepository.save(driver);
-        AccountRole accountRoleDb = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.DRIVER));
+        AccountRole accountRoleDb = this.accountRoleService.getAccountRole(email, String.valueOf(PartnerTypeEnum.DRIVER));
         if (accountRoleDb != null) {
             accountRoleDb.setActive(true);
             accountRoleDb.setLockReason(null);
@@ -212,9 +220,17 @@ public class DriverServiceImpl implements DriverService {
             accountRole.setRole(role);
             accountRole.setAccount(account);
             accountRole.setActive(true);
-            accountRole.setTimeCancel(null);
+//            accountRole.getTimeUpdate(null);
             this.accountRoleRepository.save(accountRole);
+
         }
+        // Send accepted request register to user
+        Context context = new Context();
+        context.setVariable("cssContent", this.emailService.loadCssFromFile());
+        context.setVariable("email", email);
+        context.setVariable("partner", "tài xế");
+        this.emailService.sendEmail(email, "Xác nhận trở thành đối tác", "verify_partner", context);
+        log.info("Sent email verification to driver");
 
     }
 
@@ -225,17 +241,18 @@ public class DriverServiceImpl implements DriverService {
         Driver driver = this.driverRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Id is invalid"));
         driver.setApprovalStatus(ApprovalStatusEnum.CANCEL);
+//        driver.getP
         this.driverRepository.save(driver);
         Role role = this.roleRepository.findByName("DRIVER")
                 .orElseThrow(() -> new RuntimeException("Role is invalid"));
-        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(reqPartnerAction.getPartnerType()));
+        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.DRIVER));
         accountRole.setActive(false);
         accountRole.setLockReason(reqPartnerAction.getReason());
 
         this.accountRoleRepository.save(accountRole);
         Context context = new Context();
         context.setVariable("cssContent", this.emailService.loadCssFromFile());
-//        context.setVariable("partnerType", reqCancelPartner.getPartnerType());
+        context.setVariable("partner", "tài xế");
         context.setVariable("reasonCancel", reqPartnerAction.getReason());
         this.emailService.sendEmail(driver.getAccount().getEmail(), "Thông báo dừng việc hợp tác đối tác", "cancel_partner", context);
 //        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(driver.getAccount(), role);
@@ -279,24 +296,35 @@ public class DriverServiceImpl implements DriverService {
         AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.DRIVER));
         ResCancelDriver resCancelDriver = new ResCancelDriver();
         resCancelDriver.setLockReason(accountRole.getLockReason());
-        resCancelDriver.setTimeCancel(accountRole.getTimeCancel());
+        resCancelDriver.setTimeUpdate(accountRole.getTimeUpdate());
 
         return resCancelDriver;
     }
 
     @Transactional
     @Override
-    public void refuseRegisterDriver(ReqPartnerAction reqPartnerAction) throws IdInvalidException, IOException {
+    public void refuseOrDeleteRegisterDriver(ReqPartnerAction reqPartnerAction) throws IdInvalidException, IOException, ApplicationException {
         Driver driver = this.driverRepository.findById(reqPartnerAction.getFormRegisterId())
                 .orElseThrow(() -> new IdInvalidException("Driver ID is invalid"));
-//        List<Images> imagesOfRegister = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.AVATAR_OF_DRIVER), driver.getAccount().getId());
-////        this.i
-        this.driverRepository.delete(driver);
+        this.imageService.deleteImages(driver.getId(), String.valueOf(PartnerTypeEnum.DRIVER));
+        log.info("Deleted driver with id: " + reqPartnerAction.getFormRegisterId());
         this.bankAccountService.deleteBankAccount(driver.getAccount().getId(), PartnerTypeEnum.DRIVER);
-        Context context = new Context();
-        context.setVariable("cssContent", this.emailService.loadCssFromFile());
-        context.setVariable("reasonRefuse", reqPartnerAction.getReason());
-        this.emailService.sendEmail(driver.getAccount().getEmail(), "Thông báo việc từ chối hợp tác", "refuse_partner", context);
+        this.driverRepository.delete(driver);
+
+        // Delete accountRole in delete business partner
+        String email = driver.getAccount().getEmail();
+        AccountRole accountRole = this.accountRoleService.getAccountRole(email, String.valueOf(PartnerTypeEnum.DRIVER));
+        if(accountRole != null){
+            this.accountRoleRepository.delete(accountRole);
+        }
+
+        if(reqPartnerAction.isRefuse()){
+            Context context = new Context();
+            context.setVariable("cssContent", this.emailService.loadCssFromFile());
+            context.setVariable("partner", "tài xế");
+            context.setVariable("reasonCancel", reqPartnerAction.getReason());
+            this.emailService.sendEmail(email, "Thông báo từ chối hợp tác", "refuse_partner", context);
+        }
     }
 
     @Override

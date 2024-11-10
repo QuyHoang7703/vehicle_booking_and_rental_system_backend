@@ -15,9 +15,8 @@ public class Images {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String pathImage;
-//    private String typeImage;
     private int ownerId;
     private String ownerType;
-//    @ManyToOne(@JoinColumn="owner_id")
-//    private Object owner;
+    private String ownerGroup;
+
 }

@@ -87,8 +87,8 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 
 //        businessPartner.setBusPartner(busPartner);
         // Add business license images for bus partner
-        this.imageService.uploadAndSaveImages(licenses, String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE), savedBusPartner.getId());
-        this.imageService.uploadAndSaveImages(images, String.valueOf(ImageOfObjectEnum.BUS_PARTNER), savedBusPartner.getId());
+        this.imageService.uploadAndSaveImages(licenses, String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE), savedBusPartner.getBusinessPartner().getId(), String.valueOf(PartnerTypeEnum.BUS_PARTNER));
+        this.imageService.uploadAndSaveImages(images, String.valueOf(ImageOfObjectEnum.BUS_PARTNER), savedBusPartner.getBusinessPartner().getId(), String.valueOf(PartnerTypeEnum.BUS_PARTNER));
 
         return this.businessPartnerService.convertToResBusinessPartnerDTO(savedBusinessPartner);
     }
@@ -116,8 +116,9 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         // Tạo và trả về ResBusPartnerDTO
         ResBusPartnerDTO resBusPartnerDTO = new ResBusPartnerDTO();
         resBusPartnerDTO.setBusinessInfo(resBusinessPartnerDTO.getBusinessInfo());
+        resBusPartnerDTO.setTimeBecomePartner(resBusinessPartnerDTO.getTimeBecomePartner());
+        resBusPartnerDTO.setTimeUpdate(resBusinessPartnerDTO.getTimeUpdate());
         resBusPartnerDTO.setCancelReason(resBusinessPartnerDTO.getCancelReason());
-        resBusPartnerDTO.setTimeCancel(resBusinessPartnerDTO.getTimeCancel());
         resBusPartnerDTO.setBusPartnerInfo(busPartnerInfo);
 
         return resBusPartnerDTO;
@@ -139,12 +140,12 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         busPartnerInfo.setPolicy(policiesList);
 
         List<String> urlLicenses = this.imageRepository.findByOwnerTypeAndOwnerId("BUSINESS_LICENSE",
-                        busPartner.getId()).stream().map(image -> image.getPathImage())
+                        busPartner.getBusinessPartner().getId()).stream().map(image -> image.getPathImage())
                 .collect(Collectors.toList());
         busPartnerInfo.setUrlLicenses(urlLicenses);
 
         List<String> urlImages = this.imageRepository.findByOwnerTypeAndOwnerId("BUS_PARTNER",
-                        busPartner.getId()).stream().map(image -> image.getPathImage())
+                        busPartner.getBusinessPartner().getId()).stream().map(image -> image.getPathImage())
                 .collect(Collectors.toList());
         busPartnerInfo.setUrlImages(urlImages);
 

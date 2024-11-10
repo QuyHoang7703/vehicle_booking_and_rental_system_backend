@@ -20,7 +20,7 @@ public class AccountRoleServiceImpl implements AccountRoleService {
     @Override
     public AccountRole getAccountRole(String email, String roleName) throws ApplicationException {
         Account account = this.accountRepository.findByEmail(email)
-                .orElseThrow(() -> new ApplicationException("Account not found"));
+                .orElse(null);
         if(account== null) {
             throw new ApplicationException("Account not found");
         }

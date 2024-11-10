@@ -92,7 +92,7 @@ public class DriverController {
     @DeleteMapping("/drivers/refuse-register")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResponseInfo<String>> refuseRegisterDriver(@RequestBody ReqPartnerAction reqPartnerAction) throws Exception {
-        this.driverService.refuseRegisterDriver(reqPartnerAction);
+        this.driverService.refuseOrDeleteRegisterDriver(reqPartnerAction);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Refused this register"));
     }
 

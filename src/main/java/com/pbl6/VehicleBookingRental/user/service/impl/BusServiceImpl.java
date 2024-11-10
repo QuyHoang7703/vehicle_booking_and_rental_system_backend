@@ -67,7 +67,7 @@ public class BusServiceImpl implements BusService {
         Bus savedBus = this.busRepository.save(bus);
 
         // Add images for bus
-        this.imageService.uploadAndSaveImages(busImages, String.valueOf(ImageOfObjectEnum.BUS), savedBus.getId());
+        this.imageService.uploadAndSaveImages(busImages, String.valueOf(ImageOfObjectEnum.BUS), savedBus.getId(), String.valueOf(ImageOfObjectEnum.BUS));
 
         return savedBus;
     }
@@ -98,7 +98,7 @@ public class BusServiceImpl implements BusService {
             List<String> currentUrlImages = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), busDb.getId())
                     .stream().map(Images::getPathImage).toList();
             this.s3Service.deleteFiles(currentUrlImages);
-            this.imageService.uploadAndSaveImages(busImages, String.valueOf(ImageOfObjectEnum.BUS), busDb.getId());
+            this.imageService.uploadAndSaveImages(busImages, String.valueOf(ImageOfObjectEnum.BUS), busDb.getId(), String.valueOf(ImageOfObjectEnum.BUS));
         }
 
         return this.busRepository.save(busDb);

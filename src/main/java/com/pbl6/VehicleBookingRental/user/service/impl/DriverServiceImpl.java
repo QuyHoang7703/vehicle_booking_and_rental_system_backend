@@ -180,22 +180,11 @@ public class DriverServiceImpl implements DriverService {
 
         ResBankAccountDTO resBankAccount = this.bankAccountService.convertoResBankAccountDTO(driver.getAccount().getId(), PartnerTypeEnum.DRIVER);
 
-        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail()
-                , String.valueOf(PartnerTypeEnum.DRIVER));
-        if(accountRole != null) {
-            resDriverDTO.setTimeBecomePartner(accountRole.getTimeBecomePartner());
-            resDriverDTO.setCancelReason(accountRole.getLockReason());
-            resDriverDTO.setTimeUpdate(accountRole.getTimeUpdate());
-
-        }
-
         resDriverDTO.setCitizen(citizenDTO);
         resDriverDTO.setDriverLicense(driverLicenseDTO);
         resDriverDTO.setVehicle(vehicleDTO);
         resDriverDTO.setRelative(relativeDTO);
         resDriverDTO.setBankAccount(resBankAccount);
-
-        resDriverDTO.setApprovalStatus(driver.getApprovalStatus());
 
         return resDriverDTO;
     }
@@ -278,7 +267,13 @@ public class DriverServiceImpl implements DriverService {
         meta.setTotal(driverPage.getTotalElements());
         res.setMeta(meta);
         List<ResGeneralDriverInfoDTO> generalDriverInfoDTOList = driverPage.getContent().stream()
-                .map(driver -> this.convertToResGeneralDriverInfoDTO(driver.getAccount(), driver))
+                .map(driver -> {
+                    try {
+                        return this.convertToResGeneralDriverInfoDTO(driver.getAccount(), driver);
+                    } catch (ApplicationException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .collect(Collectors.toList());
         res.setResult(generalDriverInfoDTOList);
         return res;
@@ -328,7 +323,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public ResGeneralDriverInfoDTO convertToResGeneralDriverInfoDTO(Account account, Driver driver) {
+    public ResGeneralDriverInfoDTO convertToResGeneralDriverInfoDTO(Account account, Driver driver) throws ApplicationException {
         ResGeneralDriverInfoDTO res = new ResGeneralDriverInfoDTO();
         ResGeneralDriverInfoDTO.GeneralDriverInfo generalDriverInfo = new ResGeneralDriverInfoDTO.GeneralDriverInfo();
         generalDriverInfo.setId(account.getId());
@@ -338,10 +333,18 @@ public class DriverServiceImpl implements DriverService {
         generalDriverInfo.setPermanentAddress(driver.getPermanentAddress());
         generalDriverInfo.setLocation(driver.getLocation());
         generalDriverInfo.setFormRegisterId(driver.getId());
+        generalDriverInfo.setApprovalStatus(driver.getApprovalStatus());
         List<String> urlAvatarOfDriver = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.AVATAR_OF_DRIVER), driver.getId())
                 .stream().map(image -> image.getPathImage())
                 .collect(Collectors.toList());
         generalDriverInfo.setAvatar(urlAvatarOfDriver.get(0));
+        AccountRole accountRole = this.accountRoleService.getAccountRole(driver.getAccount().getEmail()
+                , String.valueOf(PartnerTypeEnum.DRIVER));
+        if(accountRole != null) {
+            generalDriverInfo.setTimeBecomePartner(accountRole.getTimeBecomePartner());
+            generalDriverInfo.setCancelReason(accountRole.getLockReason());
+            generalDriverInfo.setTimeUpdate(accountRole.getTimeUpdate());
+        }
         res.setGeneralDriverInfo(generalDriverInfo);
         return res;
     }

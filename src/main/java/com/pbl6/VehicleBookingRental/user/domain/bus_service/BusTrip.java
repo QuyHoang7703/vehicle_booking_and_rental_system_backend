@@ -21,36 +21,29 @@ public class BusTrip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
     private String  departureLocation ;
+    private String arrivalLocation ;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate startOperationDay;
 //    private Instant departureTime ;
-    private String arrivalLocation ;
     private String durationJourney ;
     private double priceTicket;
-//    private String status ;
-    private Instant updateAt ;
+    private boolean status;
     private double discountPercentage;
     private int availableSeats ;
     private double ratingTotal;
+    private Instant updateAt ;
 
     @ManyToOne
     @JoinColumn(name = "bus_partner_id")
     private BusPartner busPartner;
 
-    @ManyToOne
-    @JoinColumn(name= "bus_id")
-    private Bus bus ;
-
-    @OneToMany(mappedBy = "busTrip", cascade = CascadeType.ALL)
-    private List<BreakDay> breakDayList;
-
-    @OneToMany(mappedBy = "busTrip", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "busTrip")
     private List<PickupLocation> pickupLocationList;
 
-    @OneToMany(mappedBy = "busTrip", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "busTrip")
     private List<DropOffLocation> dropOffLocationList;
 
-    @OneToMany(mappedBy = "busTrip", cascade = CascadeType.ALL)
-    private List<DepartTimeBusTrip> departTimeBusTripList;
+    @OneToMany(mappedBy = "busTrip")
+    private List<BusTripSchedule> busTripScheduleList;
 
 }

@@ -48,30 +48,7 @@ public class BusTripServiceImpl implements BusTripService {
 //                .orElseThrow(() -> new IdInvalidException("Bus type not found"));
 
         // Add bus for the bus trip
-        Bus bus = this.busRepository.findById(reqBusTripDTO.getBusId())
-                .orElseThrow(() -> new IdInvalidException("Bus not found"));
-        busTrip.setBus(bus);
 
-        List<BreakDay> breakDayList = reqBusTripDTO.getBreakDayList().stream()
-                .map(item -> {
-                    BreakDay breakDay  = new BreakDay();
-                    breakDay.setStartDay(item.getStartDay());
-                    breakDay.setEndDay(item.getEndDay());
-                    return breakDay;
-                }).toList();
-        breakDayList.forEach(breakDay -> this.breakDayRepository.save(breakDay));
-
-        List<DepartTimeBusTrip> departTimeBusTripList = reqBusTripDTO.getDepartTimeBusTripList().stream()
-                .map(item -> {
-                    DepartTimeBusTrip departTimeBusTrip = new DepartTimeBusTrip();
-                    departTimeBusTrip.setDepartureTime(item.getDepartureTime());
-                    return departTimeBusTrip;
-                }).toList();
-        List<DepartTimeBusTrip> savedDepartTimeBusTripList = this.departTimeBusTripRepository.saveAll(departTimeBusTripList);
-
-        busTrip.setDepartTimeBusTripList(savedDepartTimeBusTripList);
-        BusTrip savedBusTrip = this.busTripRepository.save(busTrip);
-//        bre
 
     }
 }

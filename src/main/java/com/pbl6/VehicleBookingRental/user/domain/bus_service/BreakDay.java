@@ -20,6 +20,6 @@ public class BreakDay {
     private LocalDate endDay;
 
     @ManyToOne
-    @JoinColumn(name = "bus_trip_id")
-    private BusTrip busTrip;
+    @JoinColumn(name = "bus_trip_schedule_id")
+    private BusTripSchedule busTripSchedule;
 }

@@ -1,8 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.dto.request.bus;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.DepartTimeBusTrip;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.DropOffLocation;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.PickupLocation;
 import lombok.Data;
@@ -20,8 +18,6 @@ public class ReqBusTripDTO {
     private Double discountPercentage;
     private List<PickupLocation> pickupLocationList;
     private List<DropOffLocation> dropOffLocationList;
-    private int busId;
-    private int busTypeId;
-    private List<BreakDay> breakDayList;
-    private List<DepartTimeBusTrip> departTimeBusTripList;
+//    private int busId;
+
 }

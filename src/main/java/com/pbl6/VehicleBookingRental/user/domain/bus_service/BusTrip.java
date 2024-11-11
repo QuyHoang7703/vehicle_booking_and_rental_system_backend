@@ -22,15 +22,8 @@ public class BusTrip {
     private int id ;
     private String  departureLocation ;
     private String arrivalLocation ;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate startOperationDay;
-//    private Instant departureTime ;
     private String durationJourney ;
-    private double priceTicket;
-    private boolean status;
-    private double discountPercentage;
-    private int availableSeats ;
-    private double ratingTotal;
+    private Instant createAt;
     private Instant updateAt ;
 
     @ManyToOne
@@ -45,5 +38,15 @@ public class BusTrip {
 
     @OneToMany(mappedBy = "busTrip")
     private List<BusTripSchedule> busTripScheduleList;
+
+    @PrePersist
+    public void prePersist(){
+        this.createAt = Instant.now();
+    }
+
+    @PreUpdate
+    public void preUpdate(){
+        this.updateAt = Instant.now();
+    }
 
 }

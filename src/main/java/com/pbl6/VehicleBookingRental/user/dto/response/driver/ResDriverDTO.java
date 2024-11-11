@@ -26,11 +26,10 @@ public class ResDriverDTO {
     private VehicleDTO vehicle;
     private RelativeDTO relative;
     private ResBankAccountDTO bankAccount;
-    @Enumerated(EnumType.STRING)
-    private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
-    private Instant timeBecomePartner;
-    private Instant timeUpdate;
-    private String cancelReason;
+//    private ApprovalStatusEnum approvalStatus = ApprovalStatusEnum.PENDING_APPROVAL;
+//    private Instant timeBecomePartner;
+//    private Instant timeUpdate;
+//    private String cancelReason;
 
     @Data
     @AllArgsConstructor

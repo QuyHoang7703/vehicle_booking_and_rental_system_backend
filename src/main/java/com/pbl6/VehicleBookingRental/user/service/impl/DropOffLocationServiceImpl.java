@@ -8,6 +8,8 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class DropOffLocationServiceImpl implements DropOffLocaionSevice {
@@ -21,6 +23,7 @@ public class DropOffLocationServiceImpl implements DropOffLocaionSevice {
     public DropOffLocation updateDropOffLocation(DropOffLocation dropOffLocation) throws IdInvalidException {
         DropOffLocation dropOffLocationDb = this.dropOffLocationRepository.findById(dropOffLocation.getId())
                 .orElseThrow(() -> new IdInvalidException("Drop off location not found"));
+        dropOffLocationDb.setProvinceName(dropOffLocation.getProvinceName());
         dropOffLocationDb.setName(dropOffLocation.getName());
         return this.dropOffLocationRepository.save(dropOffLocationDb);
 
@@ -31,5 +34,11 @@ public class DropOffLocationServiceImpl implements DropOffLocaionSevice {
         DropOffLocation pickupLocation = this.dropOffLocationRepository.findById(dropOffLocationId)
                 .orElseThrow(() -> new IdInvalidException("Drop off location not found"));
         this.dropOffLocationRepository.delete(pickupLocation);
+    }
+
+    @Override
+    public List<String> getDropOffLocationsByProvinceName(String provinceName) {
+        List<DropOffLocation> dropOffLocations = this.dropOffLocationRepository.findByProvinceName(provinceName);
+        return dropOffLocations.stream().map(DropOffLocation::getName).toList();
     }
 }

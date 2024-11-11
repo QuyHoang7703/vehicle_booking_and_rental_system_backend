@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface DropOffLocationRepository extends JpaRepository<DropOffLocation, Integer>, JpaSpecificationExecutor<DropOffLocation> {
     List<DropOffLocation> findByIdIn(List<Integer> ids);
+    List<DropOffLocation> findByProvinceName(String provinceName);
 }

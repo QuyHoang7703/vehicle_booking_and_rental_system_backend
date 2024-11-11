@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Data
 public class DropOffLocation {
@@ -11,10 +13,11 @@ public class DropOffLocation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    private String provinceName ;
+
     private String name;
 
-    @ManyToOne
-    @JoinColumn(name = "bus_trip_id")
+    @ManyToMany(mappedBy = "dropOffLocations")
     @JsonIgnore
-    private BusTrip busTrip;
+    private List<BusTrip> busTrip;
 }

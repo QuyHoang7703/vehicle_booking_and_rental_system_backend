@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
@@ -32,5 +34,10 @@ public class PickupLocationController {
     public ResponseEntity<Void> deletePickupLocation(@RequestParam("pickupLocationId") int pickupLocationId) throws IdInvalidException {
         this.pickupLocationService.deletePickupLocation(pickupLocationId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping("pickupLocations")
+    public ResponseEntity<List<String>> getPickupLocationNames(@RequestParam("provinceName") String provinceName) {
+        return ResponseEntity.status(HttpStatus.OK).body(this.pickupLocationService.getPickupLocationByProvinceName(provinceName));
     }
 }

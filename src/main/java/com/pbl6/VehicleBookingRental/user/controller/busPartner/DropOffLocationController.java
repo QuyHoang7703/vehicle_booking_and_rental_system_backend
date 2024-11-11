@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
@@ -33,5 +35,10 @@ public class DropOffLocationController {
     public ResponseEntity<Void> deleteDropOffLocation(@RequestParam("dropOffLocationId") int dropOffLocationId) throws IdInvalidException {
         this.dropOffLocaionSevice.deleteDropOffLocation(dropOffLocationId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping("/dropOffLocations")
+    public ResponseEntity<List<String>> getDropOffLocationName(@RequestParam("provinceName") String provinceName) {
+        return ResponseEntity.status(HttpStatus.OK).body(this.dropOffLocaionSevice.getDropOffLocationsByProvinceName(provinceName));
     }
 }

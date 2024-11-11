@@ -16,39 +16,46 @@ public class BusTripServiceImpl implements BusTripService {
     private final BusTripRepository busTripRepository;
     private final PickupLocationRepository pickupLocationRepository;
     private final DropOffLocationRepository dropOffLocationRepository;
-    private final BusTypeRepository busTypeRepository;
-    private final BusRepository busRepository;
-    private final BreakDayRepository breakDayRepository;
-    private final DepartTimeBusTripRepository departTimeBusTripRepository;
     @Override
-    public void createBusTrip(ReqBusTripDTO reqBusTripDTO) throws IdInvalidException {
+    public BusTrip createBusTrip(ReqBusTripDTO reqBusTripDTO) throws IdInvalidException {
         BusTrip busTrip = new BusTrip();
-        // Create a bus trip
         busTrip.setDepartureLocation(reqBusTripDTO.getDepartureLocation());
         busTrip.setArrivalLocation(reqBusTripDTO.getArrivalLocation());
-        busTrip.setStartOperationDay(reqBusTripDTO.getStartOperationDay());
         busTrip.setDurationJourney(reqBusTripDTO.getDurationJourney());
-        busTrip.setPriceTicket(reqBusTripDTO.getPriceTicket());
-        busTrip.setDiscountPercentage(reqBusTripDTO.getDiscountPercentage());
+        busTrip.setPickupLocations(this.getPickupLocations(reqBusTripDTO));
+        busTrip.setDropOffLocations(this.getDropOffLocations(reqBusTripDTO));
 
-        // Find pickup location for the bus trip by ids
-        List<Integer> idOfPickupLocationList = reqBusTripDTO.getPickupLocationList().stream()
-                .map(PickupLocation::getId).toList();
-        List<PickupLocation> pickupLocationList = this.pickupLocationRepository.findByIdIn(idOfPickupLocationList);
-        busTrip.setPickupLocationList(pickupLocationList);
-
-        // Find drop off location for the bus trip by ids
-        List<Integer> idOfDropOffLocationList = reqBusTripDTO.getDropOffLocationList().stream()
-                .map(DropOffLocation::getId).toList();
-        List<DropOffLocation> dropOffLocationList = this.dropOffLocationRepository.findByIdIn(idOfDropOffLocationList);
-        busTrip.setDropOffLocationList(dropOffLocationList);
-
-        // Add bus type for the bus trip
-//        BusType busType = this.busTypeRepository.findById(reqBusTripDTO.getBusTypeId())
-//                .orElseThrow(() -> new IdInvalidException("Bus type not found"));
-
-        // Add bus for the bus trip
-
-
+        return busTripRepository.save(busTrip);
     }
+
+    @Override
+    public BusTrip updateBusTrip(ReqBusTripDTO reqBusTripDTO) throws IdInvalidException {
+        BusTrip busTripDb = this.findBusTripById(reqBusTripDTO.getId());
+        busTripDb.setDepartureLocation(reqBusTripDTO.getDepartureLocation());
+        busTripDb.setArrivalLocation(reqBusTripDTO.getArrivalLocation());
+        busTripDb.setDurationJourney(reqBusTripDTO.getDurationJourney());
+        busTripDb.setPickupLocations(this.getPickupLocations(reqBusTripDTO));
+        busTripDb.setDropOffLocations(this.getDropOffLocations(reqBusTripDTO));
+
+        return this.busTripRepository.save(busTripDb);
+    }
+
+    @Override
+    public BusTrip findBusTripById(int id) throws IdInvalidException {
+        return this.busTripRepository.findById(id).orElseThrow(()-> new IdInvalidException("BusTrip not found"));
+    }
+
+    private List<PickupLocation> getPickupLocations(ReqBusTripDTO reqBusTripDTO) {
+        List<Integer> idOfPickupLocations = reqBusTripDTO.getPickupLocations().stream()
+                .map(PickupLocation::getId).toList();
+        return this.pickupLocationRepository.findByIdIn(idOfPickupLocations);
+    }
+
+    private List<DropOffLocation> getDropOffLocations(ReqBusTripDTO reqBusTripDTO) {
+        List<Integer> idOfDropOffLocations = reqBusTripDTO.getDropOffLocations().stream()
+                .map(DropOffLocation::getId).toList();
+        return this.dropOffLocationRepository.findByIdIn(idOfDropOffLocations);
+    }
+
+
 }

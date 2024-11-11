@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface PickupLocationRepository extends JpaRepository<PickupLocation, Integer>, JpaSpecificationExecutor<PickupLocation> {
     List<PickupLocation> findByIdIn(List<Integer> ids);
+    List<PickupLocation> findByProvinceName(String provinceName);
+
 }

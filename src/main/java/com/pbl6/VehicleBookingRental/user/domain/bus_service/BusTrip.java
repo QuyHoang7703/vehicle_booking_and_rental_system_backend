@@ -1,14 +1,12 @@
 package com.pbl6.VehicleBookingRental.user.domain.bus_service;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -23,30 +21,33 @@ public class BusTrip {
     private String  departureLocation ;
     private String arrivalLocation ;
     private String durationJourney ;
-    private Instant createAt;
-    private Instant updateAt ;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String pickupLocation;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String dropOffLocation;
 
     @ManyToOne
     @JoinColumn(name = "bus_partner_id")
+    @JsonIgnore
     private BusPartner busPartner;
 
-    @OneToMany(mappedBy = "busTrip")
-    private List<PickupLocation> pickupLocationList;
+    @ManyToMany
+    @JoinTable(
+            name="bus_trip_pickup_location",
+            joinColumns = @JoinColumn(name="bus_trip_id"),
+            inverseJoinColumns = @JoinColumn(name="pickup_location_id"))
+    private List<PickupLocation> pickupLocations;
+
+    @ManyToMany
+    @JoinTable(
+            name="bus_trip_drop_off_location",
+            joinColumns = @JoinColumn(name="bus_trip_id"),
+            inverseJoinColumns = @JoinColumn(name="drop_off_location_id")
+    )
+    private List<DropOffLocation> dropOffLocations;
 
     @OneToMany(mappedBy = "busTrip")
-    private List<DropOffLocation> dropOffLocationList;
-
-    @OneToMany(mappedBy = "busTrip")
-    private List<BusTripSchedule> busTripScheduleList;
-
-    @PrePersist
-    public void prePersist(){
-        this.createAt = Instant.now();
-    }
-
-    @PreUpdate
-    public void preUpdate(){
-        this.updateAt = Instant.now();
-    }
+    @JsonIgnore
+    private List<BusTripSchedule> busTripSchedules;
 
 }

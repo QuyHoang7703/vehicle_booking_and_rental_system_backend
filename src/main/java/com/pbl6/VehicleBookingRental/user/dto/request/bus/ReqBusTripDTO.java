@@ -9,15 +9,10 @@ import java.time.LocalDate;
 import java.util.List;
 @Data
 public class ReqBusTripDTO {
+    private int id;
     private String departureLocation;
     private String arrivalLocation;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate startOperationDay;
     private String durationJourney;
-    private Double priceTicket;
-    private Double discountPercentage;
-    private List<PickupLocation> pickupLocationList;
-    private List<DropOffLocation> dropOffLocationList;
-//    private int busId;
-
+    private List<PickupLocation> pickupLocations;
+    private List<DropOffLocation> dropOffLocations;
 }

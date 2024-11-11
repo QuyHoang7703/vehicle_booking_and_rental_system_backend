@@ -46,8 +46,8 @@ public class UtilitySeviceImpl implements UtilityService {
     }
 
     @Override
-    public Utility updateUtility(Utility reqUtility, MultipartFile utilityImage) throws ApplicationException {
-        Utility utilityDb = this.getUtility(reqUtility.getId());
+    public Utility updateUtility(Utility reqUtility, MultipartFile utilityImage) throws IdInvalidException {
+        Utility utilityDb = this.getUtilityById(reqUtility.getId());
         utilityDb.setName(reqUtility.getName());
         utilityDb.setDescription(reqUtility.getDescription());
 
@@ -62,17 +62,17 @@ public class UtilitySeviceImpl implements UtilityService {
     }
 
     @Override
-    public void deleteUtility(int idUtility) throws ApplicationException {
-        Utility utilityDb = this.getUtility(idUtility);
+    public void deleteUtility(int idUtility) throws IdInvalidException {
+        Utility utilityDb = this.getUtilityById(idUtility);
         this.s3Service.deleteFile(utilityDb.getImage());
 
         this.utilityRepository.delete(utilityDb);
     }
 
     @Override
-    public Utility getUtility(int idUtility) throws ApplicationException {
+    public Utility getUtilityById(int idUtility) throws IdInvalidException {
         return this.utilityRepository.findById(idUtility)
-                .orElseThrow(() -> new ApplicationException("Id of utility not found"));
+                .orElseThrow(() -> new IdInvalidException("Id of utility not found"));
     }
 
     @Override

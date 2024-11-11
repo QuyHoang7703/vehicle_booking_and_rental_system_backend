@@ -26,7 +26,7 @@ public interface DriverService {
                                            List<MultipartFile> vehicleRegistrations,
                                            List<MultipartFile> vehicleImages,
                                            List<MultipartFile> vehicleInsuranceImages) throws Exception;
-    ResGeneralDriverInfoDTO convertToResGeneralDriverInfoDTO(Account account, Driver driver);
+    ResGeneralDriverInfoDTO convertToResGeneralDriverInfoDTO(Account account, Driver driver) throws ApplicationException;
     ResDriverDTO convertoResDriverDTO(ResGeneralDriverInfoDTO resGeneralDriverInfoDTO, Driver driver) throws Exception;
     void verifyDriver(int id) throws IdInvalidException, ApplicationException, IOException;
     void cancelDriver(ReqPartnerAction reqPartnerAction) throws Exception;

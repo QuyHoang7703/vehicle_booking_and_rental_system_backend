@@ -32,19 +32,19 @@ public class BusTypeController {
 
     @GetMapping("/bus-types")
     public ResponseEntity<ResBusType> fetchById(@RequestParam("idBusType") int idBusType) throws IdInvalidException, ApplicationException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.busTypeService.findById(idBusType));
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTypeService.findById(idBusType));
     }
 
     @PutMapping("/bus-types")
     public ResponseEntity<ResBusType> updateBusType(@RequestBody BusType reqBusType) throws Exception {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.busTypeService.updateBusType(reqBusType));
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTypeService.updateBusType(reqBusType));
     }
 
     @DeleteMapping("/bus-types")
     @ApiMessage("Deleted this bus type")
     public ResponseEntity<Void> deleteBusType(@RequestParam("idBusType") int idBusType) throws Exception {
         this.busTypeService.deleteById(idBusType);
-        return ResponseEntity.status(HttpStatus.CREATED).body(null);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @GetMapping("/bus-types-all")

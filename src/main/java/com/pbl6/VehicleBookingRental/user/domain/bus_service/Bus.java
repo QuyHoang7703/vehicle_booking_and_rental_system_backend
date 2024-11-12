@@ -32,6 +32,9 @@ public class Bus {
     @JsonIgnore
     private BusPartner busPartner;
 
+    @OneToMany(mappedBy = "bus")
+    private List<BusTripSchedule> busTripScheduleList;
+
     @PrePersist
     public void handleBeforeCreated(){
         this.createAt = Instant.now();

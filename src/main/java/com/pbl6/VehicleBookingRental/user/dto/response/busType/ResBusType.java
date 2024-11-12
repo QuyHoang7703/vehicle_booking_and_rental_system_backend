@@ -8,4 +8,6 @@ public class ResBusType {
     private String name;
     private int numberOfSeat;
     private String chairType;
+
+
 }

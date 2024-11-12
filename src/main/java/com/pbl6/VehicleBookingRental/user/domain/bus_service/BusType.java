@@ -18,7 +18,7 @@ public class BusType {
     private int numberOfSeat;
     private String chairType;
 
-    @OneToMany(mappedBy = "busType", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "busType")
     @JsonIgnore
     private List<Bus> buses;
 

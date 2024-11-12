@@ -1,27 +1,16 @@
 package com.pbl6.VehicleBookingRental.user.dto.request.bus;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.DepartTimeBusTrip;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.DropOffLocation;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.PickupLocation;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.util.List;
 @Data
+
 public class ReqBusTripDTO {
+    private int id;
     private String departureLocation;
     private String arrivalLocation;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate startOperationDay;
     private String durationJourney;
-    private Double priceTicket;
-    private Double discountPercentage;
-    private List<PickupLocation> pickupLocationList;
-    private List<DropOffLocation> dropOffLocationList;
-    private int busId;
-    private int busTypeId;
-    private List<BreakDay> breakDayList;
-    private List<DepartTimeBusTrip> departTimeBusTripList;
+    private List<String> pickupLocations;
+    private List<String> dropOffLocations;
 }

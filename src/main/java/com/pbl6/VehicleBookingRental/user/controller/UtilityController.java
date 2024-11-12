@@ -5,6 +5,7 @@ import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.service.UtilityService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -30,23 +31,29 @@ public class UtilityController {
 
     @PutMapping("/utilities")
     public ResponseEntity<Utility> updateUtility(@RequestPart("utilityInfo") Utility utility
-            , @RequestPart(value = "utilityImage", required = false) MultipartFile utilityImage) throws ApplicationException {
+            , @RequestPart(value = "utilityImage", required = false) MultipartFile utilityImage) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.updateUtility(utility, utilityImage));
     }
 
     @DeleteMapping("/utilities")
     @ApiMessage("Deleted this utility")
-    public ResponseEntity<Void> deleteUtility(@RequestParam("idUtility") int idUtility) throws ApplicationException {
+    public ResponseEntity<Void> deleteUtility(@RequestParam("idUtility") int idUtility) throws IdInvalidException {
         this.utilityService.deleteUtility(idUtility);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
     @GetMapping("/utilities-all")
     @ApiMessage("Fetch all utilities")
-    public ResponseEntity<ResultPaginationDTO> deleteUtility(@Filter Specification<Utility> spec, Pageable pageable) throws ApplicationException {
-
+    public ResponseEntity<ResultPaginationDTO> getAllUtilities(@Filter Specification<Utility> spec, Pageable pageable) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.getAllUtility(spec, pageable));
     }
+
+    @GetMapping("/utilities")
+    public ResponseEntity<Utility> getUtilityById(@RequestParam("utilityId") int utilityId) throws IdInvalidException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.getUtilityById(utilityId));
+    }
+
+
 
 
 

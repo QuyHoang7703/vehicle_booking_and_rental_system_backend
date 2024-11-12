@@ -18,16 +18,18 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
-@PreAuthorize("hasRole('ADMIN')")
+
 public class VehicleTypeController {
     private final VehicleTypeService vehicleTypeService;
 
     @PostMapping("/vehicle-types")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<VehicleType> createVehicleType(@RequestBody VehicleType vehicleType) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.vehicleTypeService.createVehicleType(vehicleType));
     }
 
     @PutMapping("/vehicle-types")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<VehicleType> updateVehicleType(@RequestBody VehicleType vehicleType) throws IdInvalidException {
         if(this.vehicleTypeService.findVehicleTypeById(vehicleType.getId()) == null) {
             throw new IdInvalidException("Id vehicle type is invalid with id = " + vehicleType.getId());
@@ -36,6 +38,7 @@ public class VehicleTypeController {
     }
 
     @DeleteMapping("/vehicle-types")
+    @PreAuthorize("hasRole('ADMIN')")
     @ApiMessage("Deleted Vehicle Type")
     public ResponseEntity<Void> deleteVehicleTypeById(@RequestParam("idVehicleType") int id) throws IdInvalidException {
         VehicleType vehicleType = this.vehicleTypeService.findVehicleTypeById(id);

@@ -3,8 +3,8 @@ package com.pbl6.VehicleBookingRental.user.controller.busPartner;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Bus;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBus;
-import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetail;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetailDTO;
 import com.pbl6.VehicleBookingRental.user.service.BusService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.turkraft.springfilter.boot.Filter;
@@ -27,15 +27,15 @@ public class BusController {
     private final BusService busService;
 
     @PostMapping("/buses")
-    public ResponseEntity<ResBus> createBus(@RequestPart("busInfo") ReqBusDTO reqBus,
-                                            @RequestPart("busImages") List<MultipartFile> busImages) throws Exception {
+    public ResponseEntity<ResBusDTO> createBus(@RequestPart("busInfo") ReqBusDTO reqBus,
+                                               @RequestPart("busImages") List<MultipartFile> busImages) throws Exception {
         Bus createdBus = this.busService.createBus(reqBus, busImages);
         return ResponseEntity.status(HttpStatus.CREATED).body(this.busService.convertToResBus(createdBus));
     }
 
     @PutMapping("/buses")
-    public ResponseEntity<ResBus> updateBus(@RequestPart("busInfo") ReqBusDTO reqBus,
-                                                  @RequestPart("busImages") List<MultipartFile> busImages) throws Exception {
+    public ResponseEntity<ResBusDTO> updateBus(@RequestPart("busInfo") ReqBusDTO reqBus,
+                                               @RequestPart("busImages") List<MultipartFile> busImages) throws Exception {
         Bus updatedBus = this.busService.updateBus(reqBus, busImages);
         return ResponseEntity.status(HttpStatus.OK).body(this.busService.convertToResBus(updatedBus));
     }
@@ -48,7 +48,7 @@ public class BusController {
     }
 
     @GetMapping("/buses")
-    public ResponseEntity<ResBusDetail> fetchBusDetail(@RequestParam("busId") int busId) throws Exception {
+    public ResponseEntity<ResBusDetailDTO> fetchBusDetail(@RequestParam("busId") int busId) throws Exception {
         Bus bus = this.busService.findBusById(busId);
         return ResponseEntity.status(HttpStatus.OK).body(this.busService.convertToResBusDetail(bus));
     }

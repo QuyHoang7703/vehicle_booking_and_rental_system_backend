@@ -22,29 +22,15 @@ public class BusTrip {
     private String arrivalLocation ;
     private String durationJourney ;
     @Column(columnDefinition = "MEDIUMTEXT")
-    private String pickupLocation;
+    private String pickupLocations;
     @Column(columnDefinition = "MEDIUMTEXT")
-    private String dropOffLocation;
+    private String dropOffLocations;
 
     @ManyToOne
     @JoinColumn(name = "bus_partner_id")
     @JsonIgnore
     private BusPartner busPartner;
 
-    @ManyToMany
-    @JoinTable(
-            name="bus_trip_pickup_location",
-            joinColumns = @JoinColumn(name="bus_trip_id"),
-            inverseJoinColumns = @JoinColumn(name="pickup_location_id"))
-    private List<PickupLocation> pickupLocations;
-
-    @ManyToMany
-    @JoinTable(
-            name="bus_trip_drop_off_location",
-            joinColumns = @JoinColumn(name="bus_trip_id"),
-            inverseJoinColumns = @JoinColumn(name="drop_off_location_id")
-    )
-    private List<DropOffLocation> dropOffLocations;
 
     @OneToMany(mappedBy = "busTrip")
     @JsonIgnore

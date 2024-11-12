@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.domain.bus_service;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,5 +28,6 @@ public class BreakDay {
 
     @ManyToOne
     @JoinColumn(name = "bus_trip_schedule_id")
+    @JsonIgnore
     private BusTripSchedule busTripSchedule;
 }

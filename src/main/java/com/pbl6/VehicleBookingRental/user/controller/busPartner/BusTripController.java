@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.controller.busPartner;
 
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.service.BusTripService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -20,19 +21,21 @@ public class BusTripController {
 
     @PostMapping("busTrips")
     @ApiMessage("Created bus trip")
-    public ResponseEntity<BusTrip> createBusTrip(@RequestBody ReqBusTripDTO reqBusTripDTO) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.busTripService.createBusTrip(reqBusTripDTO));
+    public ResponseEntity<ResBusTripDTO> createBusTrip(@RequestBody ReqBusTripDTO reqBusTripDTO) throws IdInvalidException {
+        BusTrip busTrip = busTripService.createBusTrip(reqBusTripDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.busTripService.convertToBusTripDTO(busTrip));
     }
 
     @PutMapping("busTrips")
     @ApiMessage("Updated bus trip")
-    public ResponseEntity<BusTrip> updateBusTrip(@RequestBody ReqBusTripDTO reqBusTripDTO) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.updateBusTrip(reqBusTripDTO));
+    public ResponseEntity<ResBusTripDTO> updateBusTrip(@RequestBody ReqBusTripDTO reqBusTripDTO) throws IdInvalidException {
+        BusTrip busTrip = busTripService.updateBusTrip(reqBusTripDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.convertToBusTripDTO(busTrip));
     }
 
     @GetMapping("busTrips")
-    public ResponseEntity<BusTrip> getBusTripById(@RequestParam("idBusTrip") int idBusTrip) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.busTripService.findBusTripById(idBusTrip));
+    public ResponseEntity<ResBusTripDTO> getBusTripById(@RequestParam("idBusTrip") int idBusTrip) throws IdInvalidException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.findBusTripById(idBusTrip));
     }
 
 }

@@ -9,8 +9,8 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.Utility;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBus;
-import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetail;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetailDTO;
 import com.pbl6.VehicleBookingRental.user.repository.UtilityRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTypeRepository;
@@ -105,8 +105,8 @@ public class BusServiceImpl implements BusService {
     }
 
     @Override
-    public ResBusDetail convertToResBusDetail(Bus bus) {
-        ResBusDetail resBus = new ResBusDetail();
+    public ResBusDetailDTO convertToResBusDetail(Bus bus) {
+        ResBusDetailDTO resBus = new ResBusDetailDTO();
         resBus.setLicensePlate(bus.getLicensePlate());
         resBus.setUtilities(bus.getUtilities());
         resBus.setBusType(bus.getBusType());
@@ -159,7 +159,7 @@ public class BusServiceImpl implements BusService {
         meta.setTotal(busPage.getTotalElements());
         res.setMeta(meta);
 
-        List<ResBus> buses = busPage.getContent().stream().map(bus -> {
+        List<ResBusDTO> buses = busPage.getContent().stream().map(bus -> {
                     try {
                         return this.convertToResBus(bus);
                     } catch (IdInvalidException e) {
@@ -172,8 +172,8 @@ public class BusServiceImpl implements BusService {
     }
 
     @Override
-    public ResBus convertToResBus(Bus bus) throws IdInvalidException {
-        ResBus resBus = new ResBus();
+    public ResBusDTO convertToResBus(Bus bus) throws IdInvalidException {
+        ResBusDTO resBus = new ResBusDTO();
         resBus.setLicensePlate(bus.getLicensePlate());
 
         BusType busType = this.busTypeRepository.findById(bus.getBusType().getId())

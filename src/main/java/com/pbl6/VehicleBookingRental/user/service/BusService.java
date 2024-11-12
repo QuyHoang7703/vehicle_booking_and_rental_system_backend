@@ -3,8 +3,8 @@ package com.pbl6.VehicleBookingRental.user.service;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Bus;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBus;
-import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetail;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetailDTO;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import org.springframework.data.domain.Pageable;
@@ -16,10 +16,10 @@ import java.util.List;
 public interface BusService {
     Bus createBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException;
     Bus updateBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException;
-    ResBusDetail convertToResBusDetail(Bus bus);
+    ResBusDetailDTO convertToResBusDetail(Bus bus);
     void deleteBus(int busId) throws IdInvalidException, ApplicationException;
     Bus findBusById(int busId) throws IdInvalidException, ApplicationException;
     ResultPaginationDTO getAllBuses(Specification<Bus> spec, Pageable pageable) throws IdInvalidException, ApplicationException;
-    ResBus convertToResBus(Bus bus) throws IdInvalidException;
+    ResBusDTO convertToResBus(Bus bus) throws IdInvalidException;
 
 }

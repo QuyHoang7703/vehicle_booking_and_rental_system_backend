@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResBusDetail {
+public class ResBusDetailDTO {
     private String licensePlate;
     private List<Utility> utilities;
     private BusType busType;

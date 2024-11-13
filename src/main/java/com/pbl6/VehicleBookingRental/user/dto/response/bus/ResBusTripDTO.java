@@ -5,6 +5,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.Duration;
 import java.util.List;
 @Data
 @Builder
@@ -22,6 +23,6 @@ public class ResBusTripDTO {
         private int id;
         private String departureLocation;
         private String arrivalLocation;
-        private String durationJourney;
+        private Duration durationJourney;
     }
 }

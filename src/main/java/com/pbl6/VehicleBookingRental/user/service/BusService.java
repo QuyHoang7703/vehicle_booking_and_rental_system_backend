@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BusService {
     Bus createBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException;
@@ -21,5 +22,5 @@ public interface BusService {
     Bus findBusById(int busId) throws IdInvalidException, ApplicationException;
     ResultPaginationDTO getAllBuses(Specification<Bus> spec, Pageable pageable) throws IdInvalidException, ApplicationException;
     ResBusDTO convertToResBus(Bus bus) throws IdInvalidException;
-
+    Map<Integer, String> getBusesByBusTypeId(String busTypeName) throws IdInvalidException, ApplicationException;
 }

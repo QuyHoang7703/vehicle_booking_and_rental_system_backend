@@ -53,4 +53,6 @@ public class BusTypeController {
         return ResponseEntity.status(HttpStatus.OK).body(this.busTypeService.getAllBusTypes(spec, pageable));
     }
 
+
+
 }

@@ -28,7 +28,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -184,6 +186,28 @@ public class BusServiceImpl implements BusService {
         resBus.setImageRepresentative(images.get(0).getPathImage());
 
         return resBus;
+    }
+
+    @Override
+    public Map<Integer, String> getBusesByBusTypeId(String busTypeName) throws IdInvalidException, ApplicationException {
+        List<Bus> buses = this.busRepository.findByBusType_Name(busTypeName);
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+        boolean authorized = false;
+        for (Bus bus : buses) {
+            // Kiểm tra xem bus này có nằm trong danh sách các xe của busPartner hay không
+            if (businessPartner.getBusPartner().getBuses().contains(bus)) {
+                authorized = true;
+                break;
+            }
+        }
+        if (!authorized) {
+            throw new ApplicationException("You are not authorized to find this bus");
+        }
+        Map<Integer, String> map = new HashMap<>();
+        for(Bus bus : buses) {
+            map.put(bus.getId(), bus.getLicensePlate());
+        }
+        return map;
     }
 
 

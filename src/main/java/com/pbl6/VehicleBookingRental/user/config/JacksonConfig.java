@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
@@ -22,7 +23,7 @@ public class JacksonConfig {
 
         // Đăng ký CustomInstantSerializer chỉ cho Instant
         module.addSerializer(Instant.class, new CustomInstantSerializer());
-
+        module.addSerializer(Duration.class, new CustomDurationSerializer());
         objectMapper.registerModule(new JavaTimeModule()); // Đăng ký module cho Java 8 Time API
         objectMapper.registerModule(module);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

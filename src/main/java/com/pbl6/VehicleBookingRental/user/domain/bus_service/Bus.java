@@ -33,7 +33,7 @@ public class Bus {
     private BusPartner busPartner;
 
     @OneToMany(mappedBy = "bus")
-    private List<BusTripSchedule> busTripScheduleList;
+    private List<BusTripSchedule> busTripSchedules;
 
     @PrePersist
     public void handleBeforeCreated(){

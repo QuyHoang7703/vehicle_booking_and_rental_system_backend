@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,14 +26,12 @@ import java.util.List;
 @PreAuthorize("hasRole('BUS_PARTNER')")
 public class BusController {
     private final BusService busService;
-
     @PostMapping("/buses")
     public ResponseEntity<ResBusDTO> createBus(@RequestPart("busInfo") ReqBusDTO reqBus,
                                                @RequestPart("busImages") List<MultipartFile> busImages) throws Exception {
         Bus createdBus = this.busService.createBus(reqBus, busImages);
         return ResponseEntity.status(HttpStatus.CREATED).body(this.busService.convertToResBus(createdBus));
     }
-
     @PutMapping("/buses")
     public ResponseEntity<ResBusDTO> updateBus(@RequestPart("busInfo") ReqBusDTO reqBus,
                                                @RequestPart("busImages") List<MultipartFile> busImages) throws Exception {
@@ -56,6 +55,11 @@ public class BusController {
     @GetMapping("/buses-all")
     public ResponseEntity<ResultPaginationDTO> fetchAllBuses(@Filter Specification<Bus> spec, Pageable pageable) throws Exception {
         return ResponseEntity.status(HttpStatus.OK).body(this.busService.getAllBuses(spec, pageable));
+    }
+
+    @GetMapping("/buses/by-bus-type")
+    public ResponseEntity<Map<Integer, String>> getBusesByBusTypeId(@RequestParam("nameBusType") String nameBusType) throws Exception {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busService.getBusesByBusTypeId(nameBusType));
     }
 
 }

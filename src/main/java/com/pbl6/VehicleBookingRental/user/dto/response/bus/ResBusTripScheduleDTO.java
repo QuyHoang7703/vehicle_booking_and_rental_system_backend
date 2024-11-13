@@ -1,34 +1,42 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.bus;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTrip;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusType;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.pbl6.VehicleBookingRental.user.config.CustomDurationSerializer;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.Duration;
 import java.time.LocalTime;
-import java.util.List;
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResBusTripScheduleDTO {
-    private ResBusTripDTO.BusTripInfo busTripInfo;
-    private BusInfo busInfo;
+    private int idBusTripSchedule;
+    private String businessName;
+    private String busTypeName;
+    private String departureLocation;
+    private String arrivalLocation;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime departureTime;
+    @JsonSerialize(using = CustomDurationSerializer.class)
+    private Duration durationJourney;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    private LocalTime arrivalTime;
     private double discountPercentage;
     private double priceTicket;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-    private LocalDate startOperationDay;
     private int availableSeats;
-    private List<BreakDay> breakDays;
 
-    @Data
-    @Builder
-    public static class BusInfo{
-        private String licensePlate;
-        private BusType busType;
+    public LocalTime getArrivalTime() {
+        if(this.departureTime != null && this.durationJourney != null) {
+            this.arrivalTime = this.departureTime.plus(this.durationJourney);
+            return this.arrivalTime;
+        }
+        return null;
+
     }
 
 }

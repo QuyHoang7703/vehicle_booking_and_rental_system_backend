@@ -64,7 +64,7 @@ public class UtilitySeviceImpl implements UtilityService {
     @Override
     public void deleteUtility(int idUtility) throws IdInvalidException {
         Utility utilityDb = this.getUtilityById(idUtility);
-        if(utilityDb.getBuses()!= null){
+        if(utilityDb.getBuses()!= null && !utilityDb.getBuses().isEmpty()){
             throw new RuntimeException("Cannot delete this utility, it has buses");
         }
         this.s3Service.deleteFile(utilityDb.getImage());

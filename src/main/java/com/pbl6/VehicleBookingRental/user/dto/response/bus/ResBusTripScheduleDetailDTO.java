@@ -25,6 +25,7 @@ public class ResBusTripScheduleDetailDTO {
     private LocalDate startOperationDay;
     private int availableSeats;
     private List<BreakDay> breakDays;
+    private boolean isOperation;
 
     @Data
     @Builder

@@ -176,6 +176,7 @@ public class BusServiceImpl implements BusService {
     @Override
     public ResBusDTO convertToResBus(Bus bus) throws IdInvalidException {
         ResBusDTO resBus = new ResBusDTO();
+        resBus.setBusId(bus.getId());
         resBus.setLicensePlate(bus.getLicensePlate());
 
         BusType busType = this.busTypeRepository.findById(bus.getBusType().getId())

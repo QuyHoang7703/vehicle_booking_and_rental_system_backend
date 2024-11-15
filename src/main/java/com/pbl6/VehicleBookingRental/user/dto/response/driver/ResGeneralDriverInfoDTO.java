@@ -17,6 +17,7 @@ public class ResGeneralDriverInfoDTO {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class GeneralDriverInfo{
         private int id;
         private String email;

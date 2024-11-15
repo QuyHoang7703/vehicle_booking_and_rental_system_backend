@@ -96,6 +96,13 @@ public class DriverController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Refused this register"));
     }
 
-
+    @GetMapping("/drivers/register-status")
+    public ResponseEntity<ResponseInfo<String>> getRegisterStatus(){
+        String status = this.driverService.getStatusRegister();
+        if(status==null){
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Not registered yet"));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>(status));
+    }
 
 }

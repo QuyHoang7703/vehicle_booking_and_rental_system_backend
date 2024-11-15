@@ -36,5 +36,6 @@ public interface DriverService {
     ResCancelDriver getInfoCancelDriver(int idDriver) throws IdInvalidException, ApplicationException;
     @Transactional
     void refuseOrDeleteRegisterDriver(ReqPartnerAction reqPartnerAction) throws IdInvalidException, IOException, ApplicationException;
+    String getStatusRegister();
 
 }

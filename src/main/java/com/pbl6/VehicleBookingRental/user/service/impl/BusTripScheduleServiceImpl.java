@@ -19,17 +19,22 @@ import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BusTripScheduleRepository busTripScheduleRepository;
     private final BusTripRepository busTripRepository;
@@ -122,6 +127,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .startOperationDay(busTripSchedule.getStartOperationDay())
                 .availableSeats(busTripSchedule.getAvailableSeats()) // Có thể thay thế sau này khi order
                 .breakDays(busTripSchedule.getBreakDays())
+                .isOperation(busTripSchedule.isOperation())
                 .build();
         return res;
     }
@@ -185,6 +191,36 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         return res;
     }
+
+    // @Scheduled(cron = "0 0 0 * * ?")
+//    @Transactional
+//    @Scheduled(cron = "0 */1 * * * *")
+//    public void updateBusTripScheduleStatus() {
+//        LocalDate today = LocalDate.now();
+//        log.info("Today is: " + today);
+//        List<BusTripSchedule> schedules = busTripScheduleRepository.findAll();
+//
+//        for (BusTripSchedule schedule : schedules) {
+//            List<BreakDay> breakDays = schedule.getBreakDays();
+//            boolean isBreakDay = false;
+//            for (BreakDay breakDay : breakDays) {
+//                log.info("Start of reakDay is: " + breakDay.getStartDay());
+//                boolean check = today.isBefore(breakDay.getStartDay());
+//                log.info("Check: " + check);
+//                if(!today.isBefore(breakDay.getStartDay()) && !today.isAfter(breakDay.getEndDay())) {
+//                    isBreakDay = true;
+//                    break;
+//                }
+//            }
+//            if(isBreakDay && !schedule.isOperation()) {
+//                schedule.setOperation(false);
+//                log.info("Change status operation");
+//            }
+//        }
+//
+//        busTripScheduleRepository.saveAll(schedules);
+//        log.info("Updated status operation for all schedules");
+//    }
 
 
 }

@@ -19,9 +19,9 @@ public class BusPartner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id ;
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String description ;
     private String urlFanpage;
-//    private String policy;
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "business_partner_id")

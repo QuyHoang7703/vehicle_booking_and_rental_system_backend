@@ -24,6 +24,7 @@ public class BusTripSchedule {
     private double ratingTotal;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate startOperationDay;
+    private boolean isOperation;
 
     @ManyToOne
     @JoinColumn(name="bus_trip_id")

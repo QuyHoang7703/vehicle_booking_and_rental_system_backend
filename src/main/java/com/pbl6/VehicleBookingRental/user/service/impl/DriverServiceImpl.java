@@ -323,6 +323,18 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
+    public String getStatusRegister() {
+        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
+        Account account = this.accountService.handleGetAccountByUsername(email);
+        Driver driver = account.getDriver();
+        if(driver != null){
+            ApprovalStatusEnum approvalStatus = driver.getApprovalStatus();
+            return String.valueOf(approvalStatus);
+        }
+        return null;
+    }
+
+    @Override
     public ResGeneralDriverInfoDTO convertToResGeneralDriverInfoDTO(Account account, Driver driver) throws ApplicationException {
         ResGeneralDriverInfoDTO res = new ResGeneralDriverInfoDTO();
         ResGeneralDriverInfoDTO.GeneralDriverInfo generalDriverInfo = new ResGeneralDriverInfoDTO.GeneralDriverInfo();

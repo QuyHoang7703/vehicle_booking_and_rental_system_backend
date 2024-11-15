@@ -4,6 +4,7 @@ import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
@@ -244,5 +245,19 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     public BusinessPartner getBusinessPartnerById(int id) throws IdInvalidException {
         return this.businessPartnerRepository.findById(id)
                 .orElseThrow(() -> new IdInvalidException("Business partner not found"));
+    }
+
+    @Override
+    public String getStatusRegisterPartner(PartnerTypeEnum partnerType) throws ApplicationException {
+        try{
+            BusinessPartner businessPartner = this.getCurrentBusinessPartner(partnerType);
+            if(businessPartner != null){
+                return String.valueOf(businessPartner.getApprovalStatus());
+            }
+        }catch (ApplicationException e){
+            return null;
+        }
+
+        return null;
     }
 }

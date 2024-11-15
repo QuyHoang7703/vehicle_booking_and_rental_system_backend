@@ -30,7 +30,7 @@ public class BusTripScheduleController {
     }
 
     @GetMapping("busScheduleTrips")
-    public ResponseEntity<ResBusTripScheduleDetailDTO> getBusTripSchedule(@RequestParam("idBusTripSchedule") int idBusTripSchedule) throws IdInvalidException {
+    public ResponseEntity<ResBusTripScheduleDetailDTO> getBusTripScheduleDetail(@RequestParam("idBusTripSchedule") int idBusTripSchedule) throws IdInvalidException {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleById(idBusTripSchedule));
     }

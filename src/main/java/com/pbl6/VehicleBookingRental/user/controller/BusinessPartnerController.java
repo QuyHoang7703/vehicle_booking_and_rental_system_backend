@@ -14,6 +14,7 @@ import com.pbl6.VehicleBookingRental.user.service.CarRentalPartnerService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
@@ -103,4 +104,14 @@ public class BusinessPartnerController {
         this.businessPartnerService.refuseOrDeleteRegisterBusinessPartner(reqPartnerAction);
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Refused this register"));
     }
+
+    @GetMapping("business-partner/register-status")
+    public ResponseEntity<ResponseInfo<String>> registerStatus(@RequestParam("partnerType") PartnerTypeEnum partnerType) throws ApplicationException {
+        String status = this.businessPartnerService.getStatusRegisterPartner(partnerType);
+        if(status == null){
+          return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("Not registered yet"));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>(status));
+    }
+
 }

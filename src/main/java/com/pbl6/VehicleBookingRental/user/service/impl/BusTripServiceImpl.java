@@ -48,6 +48,7 @@ public class BusTripServiceImpl implements BusTripService {
         List<String> dropOffLocations = reqBusTripDTO.getDropOffLocations();
         busTrip.setDropOffLocations(String.join("!", dropOffLocations));
         busTrip.setBusPartner(businessPartner.getBusPartner());
+
         return busTripRepository.save(busTrip);
     }
 
@@ -61,7 +62,7 @@ public class BusTripServiceImpl implements BusTripService {
         }
 
         if(busTripDb.getBusTripSchedules()!=null && !busTripDb.getBusTripSchedules().isEmpty()) {
-            throw new ApplicationException("Can't delete this bus trip scheduled");
+            throw new ApplicationException("Can't update this bus trip scheduled");
         }
 
         busTripDb.setDepartureLocation(reqBusTripDTO.getDepartureLocation());

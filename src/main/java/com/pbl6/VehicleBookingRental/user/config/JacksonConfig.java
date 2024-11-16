@@ -24,6 +24,8 @@ public class JacksonConfig {
         // Đăng ký CustomInstantSerializer chỉ cho Instant
         module.addSerializer(Instant.class, new CustomInstantSerializer());
         module.addSerializer(Duration.class, new CustomDurationSerializer());
+        module.addDeserializer(Duration.class, new CustomDurationDeserializer());
+
         objectMapper.registerModule(new JavaTimeModule()); // Đăng ký module cho Java 8 Time API
         objectMapper.registerModule(module);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);

@@ -29,6 +29,7 @@ public class ResBusTripScheduleDTO {
     private double discountPercentage;
     private double priceTicket;
     private int availableSeats;
+    private boolean isOperation;
 
     public LocalTime getArrivalTime() {
         if(this.departureTime != null && this.durationJourney != null) {

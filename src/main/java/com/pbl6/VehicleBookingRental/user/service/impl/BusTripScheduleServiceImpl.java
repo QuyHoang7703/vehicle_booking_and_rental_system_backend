@@ -18,6 +18,7 @@ import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -86,6 +88,10 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         busTripSchedule.setDiscountPercentage(reqBusTripScheduleDTO.getDiscountPercentage());
         busTripSchedule.setPriceTicket(reqBusTripScheduleDTO.getPriceTicket());
         busTripSchedule.setStartOperationDay(reqBusTripScheduleDTO.getStartOperationDay());
+
+        if(reqBusTripScheduleDTO.getStartOperationDay().isEqual(LocalDate.now()) || reqBusTripScheduleDTO.getStartOperationDay().isBefore(LocalDate.now())) {
+            busTripSchedule.setOperation(true);
+        }
 
         BusTripSchedule savedBusTripSchedule = this.busTripScheduleRepository.save(busTripSchedule);
 
@@ -154,6 +160,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .priceTicket(busTripSchedule.getPriceTicket())
 //                .arrivalTime(busTripSchedule.getDepartureTime().plus(busTripSchedule.getBusTrip().getDurationJourney()))
                 .availableSeats(busTripSchedule.getAvailableSeats())
+                .isOperation(busTripSchedule.isOperation())
                 .build();
         res.setArrivalTime(res.getArrivalTime());
 
@@ -192,35 +199,57 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         return res;
     }
 
+    @Override
+    public ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
+        Specification<BusTripSchedule> newSpec = (root, query, criteriaBuilder) -> {
+            Predicate predicateOperationDay = criteriaBuilder.lessThanOrEqualTo(root.get("startOperationDay"), LocalDate.now());
+            Predicate predicateStatusOperation = criteriaBuilder.equal(root.get("isOperation"), true);
+
+            return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation);
+        };
+        Specification<BusTripSchedule> finalSpec = spec.and(newSpec);
+        Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findAll(finalSpec, pageable);
+        ResultPaginationDTO res = new ResultPaginationDTO();
+
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(busTripSchedulePage.getTotalPages());
+        meta.setTotal(busTripSchedulePage.getTotalElements());
+
+        res.setMeta(meta);
+
+        List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = busTripSchedulePage.getContent().stream()
+                .map(this::convertToResBusTripScheduleDTO)
+                .toList();
+        res.setResult(resBusTripScheduleDTOS);
+        return res;
+    }
+
     // @Scheduled(cron = "0 0 0 * * ?")
-//    @Transactional
-//    @Scheduled(cron = "0 */1 * * * *")
-//    public void updateBusTripScheduleStatus() {
-//        LocalDate today = LocalDate.now();
-//        log.info("Today is: " + today);
-//        List<BusTripSchedule> schedules = busTripScheduleRepository.findAll();
-//
-//        for (BusTripSchedule schedule : schedules) {
-//            List<BreakDay> breakDays = schedule.getBreakDays();
-//            boolean isBreakDay = false;
-//            for (BreakDay breakDay : breakDays) {
-//                log.info("Start of reakDay is: " + breakDay.getStartDay());
-//                boolean check = today.isBefore(breakDay.getStartDay());
-//                log.info("Check: " + check);
-//                if(!today.isBefore(breakDay.getStartDay()) && !today.isAfter(breakDay.getEndDay())) {
-//                    isBreakDay = true;
-//                    break;
-//                }
-//            }
-//            if(isBreakDay && !schedule.isOperation()) {
-//                schedule.setOperation(false);
-//                log.info("Change status operation");
-//            }
-//        }
-//
-//        busTripScheduleRepository.saveAll(schedules);
-//        log.info("Updated status operation for all schedules");
-//    }
+    @Transactional
+    @Scheduled(cron = "0 */2 * * * *")
+    public void updateBusTripScheduleStatus() {
+        LocalDate today = LocalDate.now();
+        log.info("Today is: " + today);
+        List<BusTripSchedule> busTripSchedules = busTripScheduleRepository.findAll();
+        List<BusTripSchedule> updatedBusTripSchedules = new ArrayList<>();
+        for (BusTripSchedule busTripSchedule : busTripSchedules) {
+            boolean isOperation = busTripSchedule.isOperation();
+            // Check today is break day ?
+            boolean isBreakDay = busTripSchedule.getBreakDays().stream()
+                    .anyMatch(breakDay -> !today.isBefore(breakDay.getStartDay()) && !today.isAfter(breakDay.getEndDay()));
+
+            if(isOperation == isBreakDay) {
+                busTripSchedule.setOperation(!isBreakDay);
+                updatedBusTripSchedules.add(busTripSchedule);
+                log.info("Change status operation: " + busTripSchedule.getId());
+            }
+        }
+
+        busTripScheduleRepository.saveAll(updatedBusTripSchedules);
+        log.info("Updated status operation for all schedules");
+    }
 
 
 }

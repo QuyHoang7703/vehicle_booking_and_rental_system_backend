@@ -19,27 +19,34 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
-@PreAuthorize("hasRole('BUS_PARTNER')")
+
 public class BusTripScheduleController {
     private final BusTripScheduleService busTripScheduleService;
 
-    @PostMapping("busScheduleTrips")
+    @PreAuthorize("hasRole('BUS_PARTNER')")
+    @PostMapping("busTripSchedules")
     public ResponseEntity<ResBusTripScheduleDetailDTO> createBusTripSchedule(@RequestBody ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws ApplicationException, IdInvalidException {
         BusTripSchedule busTripSchedule = busTripScheduleService.createBusTripSchedule(reqBusTripScheduleDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(this.busTripScheduleService.convertToResBusTripScheduleDetailDTO(busTripSchedule));
     }
 
-    @GetMapping("busScheduleTrips")
-    public ResponseEntity<ResBusTripScheduleDetailDTO> getBusTripScheduleDetail(@RequestParam("idBusTripSchedule") int idBusTripSchedule) throws IdInvalidException {
+    @PreAuthorize("hasRole('BUS_PARTNER')")
+    @GetMapping("busTripSchedules")
+    public ResponseEntity<ResBusTripScheduleDetailDTO> getBusTripScheduleDetail(@RequestParam("busTripScheduleId") int busTripScheduleId) throws IdInvalidException {
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleById(idBusTripSchedule));
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleById(busTripScheduleId));
     }
 
-    @GetMapping("busScheduleTrips/get-all")
+    @GetMapping("busTripSchedules/get-all")
     public ResponseEntity<ResultPaginationDTO> getAllBusTripSchedule(@Filter Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripSchedules(spec, pageable));
 
+    }
+
+    @GetMapping("busTripSchedules/available")
+    public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleAvailableForUser(@Filter Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable));
     }
 
 

@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 import java.time.Duration;
-
+// Change java object (in database) to JSON
+// Use in case to get data from database
 public class CustomDurationSerializer extends JsonSerializer<Duration> {
     @Override
     public void serialize(Duration duration, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {

@@ -16,4 +16,5 @@ public interface BusTripScheduleService {
     ResBusTripScheduleDetailDTO getBusTripScheduleById(int id) throws IdInvalidException;
     ResBusTripScheduleDTO convertToResBusTripScheduleDTO(BusTripSchedule busTripSchedule);
     ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException;
+    ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException;
 }

@@ -25,6 +25,7 @@ public class JacksonConfig {
         module.addSerializer(Instant.class, new CustomInstantSerializer());
         module.addSerializer(Duration.class, new CustomDurationSerializer());
         module.addDeserializer(Duration.class, new CustomDurationDeserializer());
+        module.addDeserializer(Instant.class, new CustomInstantDeserializer());
 
         objectMapper.registerModule(new JavaTimeModule()); // Đăng ký module cho Java 8 Time API
         objectMapper.registerModule(module);

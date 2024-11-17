@@ -1,9 +1,13 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.redis.BusTripScheduleRedis;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
@@ -11,9 +15,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDet
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BreakDayRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
-import com.pbl6.VehicleBookingRental.user.service.BusService;
-import com.pbl6.VehicleBookingRental.user.service.BusTripScheduleService;
-import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
+import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -43,7 +45,9 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BusService busService;
     private final BreakDayRepository breakDayRepository;
     private final BusinessPartnerService businessPartnerService;
-
+    private final BaseRedisServiceV2<String, String, BusTripSchedule> redisService;
+    private final ObjectMapper objectMapper;
+    private final String redisKeyPrefix = "busTripSchedule:";
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
 
@@ -106,6 +110,17 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         savedBusTripSchedule.setBreakDays(breakDays);
         this.breakDayRepository.saveAll(breakDays);
+
+        // Create busTripSchedule to save in Redis
+//        String redisKey = "busTripSchedule:" + savedBusTripSchedule.getId();
+//        redisService.setHashSet(redisKeyPrefix+ savedBusTripSchedule.getId(), "info", savedBusTripSchedule);
+//        redisService.setHashSet("busTripSchedule", String.valueOf(savedBusTripSchedule.getId()), savedBusTripSchedule);
+//        Object rawValue = redisService.getHashValue(redisKey, "info");
+//        BusTripSchedule busTripSchedule1 = objectMapper.convertValue(rawValue, BusTripSchedule.class);
+//        log.info("AVAILABLE OF REDIS " + String.valueOf(busTripSchedule1.getAvailableSeats()));
+//        log.info("ID OF REDIS " + String.valueOf(busTripSchedule1.getId()));
+//        log.info("departure time of redis" + String.valueOf(busTripSchedule1.getDepartureTime()));
+//        log.info("start operation of reddis" + String.valueOf(busTripSchedule1.getBusTrip().getDepartureLocation()));
         return savedBusTripSchedule;
     }
 
@@ -140,9 +155,14 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     @Override
     public ResBusTripScheduleDetailDTO getBusTripScheduleById(int id) throws IdInvalidException {
+//        BusTripSchedule busTripScheduleRedis = objectMapper.convertValue(redisService.getHashValue(redisKeyPrefix+id, "info"), BusTripSchedule.class);
+//        if(busTripScheduleRedis != null) {
+//            log.info("Get busTripSchedule with id {} from redis ", id);
+//            return this.convertToResBusTripScheduleDetailDTO(busTripScheduleRedis);
+//        }
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(id)
                 .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
-
+        log.info("Get busTripSchedule with id {} from mysql ", id);
         return this.convertToResBusTripScheduleDetailDTO(busTripSchedule);
     }
 
@@ -170,6 +190,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     @Override
     public ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
+
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
 
         Specification<BusTripSchedule> newSpec = (root, query, criteriaBuilder) -> {

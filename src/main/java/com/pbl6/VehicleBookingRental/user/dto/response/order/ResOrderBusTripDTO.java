@@ -1,0 +1,55 @@
+package com.pbl6.VehicleBookingRental.user.dto.response.order;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailDTO;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class ResOrderBusTripDTO {
+    private CustomerInfo customerInfo;
+    private ResBusTripScheduleDetailDTO.BusInfo busInfo;
+    private OrderInfo orderInfo;
+    private TripInfo tripInfo;
+    private String key;
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class CustomerInfo {
+        private String email;
+        private String name;
+        private String phoneNumber;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class OrderInfo {
+        private int orderId;
+        private int numberOfTicket;
+        private String pricePerTicket;
+        private double discountPercentage;
+        private String priceTotal;
+        private Instant orderDate;
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class TripInfo {
+        private String departureLocation;
+        private String arrivalLocation;
+        private Instant departureDateTime;
+        private Instant arrivalDateTime;
+    }
+}

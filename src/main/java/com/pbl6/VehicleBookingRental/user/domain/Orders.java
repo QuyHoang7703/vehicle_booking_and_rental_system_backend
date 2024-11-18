@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.Date;
 
 @Entity
@@ -21,6 +22,7 @@ public class Orders {
     private int id;
     private Date create_at;
     private String order_type;
+    private Instant order_date;
 
     @OneToOne(mappedBy = "order",cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
@@ -39,5 +41,10 @@ public class Orders {
     // Mối quan hệ 1-1 với Rating
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Rating rating;
+
+    @PrePersist
+    public void prePersist(){
+        this.order_date = Instant.now();
+    }
 
 }

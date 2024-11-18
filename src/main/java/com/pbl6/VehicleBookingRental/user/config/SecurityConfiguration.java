@@ -29,6 +29,7 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -85,6 +86,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authz -> authz
                                 .requestMatchers("/", "/api/v1/auth/**", "/identity/auth/outbound/authentication","/ws/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/vn-pay-callback/**").permitAll()
                                 .requestMatchers("/api/v1/auth/logout").authenticated()
                                 .anyRequest().authenticated()
                                 )

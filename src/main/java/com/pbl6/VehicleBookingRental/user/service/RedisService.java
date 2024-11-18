@@ -5,12 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 // K: key, F: Field, V: Value
-public interface BaseRedisServiceV2<K, F, V> {
+public interface RedisService<K, F, V> {
     // Lưu một giá trị đơn giản vào Redis với key
     void setValue(K key, V value);
 
     // Thiết lập TTL cho key
-    void setTimeToLive(K key, long timeoutInDays);
+    void setTimeToLive(K key, long timeoutInMinutes);
 
     // Lưu giá trị trong Hash
     void setHashSet(K key, F field, V value);

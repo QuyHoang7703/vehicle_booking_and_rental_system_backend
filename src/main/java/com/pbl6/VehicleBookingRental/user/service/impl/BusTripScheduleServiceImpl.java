@@ -1,13 +1,10 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.redis.BusTripScheduleRedis;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
@@ -45,7 +42,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BusService busService;
     private final BreakDayRepository breakDayRepository;
     private final BusinessPartnerService businessPartnerService;
-    private final BaseRedisServiceV2<String, String, BusTripSchedule> redisService;
+    private final RedisService<String, String, BusTripSchedule> redisService;
     private final ObjectMapper objectMapper;
     private final String redisKeyPrefix = "busTripSchedule:";
     @Override
@@ -191,6 +188,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     @Override
     public ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
 
+
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
 
         Specification<BusTripSchedule> newSpec = (root, query, criteriaBuilder) -> {
@@ -200,6 +198,17 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         };
 
         Specification<BusTripSchedule> finalSpec = spec.and(newSpec);
+
+//        // Tạo key Redis dựa trên các tham số filter và pageable
+//        String redisKey = "busTripSchedules:" + businessPartner.getBusPartner().getId()
+//                + ":filter=" + finalSpec.hashCode()
+//                + ":page=" + pageable.getPageNumber()
+//                + ":size=" + pageable.getPageSize();
+//        log.info("Spec: " + finalSpec.toString().hashCode());
+//        Map<String, BusTripSchedule> maps = redisService.getAllHashValues(redisKey);
+//        if(!maps.isEmpty()){
+//            log.info("Khác rỗng");
+//        }
 
         Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findAll(finalSpec, pageable);
         ResultPaginationDTO res = new ResultPaginationDTO();

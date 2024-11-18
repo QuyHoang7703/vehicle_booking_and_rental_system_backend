@@ -1,6 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
-import com.pbl6.VehicleBookingRental.user.service.BaseRedisServiceV2;
+import com.pbl6.VehicleBookingRental.user.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
-public class BaseRedisServiceImplV2<K, F, V> implements BaseRedisServiceV2<K, F, V> {
+public class RedisServiceImpl<K, F, V> implements RedisService<K, F, V> {
     private final RedisTemplate<K, V> redisTemplate;
     private final HashOperations<K, F, V> hashOperations;
 
@@ -23,8 +23,8 @@ public class BaseRedisServiceImplV2<K, F, V> implements BaseRedisServiceV2<K, F,
     }
 
     @Override
-    public void setTimeToLive(K key, long timeoutInDays) {
-        redisTemplate.expire(key, timeoutInDays, TimeUnit.DAYS);
+    public void setTimeToLive(K key, long timeoutInMinutes) {
+        redisTemplate.expire(key, timeoutInMinutes, TimeUnit.MINUTES);
     }
 
     @Override

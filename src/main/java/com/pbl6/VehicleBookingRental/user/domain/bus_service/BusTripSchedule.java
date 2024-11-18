@@ -37,6 +37,9 @@ public class BusTripSchedule {
     @OneToMany(mappedBy = "busTripSchedule")
     private List<BreakDay> breakDays;
 
+    @OneToMany(mappedBy = "busTripSchedule")
+    private List<OrderBusTrip> orderBusTrips;
+
 
 
 }

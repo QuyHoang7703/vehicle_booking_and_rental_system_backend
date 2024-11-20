@@ -20,7 +20,13 @@ public class RedisMessageListener implements MessageListener {
     public void onMessage(Message message, byte[] pattern) {
         String key  = new String(message.getBody());
         log.info("Key expired: " + key);
-        // Split key to get info
+        if(key.contains("BUS_TRIP")){
+            handleBusTripOrder(key);
+        }
+
+    }
+
+    private void handleBusTripOrder(String key) {
         String[] parts = key.split("-");
         String typeOfOrder = parts[1];
         String busTripScheduleId = parts[3];
@@ -33,6 +39,5 @@ public class RedisMessageListener implements MessageListener {
         busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() + Integer.parseInt(numberOfTicket));
         this.busTripScheduleRepository.save(busTripSchedule);
         log.info("BusTripSchedule updated number of seats");
-
     }
 }

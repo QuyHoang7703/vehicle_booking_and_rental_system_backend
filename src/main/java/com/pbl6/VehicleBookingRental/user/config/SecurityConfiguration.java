@@ -79,13 +79,21 @@ public class SecurityConfiguration {
    
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+        String[] whiteList = {
+                "/",
+                "/api/v1/auth/**",
+                "/identity/auth/outbound/authentication",
+                "/ws/**",
+                "api/v1/busTripSchedules/available"
+        };
         http
                 .csrf(c->c.disable())
                 .cors(Customizer.withDefaults())
                 // .antMatcher("/secured/**")
                 .authorizeHttpRequests(
                         authz -> authz
-                                .requestMatchers("/", "/api/v1/auth/**", "/identity/auth/outbound/authentication","/ws/**").permitAll()
+//                                .requestMatchers("/", "/api/v1/auth/**", "/identity/auth/outbound/authentication","/ws/**").permitAll()
+                                .requestMatchers(whiteList).permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/vn-pay-callback/**").permitAll()
                                 .requestMatchers("/api/v1/auth/logout").authenticated()
                                 .anyRequest().authenticated()

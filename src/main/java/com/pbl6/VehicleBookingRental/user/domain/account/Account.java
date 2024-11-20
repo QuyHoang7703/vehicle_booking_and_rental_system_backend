@@ -100,10 +100,13 @@ public class Account {
     private Driver driver;
 
     @OneToMany(mappedBy = "account",cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Rating> rating;
 
     @OneToMany(mappedBy = "account",cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<CarRentalOrders> carRentalOrdersList;
     @OneToMany(mappedBy = "account",cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<ConversationAccount> conversationAccounts;
 }

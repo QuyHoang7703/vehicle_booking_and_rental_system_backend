@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
@@ -11,9 +12,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDet
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BreakDayRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
-import com.pbl6.VehicleBookingRental.user.service.BusService;
-import com.pbl6.VehicleBookingRental.user.service.BusTripScheduleService;
-import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
+import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -43,7 +42,6 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BusService busService;
     private final BreakDayRepository breakDayRepository;
     private final BusinessPartnerService businessPartnerService;
-
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
 
@@ -106,6 +104,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         savedBusTripSchedule.setBreakDays(breakDays);
         this.breakDayRepository.saveAll(breakDays);
+
         return savedBusTripSchedule;
     }
 
@@ -142,7 +141,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     public ResBusTripScheduleDetailDTO getBusTripScheduleById(int id) throws IdInvalidException {
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(id)
                 .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
-
+        log.info("Get busTripSchedule with id {} from mysql ", id);
         return this.convertToResBusTripScheduleDetailDTO(busTripSchedule);
     }
 
@@ -170,6 +169,8 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     @Override
     public ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
+
+
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
 
         Specification<BusTripSchedule> newSpec = (root, query, criteriaBuilder) -> {

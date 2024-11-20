@@ -2,7 +2,8 @@
 //
 //import com.pbl6.VehicleBookingRental.user.RedisTest;
 //import com.pbl6.VehicleBookingRental.user.domain.account.Account;
-//import com.pbl6.VehicleBookingRental.user.service.BaseRedisService;
+////import com.pbl6.VehicleBookingRental.user.service.BaseRedisService;
+//import com.pbl6.VehicleBookingRental.user.service.BaseRedisServiceV2;
 //import lombok.RequiredArgsConstructor;
 //import org.springframework.web.bind.annotation.PostMapping;
 //import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,7 +14,7 @@
 //@RequiredArgsConstructor
 //public class RedisController {
 //
-//    private final BaseRedisService redisService;
+//    private final BaseRedisServiceV2<String, String, String> redisService;
 //
 //    @PostMapping
 //    public void set(){
@@ -26,6 +27,6 @@
 //        redisTest.setName("HOang van quy 2222");
 //        redisTest.setPassword("1234567");
 //
-//        redisService.hashSet("TEST_REDIS", "Redis Test", account);
+////        redisService.hashSet("TEST_REDIS", "Redis Test", "a");
 //    }
 //}

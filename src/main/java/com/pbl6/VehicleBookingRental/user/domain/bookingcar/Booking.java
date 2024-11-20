@@ -19,7 +19,7 @@ public class Booking {
 
     @Id
     @Column(name = "order_id")
-    private int id;
+    private String id;
 
     private Date create_at;
     private String starting_location;

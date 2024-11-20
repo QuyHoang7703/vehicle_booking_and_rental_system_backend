@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.Date;
 @Entity
 @Data
@@ -17,12 +18,12 @@ import java.util.Date;
 public class CarRentalOrders {
     @Id
     @Column(name = "order_id")
-    private int id;
+    private String id;
     private Date start_rental_time;
     private Date end_rental_time;
     private String pickup_location;
     private double total;
-    private Date created_at;
+    private Instant created_at;
     private String status;
     private double voucher_value;
     private double voucher_percentage;

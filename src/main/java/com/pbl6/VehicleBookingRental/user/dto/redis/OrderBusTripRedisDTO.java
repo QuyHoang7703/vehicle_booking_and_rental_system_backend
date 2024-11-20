@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Builder
 public class OrderBusTripRedisDTO {
-    private int id;
+    private String id;
     private int numberOfTicket;
     private double priceTotal;
     private LocalDate departureDate;

@@ -35,29 +35,11 @@ public class OrderServiceImpl implements OrderService {
     private final VnPayConfig vnPayConfig;
     private final RedisService<String, String, Object> redisService;
     private final OrdersRepo ordersRepo;
-    private final OrderBusTripRepository orderBusTripRepo;
     private final AccountService accountService;
     private final BusTripScheduleRepository busTripScheduleRepository;
     private final OrderBusTripRepository orderBusTripRepository;
     @Override
-    public ResVnPayDTO createOrder(HttpServletRequest request) throws ApplicationException, IdInvalidException {
-//        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
-//        if(email == null) {
-//            throw new ApplicationException("Email not fount");
-//        }
-//        Account currentAccount = accountService.handleGetAccountByUsername(email);
-//        String orderType = request.getParameter("orderType");
-//        String orderId = request.getParameter("orderId");
-//        String busTripScheduleId = request.getParameter("busTripScheduleId");
-//        String numberOfTickets = request.getParameter("numberOfTickets");
-
-//        String key:
-
-//        String key = "order:" + email
-//                + "-" + orderType
-//                + "-" + orderId
-//                + "-" + busTripScheduleId
-//                + "-" + numberOfTickets ;
+    public ResVnPayDTO createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException {
 
         String key = request.getParameter("key");
         log.info("Key: " + key);
@@ -65,26 +47,68 @@ public class OrderServiceImpl implements OrderService {
         // Get data from redis
         Object rawJson = redisService.getHashValue(key, "order-detail");
         // Convert json to orderBusTrip object
-        OrderBusTrip orderBusTripRedis = objectMapper.convertValue(rawJson, OrderBusTrip.class);
+        OrderBusTripRedisDTO orderBusTripRedis = objectMapper.convertValue(rawJson, OrderBusTripRedisDTO.class);
 
         if(orderBusTripRedis==null){
             throw new ApplicationException("Order bus trip in redis not found");
         }
 
+        ResVnPayDTO res = this.createUrlRequestToVnPay(request, orderBusTripRedis.getPriceTotal(), key);
+        return res;
+    }
+
+    @Override
+    public void handlePaymentSuccess(String transactionCode) throws IdInvalidException {
+        String keyOrderBusTrip = (String) redisService.getHashValue(transactionCode, "transactionCode");
+
+        // Get data from redis
+        Object rawJson = redisService.getHashValue(keyOrderBusTrip, "order-detail");
+        // Convert json to orderBusTrip object
+        OrderBusTripRedisDTO orderBusTripRedisDTO = objectMapper.convertValue(rawJson, OrderBusTripRedisDTO.class);
+
+        // Create order to save in database
+        Orders order = new Orders();
+        order.setId(orderBusTripRedisDTO.getId());
+        order.setOrder_type("BUS_TRIP_ORDER");
+
+        Account currentAccount = accountService.fetchAccountById(orderBusTripRedisDTO.getAccount_Id());
+
+        // Create orderBusTrip to save in database
+        OrderBusTrip orderBusTrip = new OrderBusTrip();
+        orderBusTrip.setId(orderBusTripRedisDTO.getId());
+        orderBusTrip.setNumberOfTicket(orderBusTripRedisDTO.getNumberOfTicket());
+        orderBusTrip.setPriceTotal(orderBusTripRedisDTO.getPriceTotal());
+        orderBusTrip.setDepartureDate(orderBusTripRedisDTO.getDepartureDate());
+        orderBusTrip.setAccount(currentAccount);
+
+        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(orderBusTripRedisDTO.getBusTripScheduleId())
+                .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
+        orderBusTrip.setBusTripSchedule(busTripSchedule);
+
+        orderBusTrip.setOrder(order);
+        order.setOrderBusTrip(orderBusTrip);
+
+        // Save all order and orderBusTrip, cascade = CascadeType.ALL => orderBusTrip is also saved
+        this.ordersRepo.save(order);
+
+        // Delete orderBusTrip, transactionCode in Redis
+        redisService.deleteHashFile(transactionCode, "transactionCode");
+        redisService.deleteHashFile(keyOrderBusTrip, "order-detail");
+
+    }
+
+    private ResVnPayDTO createUrlRequestToVnPay (HttpServletRequest request, Double amount, String keyOrder) throws ApplicationException, IdInvalidException {
         // Create request payment with params to call VnPay's API
         String bankCode = request.getParameter("bankCode");
-            // Get obligatory params
+        // Get obligatory params
         Map<String, String> vnpParamsMap = vnPayConfig.getVnPayConfig();
-            // Create additional params about transaction
-        vnpParamsMap.put("vnp_Amount", String.valueOf(Math.round(orderBusTripRedis.getPriceTotal() * 100)));
-//        vnpParamsMap.put("vnp_Amount", String.valueOf(Math.round(orderBusTripRedis.getPriceTotal())));
-
-//        vnpParamsMap.put("vnp_Amount", String.valueOf(savedOrderBusTrip.getPriceTotal()));
+        // Create additional params about transaction
+        vnpParamsMap.put("vnp_Amount", String.valueOf(Math.round(amount* 100)));
         if (bankCode != null && !bankCode.isEmpty()) {
             vnpParamsMap.put("vnp_BankCode", bankCode);
         }
         vnpParamsMap.put("vnp_IpAddr", VnPayUtil.getIpAddress(request));
-            // Build request url
+        // Build request url
         String queryUrl = VnPayUtil.getPaymentURL(vnpParamsMap, true);
         String hashData = VnPayUtil.getPaymentURL(vnpParamsMap, false);
         queryUrl += "&vnp_SecureHash=" + VnPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
@@ -97,43 +121,8 @@ public class OrderServiceImpl implements OrderService {
         String transactionCode = vnpParamsMap.get("vnp_TxnRef");
 //        booking.setTransactionCode(transactionCode);
         log.info("TransactionCode: " + transactionCode);
-        redisService.setHashSet(transactionCode, "transactionCode", key);
-
+        redisService.setHashSet(transactionCode, "transactionCode", keyOrder);
+        redisService.setTimeToLive(transactionCode, 3);
         return res;
-    }
-
-    @Override
-    public void handlePaymentSuccess(String transactionCode) throws ApplicationException, IdInvalidException {
-        String keyOrderBusTrip = (String) redisService.getHashValue(transactionCode, "transactionCode");
-
-        // Get data from redis
-        Object rawJson = redisService.getHashValue(keyOrderBusTrip, "order-detail");
-        // Convert json to orderBusTrip object
-        OrderBusTripRedisDTO orderBusTripRedisDTO = objectMapper.convertValue(rawJson, OrderBusTripRedisDTO.class);
-
-        // Create order to save in database
-        Orders order = new Orders();
-//        order.setId(orderBusTripRedis.getId());
-        order.setOrder_type("BUS_TRIP_ORDER");
-        order.setOrder_date(Instant.now());
-        Orders savedOrder = this.ordersRepo.save(order);
-
-        Account currentAccount = accountService.fetchAccountById(orderBusTripRedisDTO.getAccount_Id());
-        // Create orderBusTrip to save in database
-        OrderBusTrip orderBusTrip = new OrderBusTrip();
-//        orderBusTrip.setId(orderBusTripRedis.getId());
-        orderBusTrip.setNumberOfTicket(orderBusTripRedisDTO.getNumberOfTicket());
-        orderBusTrip.setPriceTotal(orderBusTripRedisDTO.getPriceTotal());
-        orderBusTrip.setDepartureDate(orderBusTripRedisDTO.getDepartureDate());
-        orderBusTrip.setAccount(currentAccount);
-        orderBusTrip.setOrder(savedOrder);
-
-        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(orderBusTripRedisDTO.getBusTripScheduleId())
-                .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
-
-        orderBusTrip.setBusTripSchedule(busTripSchedule);
-
-        this.orderBusTripRepository.save(orderBusTrip);
-
     }
 }

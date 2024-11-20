@@ -42,9 +42,6 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BusService busService;
     private final BreakDayRepository breakDayRepository;
     private final BusinessPartnerService businessPartnerService;
-    private final RedisService<String, String, BusTripSchedule> redisService;
-    private final ObjectMapper objectMapper;
-    private final String redisKeyPrefix = "busTripSchedule:";
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
 
@@ -108,16 +105,6 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         savedBusTripSchedule.setBreakDays(breakDays);
         this.breakDayRepository.saveAll(breakDays);
 
-        // Create busTripSchedule to save in Redis
-//        String redisKey = "busTripSchedule:" + savedBusTripSchedule.getId();
-//        redisService.setHashSet(redisKeyPrefix+ savedBusTripSchedule.getId(), "info", savedBusTripSchedule);
-//        redisService.setHashSet("busTripSchedule", String.valueOf(savedBusTripSchedule.getId()), savedBusTripSchedule);
-//        Object rawValue = redisService.getHashValue(redisKey, "info");
-//        BusTripSchedule busTripSchedule1 = objectMapper.convertValue(rawValue, BusTripSchedule.class);
-//        log.info("AVAILABLE OF REDIS " + String.valueOf(busTripSchedule1.getAvailableSeats()));
-//        log.info("ID OF REDIS " + String.valueOf(busTripSchedule1.getId()));
-//        log.info("departure time of redis" + String.valueOf(busTripSchedule1.getDepartureTime()));
-//        log.info("start operation of reddis" + String.valueOf(busTripSchedule1.getBusTrip().getDepartureLocation()));
         return savedBusTripSchedule;
     }
 
@@ -152,11 +139,6 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     @Override
     public ResBusTripScheduleDetailDTO getBusTripScheduleById(int id) throws IdInvalidException {
-//        BusTripSchedule busTripScheduleRedis = objectMapper.convertValue(redisService.getHashValue(redisKeyPrefix+id, "info"), BusTripSchedule.class);
-//        if(busTripScheduleRedis != null) {
-//            log.info("Get busTripSchedule with id {} from redis ", id);
-//            return this.convertToResBusTripScheduleDetailDTO(busTripScheduleRedis);
-//        }
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(id)
                 .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
         log.info("Get busTripSchedule with id {} from mysql ", id);
@@ -198,17 +180,6 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         };
 
         Specification<BusTripSchedule> finalSpec = spec.and(newSpec);
-
-//        // Tạo key Redis dựa trên các tham số filter và pageable
-//        String redisKey = "busTripSchedules:" + businessPartner.getBusPartner().getId()
-//                + ":filter=" + finalSpec.hashCode()
-//                + ":page=" + pageable.getPageNumber()
-//                + ":size=" + pageable.getPageSize();
-//        log.info("Spec: " + finalSpec.toString().hashCode());
-//        Map<String, BusTripSchedule> maps = redisService.getAllHashValues(redisKey);
-//        if(!maps.isEmpty()){
-//            log.info("Khác rỗng");
-//        }
 
         Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findAll(finalSpec, pageable);
         ResultPaginationDTO res = new ResultPaginationDTO();

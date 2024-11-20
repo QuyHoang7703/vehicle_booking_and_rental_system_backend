@@ -24,8 +24,5 @@ public class OrderBusTripController {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.orderBusTripService.convertToResOrderBusTripDTO(orderBusTripRedis));
     }
 
-//    @GetMapping("/vn-pay-callback")
-
-
 
 }

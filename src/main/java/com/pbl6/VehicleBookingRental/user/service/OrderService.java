@@ -6,6 +6,6 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface OrderService {
-    ResVnPayDTO createOrder(HttpServletRequest request) throws ApplicationException, IdInvalidException;
+    ResVnPayDTO createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException;
     void handlePaymentSuccess(String transactionCode) throws ApplicationException, IdInvalidException;
 }

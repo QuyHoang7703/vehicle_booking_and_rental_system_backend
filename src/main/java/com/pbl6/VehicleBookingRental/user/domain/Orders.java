@@ -18,11 +18,10 @@ import java.util.Date;
 @NoArgsConstructor
 public class Orders {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    private Date create_at;
+    private String id;
+//    private Date create_at;
     private String order_type;
-    private Instant order_date;
+    private Instant create_at;
 
     @OneToOne(mappedBy = "order",cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
@@ -44,7 +43,7 @@ public class Orders {
 
     @PrePersist
     public void prePersist(){
-        this.order_date = Instant.now();
+        this.create_at = Instant.now();
     }
 
 }

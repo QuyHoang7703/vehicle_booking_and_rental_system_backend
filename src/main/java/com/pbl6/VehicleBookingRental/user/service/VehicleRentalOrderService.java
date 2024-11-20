@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -50,7 +51,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         // Create New Order
         Orders order_vehicle_rental = new Orders();
         order_vehicle_rental.setOrder_type("VehicleRentalOrders");
-        order_vehicle_rental.setCreate_at(new Date());
+        order_vehicle_rental.setCreate_at(Instant.now());
 
         // Create VehicleRentalOrders
         CarRentalOrders carRentalOrders = new CarRentalOrders();

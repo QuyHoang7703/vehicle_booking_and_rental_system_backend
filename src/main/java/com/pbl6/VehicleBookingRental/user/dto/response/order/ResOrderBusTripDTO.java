@@ -34,7 +34,7 @@ public class ResOrderBusTripDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class OrderInfo {
-        private int orderId;
+        private String orderId;
         private int numberOfTicket;
         private String pricePerTicket;
         private double discountPercentage;

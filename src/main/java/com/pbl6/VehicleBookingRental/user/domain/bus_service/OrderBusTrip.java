@@ -22,7 +22,7 @@ import java.util.Date;
 public class OrderBusTrip {
     @Id
     @Column(name = "order_id")
-    private int id;
+    private String id;
 
     private int numberOfTicket;
 

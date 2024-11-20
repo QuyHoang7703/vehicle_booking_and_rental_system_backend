@@ -27,7 +27,7 @@ public class OrderController {
 
     @GetMapping("orders/create-payment")
     public ResponseEntity<ResVnPayDTO> createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.orderService.createOrder(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.orderService.createPayment(request));
     }
 
     @GetMapping("/vn-pay-callback")
@@ -36,6 +36,7 @@ public class OrderController {
         String status = request.getParameter("vnp_ResponseCode");
         String transactionCode = request.getParameter("vnp_TxnRef");
         log.info("Mã giao dịch: " + transactionCode);
+
         if (status.equals("00")) {
             this.orderService.handlePaymentSuccess(transactionCode);
             log.info("PAYMENT SUCCESSFULLY");

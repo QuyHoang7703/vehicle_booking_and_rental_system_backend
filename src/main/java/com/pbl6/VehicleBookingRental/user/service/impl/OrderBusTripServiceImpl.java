@@ -41,15 +41,10 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         }
         Account currentAccount = accountService.handleGetAccountByUsername(email);
 
-//        String orderId = UUID.randomUUID().toString();
+        String orderId = UUID.randomUUID().toString().replaceAll("-", "");
 
-        Random random = new Random();
-        int orderId = 100000 + random.nextInt(900000);
-
-//        Orders order = new Orders();
-//        order.setId(orderId);
-//        order.setOrder_type("BUS_TRIP_ORDER");
-//        order.setOrder_date(Instant.now());
+//        Random random = new Random();
+//        int orderId = 100000 + random.nextInt(900000);
 
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(reqOrderBusTripDTO.getBusTripScheduleId())
                 .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
@@ -73,8 +68,10 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 + "-" + busTripSchedule.getId()
                 + "-" + reqOrderBusTripDTO.getNumberOfTicket();
         orderBusTripRedis.setKey(redisKeyOrderBusTrip);
+
         redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
-        redisService.setTimeToLive(redisKeyOrderBusTrip, 1);
+        redisService.setTimeToLive(redisKeyOrderBusTrip, 4);
+
 
         // Number of available tickets minus number of ticket
         busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() - reqOrderBusTripDTO.getNumberOfTicket());
@@ -90,18 +87,12 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         if(email==null){
             throw new ApplicationException("Email is invalid");
         }
-//        String redisKeyOrderBusTrip = "order-bus-trip" + email + "-" + orderBusTrip.getId();
-//        Orders order = redisServiceOrders.getHashValue(redisKeyOrderBusTrip, "order");
-//        if (order == null) {
-//            // Xử lý khi không có dữ liệu, ví dụ: trả về null hoặc tạo đối tượng mặc định
-//            throw new ApplicationException("No data found in Redis for the given key.");
-//        }
-//        Object rawJson = rawJsonList.get(0);
-//        Orders orders = objectMapper.convertValue(rawJson, Orders.class);
+
         Account currentAccount = accountService.handleGetAccountByUsername(email);
 
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(orderBusTripRedis.getBusTripScheduleId())
                 .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
+
         // Create customer info
         ResOrderBusTripDTO.CustomerInfo customerInfo = ResOrderBusTripDTO.CustomerInfo.builder()
                 .email(email)

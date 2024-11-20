@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface OrderBusTripRepository extends JpaRepository<OrderBusTrip, Integer>, JpaSpecificationExecutor<OrderBusTrip> {
+public interface OrderBusTripRepository extends JpaRepository<OrderBusTrip, String>, JpaSpecificationExecutor<OrderBusTrip> {
 }

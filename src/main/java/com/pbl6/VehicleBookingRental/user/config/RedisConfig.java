@@ -23,9 +23,9 @@ import java.util.Map;
 @Configuration
 @RequiredArgsConstructor
 public class RedisConfig {
-    @Value("6379")
+    @Value("${redis.port}")
     private String redisPort;
-    @Value("localhost")
+    @Value("${redis.host}")
     private String redisHost;
 
 //    private final RedisMessageListener redisMessageListener;
@@ -74,7 +74,6 @@ public class RedisConfig {
         return redisTemplate.opsForHash();
     }
 
-
     @Bean
     public MessageListenerAdapter messageListenerAdapter(RedisMessageListener redisMessageListener) {
         return new MessageListenerAdapter(redisMessageListener, "onMessage");
@@ -90,7 +89,7 @@ public class RedisConfig {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(jedisConnectionFactory());
 
-        // Đăng ký listener cho kênh "order-events"
+        // Register listener for channel "__keyevent@0__:expired"
         container.addMessageListener(messageListenerAdapter, topic());
         return container;
     }

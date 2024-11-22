@@ -57,7 +57,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 .stream().map(conversationAccount -> conversationAccount.getAccount().getId())
                 .collect(Collectors.toList());
     }
-
     @Override
     public MessageDTO lastMessageOfConversation(int conversation_id) {
         MessageDTO messageDTO = new MessageDTO();

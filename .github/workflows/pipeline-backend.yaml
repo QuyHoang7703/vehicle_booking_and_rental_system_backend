@@ -51,9 +51,18 @@ jobs:
          MYSQL_USER: vehicle_booking_rental
          MYSQL_PASSWORD: vehicle_booking_rental
        ports:
-         - 3306:3306
+         - 3308:3306
        options: >-
          --health-cmd="mysqladmin ping --silent"
+         --health-interval=5s
+         --health-timeout=3s
+         --health-retries=5
+     redis:
+       image: redis:latest
+       ports:
+         - 6380:6379
+       options: >-
+         --health-cmd="redis-cli ping || exit 1"
          --health-interval=5s
          --health-timeout=3s
          --health-retries=5
@@ -74,7 +83,13 @@ jobs:
            echo "Waiting for MySQL..."
            sleep 5
          done
-
+      - name: Wait for Redis to be ready
+        run: |
+            # Chờ Redis service khởi động hoàn tất
+            while ! redis-cli -h "127.0.0.1" ping | grep PONG > /dev/null; do
+              echo "Waiting for Redis..."
+              sleep 5
+            done
       - name: Run Unit Test
         env:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}

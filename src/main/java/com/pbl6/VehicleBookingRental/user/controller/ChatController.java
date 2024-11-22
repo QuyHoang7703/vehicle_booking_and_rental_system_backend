@@ -58,6 +58,14 @@ public class ChatController {
                         .build()
         );
     }
+    @GetMapping("/chat/get-connected-account")
+    public ResponseEntity<?> getConnectedUser
+            (@RequestParam("conversation_id") int conversation_id,
+             @RequestParam("account_id") int account_id,
+             @RequestParam("role_account") String role_account){
+        return ResponseEntity.status(HttpStatus.OK).
+                body(chatMessageService.getAccountConnected(conversation_id,account_id,role_account));
+    }
     @GetMapping("/chat/last-message")
     public ResponseEntity<?> getLastMessage(@RequestParam("conversation_id") int conversation_id){
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageService.lastMessageOfConversation(conversation_id));
@@ -69,14 +77,6 @@ public class ChatController {
              @RequestParam("conversation_id") int conversation_id){
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageService.
                 getMessageByConservationAndSender(conversation_id,sender_id,sender_type));
-    }
-    @GetMapping("/chat/get-connected-account")
-    public ResponseEntity<?> getConnectedUser
-            (@RequestParam("conversation_id") int conversation_id,
-             @RequestParam("account_id") int account_id,
-             @RequestParam("role_account") String role_account){
-        return ResponseEntity.status(HttpStatus.OK).
-                body(chatMessageService.getAccountConnected(conversation_id,account_id,role_account));
     }
 
 }

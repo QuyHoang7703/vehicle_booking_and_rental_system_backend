@@ -54,6 +54,9 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         // Get the bus
         Bus bus = this.busService.findBusById(reqBusTripScheduleDTO.getBusId());
 
+
+        // Kiểm tra trường hợp lúc thêm mà ko có break days
+
         // Check valid departure time of new bus trip schedule
         List<BusTripSchedule> busTripSchedulesOfBus = bus.getBusTripSchedules();
         for(BusTripSchedule busTripScheduleOfBus : busTripSchedulesOfBus) {

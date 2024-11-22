@@ -24,6 +24,8 @@ public class RedisMessageListener implements MessageListener {
             handleBusTripOrder(key);
         }
 
+        // Xử lý các order loại khác ...
+
     }
 
     private void handleBusTripOrder(String key) {

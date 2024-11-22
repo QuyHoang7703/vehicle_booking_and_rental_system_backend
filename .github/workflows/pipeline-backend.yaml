@@ -51,7 +51,7 @@ jobs:
          MYSQL_USER: vehicle_booking_rental
          MYSQL_PASSWORD: vehicle_booking_rental
        ports:
-         - 3308:3306
+         - 3306:3306
        options: >-
          --health-cmd="mysqladmin ping --silent"
          --health-interval=5s
@@ -60,7 +60,7 @@ jobs:
      redis:
        image: redis:latest
        ports:
-         - 6380:6379
+         - 6379:6379
        options: >-
          --health-cmd="redis-cli ping || exit 1"
          --health-interval=5s

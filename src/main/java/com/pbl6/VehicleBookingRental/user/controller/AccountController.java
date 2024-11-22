@@ -139,5 +139,4 @@ public class AccountController {
     public ResponseEntity<ResDeactivateAccount> getReasonLockAccount(@RequestParam("email") String email) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(this.accountService.getInfoDeactivatedAccount(email));
     }
-
 }

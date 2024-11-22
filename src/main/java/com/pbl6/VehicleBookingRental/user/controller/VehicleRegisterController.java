@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.controller;
 
+import com.amazonaws.services.dynamodbv2.xspec.M;
 import com.pbl6.VehicleBookingRental.user.domain.RestResponse;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
@@ -13,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @RestController
@@ -31,19 +35,20 @@ public class VehicleRegisterController {
     }
     @PostMapping("/register")
     public ResponseEntity<?> register_vehicle(
-            @RequestBody VehicleRegister vehicleRegister,
+            @RequestPart("vehicleRegisterInfo") VehicleRegister vehicleRegister,
             @RequestParam("service_type") int service_type,
             @RequestParam("no_driver_price") double no_driver_price,
             @RequestParam("driver_price") double driver_price,
             @RequestParam("vehicle_type_id") int vehicle_type_id,
-            @RequestParam("car_rental_partner_id") int car_rental_partner_id
+            @RequestParam("car_rental_partner_id") int car_rental_partner_id,
+            @RequestParam(value = "vehicleRegisterImages") List<MultipartFile> images
 
     ){
         CarRentalPartner carRentalPartner = vehicleRegisterInterface.findCarRentalPartnerById(car_rental_partner_id);
         VehicleType vehicleType = vehicleRegisterInterface.findVehicleTypeById(vehicle_type_id);
         vehicleRegister.setVehicleType(vehicleType);
         vehicleRegister.setCarRentalPartner(carRentalPartner);
-        vehicleRegisterInterface.register_vehicle(vehicleRegister);
+        vehicleRegisterInterface.register_vehicle(vehicleRegister,images);
 
         CarRentalService carRentalService = new CarRentalService();
         if(service_type != 2){
@@ -81,11 +86,12 @@ public class VehicleRegisterController {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalServiceDTO);
     }
     @PatchMapping("/update-vehicle-rental-service")
-    public ResponseEntity<?> update_vehicle_rental_service(@RequestBody VehicleRentalServiceDTO vehicleRentalServiceDTO){
+    public ResponseEntity<?> update_vehicle_rental_service(@RequestPart("vehicleRentalService") VehicleRentalServiceDTO vehicleRentalServiceDTO,
+                                                           @RequestParam(value = "vehicleRegisterImages") List<MultipartFile>images){
         RestResponse<String> restResponse = new RestResponse<>();
         restResponse.setStatusCode(200);
 
-        boolean status = vehicleRegisterInterface.update_vehicle_rental_service(vehicleRentalServiceDTO);
+        boolean status = vehicleRegisterInterface.update_vehicle_rental_service(vehicleRentalServiceDTO,images);
         if(status == true){
             restResponse.setMessage("Update Successfully");
         }else{
@@ -119,5 +125,4 @@ public class VehicleRegisterController {
     {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.filter_by_vehicle_attribute(location,manufacturer,vehicle_type));
     }
-
 }

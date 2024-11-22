@@ -34,7 +34,7 @@ public class BusTripSchedule {
     @JoinColumn(name="bus_id")
     private Bus bus;
 
-    @OneToMany(mappedBy = "busTripSchedule")
+    @OneToMany(mappedBy = "busTripSchedule", cascade = CascadeType.ALL)
     private List<BreakDay> breakDays;
 
     @OneToMany(mappedBy = "busTripSchedule")

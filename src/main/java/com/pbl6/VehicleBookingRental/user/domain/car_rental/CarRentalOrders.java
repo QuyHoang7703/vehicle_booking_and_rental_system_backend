@@ -46,6 +46,4 @@ public class CarRentalOrders {
     @JsonIgnore
     @JoinColumn(name ="account_id")
     private Account account;
-    
-
 }

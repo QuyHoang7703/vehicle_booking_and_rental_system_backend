@@ -10,8 +10,11 @@ import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.CarRentalPar
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRegisterRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepository;
+import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +30,8 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     private VehicleTypeRepository vehicleTypeRepo;
     @Autowired
     private CarRentalPartnerRepo carRentalPartnerRepo;
-
+    @Autowired
+    private ImageService imageService;
     @Override
     public VehicleType findVehicleTypeById(int id) {
         return vehicleTypeRepo.findById(id).orElse(null);
@@ -39,9 +43,10 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     }
 
     @Override
-    public boolean register_vehicle(VehicleRegister vehicleRegister) {
+    public boolean register_vehicle(VehicleRegister vehicleRegister, List<MultipartFile> images) {
         try{
-            vehicleRegisterRepository.save(vehicleRegister);
+            VehicleRegister savedVehicleRegister = vehicleRegisterRepository.save(vehicleRegister);
+            imageService.uploadAndSaveImages(images,String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId(),String.valueOf(PartnerTypeEnum.CAR_RENTAL_PARTNER));
             return true;
         }catch (Exception e){
             System.out.println(e.getLocalizedMessage());
@@ -99,25 +104,28 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     }
 
     @Override
-    public boolean update_vehicle_rental_service(VehicleRentalServiceDTO vehicleRentalServiceDTO) {
-        Optional<VehicleRegister> vehicleRegister = vehicleRegisterRepository.findById(vehicleRentalServiceDTO.getVehicle_register_id());
+    public boolean update_vehicle_rental_service(VehicleRentalServiceDTO vehicleRentalServiceDTO,List<MultipartFile> images) {
         Optional<CarRentalService> carRentalService = vehicleRentalServiceRepo.findById(vehicleRentalServiceDTO.getId());
         Optional<VehicleType> vehicleType = vehicleTypeRepo.findById(vehicleRentalServiceDTO.getVehicle_type_id());
-        if(vehicleRegister.isPresent() && carRentalService.isPresent() && vehicleType.isPresent()){
-            vehicleRegister.get().setVehicleType(vehicleType.get());
-            vehicleRegister.get().setManufacturer(vehicleRentalServiceDTO.getManufacturer());
-            vehicleRegister.get().setDescription(vehicleRentalServiceDTO.getDescription());
-            vehicleRegister.get().setQuantity(vehicleRentalServiceDTO.getQuantity());
-            vehicleRegister.get().setStatus(vehicleRentalServiceDTO.getStatus());
-            vehicleRegister.get().setDate_of_status(vehicleRentalServiceDTO.getDate_of_status());
-            vehicleRegister.get().setDiscount_percentage(vehicleRentalServiceDTO.getDiscount_percentage());
-            vehicleRegister.get().setCar_deposit(vehicleRentalServiceDTO.getCar_deposit());
-            vehicleRegister.get().setReservation_fees(vehicleRentalServiceDTO.getReservation_fees());
-            vehicleRegister.get().setUlties(vehicleRentalServiceDTO.getUlties());
-            vehicleRegister.get().setPolicy(vehicleRentalServiceDTO.getPolicy());
-            vehicleRegister.get().setRating_total(vehicleRentalServiceDTO.getRating_total());
-            vehicleRegister.get().setAmount(vehicleRentalServiceDTO.getAmount());
-            vehicleRegister.get().setLocation(vehicleRentalServiceDTO.getLocation());
+        if( carRentalService.isPresent() && vehicleType.isPresent()){
+            Optional<VehicleRegister> vehicleRegister = vehicleRegisterRepository.findById(carRentalService.get().getVehicleRegister().getId());
+            if(vehicleRegister.isPresent()){
+                vehicleRegister.get().setVehicleType(vehicleType.get());
+                vehicleRegister.get().setManufacturer(vehicleRentalServiceDTO.getManufacturer());
+                vehicleRegister.get().setDescription(vehicleRentalServiceDTO.getDescription());
+                vehicleRegister.get().setQuantity(vehicleRentalServiceDTO.getQuantity());
+                vehicleRegister.get().setStatus(vehicleRentalServiceDTO.getStatus());
+                vehicleRegister.get().setDate_of_status(vehicleRentalServiceDTO.getDate_of_status());
+                vehicleRegister.get().setDiscount_percentage(vehicleRentalServiceDTO.getDiscount_percentage());
+                vehicleRegister.get().setCar_deposit(vehicleRentalServiceDTO.getCar_deposit());
+                vehicleRegister.get().setReservation_fees(vehicleRentalServiceDTO.getReservation_fees());
+                vehicleRegister.get().setUlties(vehicleRentalServiceDTO.getUlties());
+                vehicleRegister.get().setPolicy(vehicleRentalServiceDTO.getPolicy());
+                vehicleRegister.get().setRating_total(vehicleRentalServiceDTO.getRating_total());
+                vehicleRegister.get().setAmount(vehicleRentalServiceDTO.getAmount());
+                vehicleRegister.get().setLocation(vehicleRentalServiceDTO.getLocation());
+
+            }
 
             //car_rental_service
             carRentalService.get().setVehicleRegister(vehicleRegister.get());
@@ -126,6 +134,9 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
 
             try{
                 vehicleRentalServiceRepo.save(carRentalService.get());
+                //update images
+                imageService.deleteImages(vehicleRegister.get().getId(),"CAR_RENTAL_PARTNER");
+                imageService.uploadAndSaveImages(images,String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.get().getId(),String.valueOf(PartnerTypeEnum.CAR_RENTAL_PARTNER));
                 return true;
             }catch (Exception e){
                 System.out.println(e.getLocalizedMessage());

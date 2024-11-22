@@ -66,6 +66,8 @@ jobs:
          --health-interval=5s
          --health-timeout=3s
          --health-retries=5
+    
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -76,6 +78,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'corretto'
+      - name: Install Redis CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y redis-tools
       - name: Wait for MySQL to be ready
         run: |
          # Chờ MySQL service khởi động hoàn tất

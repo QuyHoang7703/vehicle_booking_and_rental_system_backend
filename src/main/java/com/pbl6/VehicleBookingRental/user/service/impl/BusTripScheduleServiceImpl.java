@@ -94,21 +94,22 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
             busTripSchedule.setOperation(true);
         }
 
-        BusTripSchedule savedBusTripSchedule = this.busTripScheduleRepository.save(busTripSchedule);
+        // Check breaDays is null ?
+        if(reqBusTripScheduleDTO.getBreakDays()!=null && !reqBusTripScheduleDTO.getBreakDays().isEmpty()) {
+            List<BreakDay> breakDays = reqBusTripScheduleDTO.getBreakDays().stream()
+                    .map(breakDay -> {
+                        return BreakDay.builder()
+                                .startDay(breakDay.getStartDay())
+                                .endDay(breakDay.getEndDay())
+                                .busTripSchedule(busTripSchedule)  // Set BusTripSchedule for BreakDay
+                                .build();
+                    }).toList();
 
-        List<BreakDay> breakDays = reqBusTripScheduleDTO.getBreakDays().stream()
-                .map(breakDay -> {
-                    return BreakDay.builder()
-                            .startDay(breakDay.getStartDay())
-                            .endDay(breakDay.getEndDay())
-                            .busTripSchedule(savedBusTripSchedule)  // Gán BusTripSchedule cho BreakDay
-                            .build();
-                }).toList();
+           busTripSchedule.setBreakDays(breakDays);
+        }
 
-        savedBusTripSchedule.setBreakDays(breakDays);
-        this.breakDayRepository.saveAll(breakDays);
 
-        return savedBusTripSchedule;
+        return this.busTripScheduleRepository.save(busTripSchedule);
     }
 
     @Override
@@ -232,11 +233,11 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     // @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
-    @Scheduled(cron = "0 */2 * * * *")
+    @Scheduled(cron = "0 */1 * * * *")
     public void updateBusTripScheduleStatus() {
         LocalDate today = LocalDate.now();
         log.info("Today is: " + today);
-        List<BusTripSchedule> busTripSchedules = busTripScheduleRepository.findAll();
+        List<BusTripSchedule> busTripSchedules = busTripScheduleRepository.findSchedulesBeforeToday(today);
         List<BusTripSchedule> updatedBusTripSchedules = new ArrayList<>();
         for (BusTripSchedule busTripSchedule : busTripSchedules) {
             boolean isOperation = busTripSchedule.isOperation();

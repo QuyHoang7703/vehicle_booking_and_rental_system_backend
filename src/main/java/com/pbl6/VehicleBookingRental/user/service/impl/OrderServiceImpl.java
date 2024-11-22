@@ -122,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
 //        booking.setTransactionCode(transactionCode);
         log.info("TransactionCode: " + transactionCode);
         redisService.setHashSet(transactionCode, "transactionCode", keyOrder);
-        redisService.setTimeToLive(transactionCode, 3);
+        redisService.setTimeToLive(transactionCode, 4);
         return res;
     }
 }

@@ -70,6 +70,8 @@ public class OrderServiceImpl implements OrderService {
         Orders order = new Orders();
         order.setId(orderBusTripRedisDTO.getId());
         order.setOrder_type("BUS_TRIP_ORDER");
+        order.setCustomerName(orderBusTripRedisDTO.getCustomerName());
+        order.setCustomerPhoneNumber(orderBusTripRedisDTO.getCustomerPhoneNumber());
 
         Account currentAccount = accountService.fetchAccountById(orderBusTripRedisDTO.getAccount_Id());
 

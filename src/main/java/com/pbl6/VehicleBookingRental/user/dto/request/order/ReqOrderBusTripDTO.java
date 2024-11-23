@@ -13,6 +13,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ReqOrderBusTripDTO {
+    private String customerName;
+    private String customerPhoneNumber;
     private int busTripScheduleId;
     private int numberOfTicket;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")

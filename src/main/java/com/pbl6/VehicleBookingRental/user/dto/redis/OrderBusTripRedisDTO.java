@@ -13,6 +13,8 @@ import java.time.LocalDate;
 @Builder
 public class OrderBusTripRedisDTO {
     private String id;
+    private String customerName;
+    private String customerPhoneNumber;
     private int numberOfTicket;
     private double priceTotal;
     private LocalDate departureDate;

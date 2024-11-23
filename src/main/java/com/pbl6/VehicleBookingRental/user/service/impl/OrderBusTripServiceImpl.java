@@ -58,6 +58,8 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setPriceTotal(reqOrderBusTripDTO.getNumberOfTicket()*busTripSchedule.getPriceTicket());
         orderBusTripRedis.setAccount_Id(currentAccount.getId());
         orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
+        orderBusTripRedis.setCustomerName(reqOrderBusTripDTO.getCustomerName());
+        orderBusTripRedis.setCustomerPhoneNumber(reqOrderBusTripDTO.getCustomerPhoneNumber());
         orderBusTripRedis.setOrderDate(Instant.now());
 
 //        String redisKeyOrder = "order:" + currentAccount.getEmail();
@@ -97,8 +99,8 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         // Create customer info
         ResOrderBusTripDTO.CustomerInfo customerInfo = ResOrderBusTripDTO.CustomerInfo.builder()
                 .email(email)
-                .name(currentAccount.getName())
-                .phoneNumber(currentAccount.getPhoneNumber())
+                .name(orderBusTripRedis.getCustomerName())
+                .phoneNumber(orderBusTripRedis.getCustomerPhoneNumber())
                 .build();
 
         // Create order info

@@ -6,10 +6,16 @@ import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
+import com.pbl6.VehicleBookingRental.user.domain.notification.Notification;
+import com.pbl6.VehicleBookingRental.user.domain.notification.NotificationAccount;
+import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.redis.OrderBusTripRedisDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResVnPayDTO;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
+import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationAccountRepo;
+import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationRepo;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.BusTripScheduleService;
@@ -17,6 +23,8 @@ import com.pbl6.VehicleBookingRental.user.service.OrderService;
 import com.pbl6.VehicleBookingRental.user.service.RedisService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.VnPayUtil;
+import com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +33,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +48,11 @@ public class OrderServiceImpl implements OrderService {
     private final AccountService accountService;
     private final BusTripScheduleRepository busTripScheduleRepository;
     private final OrderBusTripRepository orderBusTripRepository;
+    private final NotificationRepo notificationRepo;
+    private final AccountRepository accountRepository;
+    private final NotificationAccountRepo notificationAccountRepo;
+    private final NotificationServiceImpl notificationServiceImpl;
+
     @Override
     public ResVnPayDTO createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException {
 
@@ -59,8 +74,46 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void handlePaymentSuccess(String transactionCode) throws IdInvalidException {
-        String keyOrderBusTrip = (String) redisService.getHashValue(transactionCode, "transactionCode");
+        String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
+        if(keyOrder.contains("BUS_TRIP")) {
+            handleBusTripScheduleOrder(keyOrder);
+        }
 
+        // Delete orderBusTrip, transactionCode in Redis
+        redisService.deleteHashFile(transactionCode, "transactionCode");
+        redisService.deleteHashFile(keyOrder, "order-detail");
+    }
+
+    private ResVnPayDTO createUrlRequestToVnPay (HttpServletRequest request, Double amount, String keyOrder) throws ApplicationException, IdInvalidException {
+        // Create request payment with params to call VnPay's API
+        String bankCode = request.getParameter("bankCode");
+        // Get obligatory params
+        Map<String, String> vnpParamsMap = vnPayConfig.getVnPayConfig();
+        // Create additional params about transaction
+        vnpParamsMap.put("vnp_Amount", String.valueOf(Math.round(amount* 100)));
+        if (bankCode != null && !bankCode.isEmpty()) {
+            vnpParamsMap.put("vnp_BankCode", bankCode);
+        }
+        vnpParamsMap.put("vnp_IpAddr", VnPayUtil.getIpAddress(request));
+        // Build request url
+        String queryUrl = VnPayUtil.getPaymentURL(vnpParamsMap, true);
+        String hashData = VnPayUtil.getPaymentURL(vnpParamsMap, false);
+        queryUrl += "&vnp_SecureHash=" + VnPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
+        String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
+
+        ResVnPayDTO res = new ResVnPayDTO();
+        res.setMessage("Success");
+        res.setPaymentUrl(paymentUrl);
+
+        String transactionCode = vnpParamsMap.get("vnp_TxnRef");
+//        booking.setTransactionCode(transactionCode);
+        log.info("TransactionCode: " + transactionCode);
+        redisService.setHashSet(transactionCode, "transactionCode", keyOrder);
+        redisService.setTimeToLive(transactionCode, 4);
+        return res;
+    }
+
+    private void handleBusTripScheduleOrder(String keyOrderBusTrip) throws IdInvalidException {
         // Get data from redis
         Object rawJson = redisService.getHashValue(keyOrderBusTrip, "order-detail");
         // Convert json to orderBusTrip object
@@ -93,38 +146,40 @@ public class OrderServiceImpl implements OrderService {
         // Save all order and orderBusTrip, cascade = CascadeType.ALL => orderBusTrip is also saved
         this.ordersRepo.save(order);
 
-        // Delete orderBusTrip, transactionCode in Redis
-        redisService.deleteHashFile(transactionCode, "transactionCode");
-        redisService.deleteHashFile(keyOrderBusTrip, "order-detail");
 
+
+        int busPartnerId = busTripSchedule.getBusTrip().getBusPartner().getId();
+        int accountIdOfBusPartner = busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getAccount().getId();
+        createNotificationToPartner(accountIdOfBusPartner, busPartnerId, PartnerTypeEnum.BUS_PARTNER);
     }
 
-    private ResVnPayDTO createUrlRequestToVnPay (HttpServletRequest request, Double amount, String keyOrder) throws ApplicationException, IdInvalidException {
-        // Create request payment with params to call VnPay's API
-        String bankCode = request.getParameter("bankCode");
-        // Get obligatory params
-        Map<String, String> vnpParamsMap = vnPayConfig.getVnPayConfig();
-        // Create additional params about transaction
-        vnpParamsMap.put("vnp_Amount", String.valueOf(Math.round(amount* 100)));
-        if (bankCode != null && !bankCode.isEmpty()) {
-            vnpParamsMap.put("vnp_BankCode", bankCode);
-        }
-        vnpParamsMap.put("vnp_IpAddr", VnPayUtil.getIpAddress(request));
-        // Build request url
-        String queryUrl = VnPayUtil.getPaymentURL(vnpParamsMap, true);
-        String hashData = VnPayUtil.getPaymentURL(vnpParamsMap, false);
-        queryUrl += "&vnp_SecureHash=" + VnPayUtil.hmacSHA512(vnPayConfig.getSecretKey(), hashData);
-        String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
+    private void createNotificationToPartner(int accountIdOfPartner, int partnerId, PartnerTypeEnum partnerTypeEnum) {
+        Notification notification = new Notification();
+        notification.setCreate_at(new Date());
+        notification.setMessage("Bạn có một đơn đặt xe mới ");
+        notification.setTitle("Đơn thuê xe mới");
+        notification.setType(NotificationTypeEnum.NEW_BOOKING);
+        notificationRepo.save(notification);
 
-        ResVnPayDTO res = new ResVnPayDTO();
-        res.setMessage("Success");
-        res.setPaymentUrl(paymentUrl);
+        NotificationAccount notificationAccount = new NotificationAccount();
+        notificationAccount.setNotification(notification);
+        Optional<Account> partnerAccount = accountRepository.findById(accountIdOfPartner);
+        notificationAccount.setAccount(partnerAccount.get());
+        notificationAccount.setPartnerType(PartnerTypeEnum.BUS_PARTNER);
+        notificationAccount.setSeen(false);
+        notificationAccountRepo.save(notificationAccount);
 
-        String transactionCode = vnpParamsMap.get("vnp_TxnRef");
-//        booking.setTransactionCode(transactionCode);
-        log.info("TransactionCode: " + transactionCode);
-        redisService.setHashSet(transactionCode, "transactionCode", keyOrder);
-        redisService.setTimeToLive(transactionCode, 4);
-        return res;
+        notificationServiceImpl.sendNotification
+                (partnerId
+                        ,String.valueOf(partnerTypeEnum)
+                        , NotificationDTO.builder()
+                                .id(notification.getId())
+                                .type(notification.getType())
+                                .title(notification.getTitle())
+                                .message(notification.getMessage())
+                                .create_at(notification.getCreate_at())
+                                .isSeen(notificationAccount.isSeen())
+                                .build());
+
     }
 }

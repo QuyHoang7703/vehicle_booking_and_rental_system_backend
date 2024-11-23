@@ -73,7 +73,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setKey(redisKeyOrderBusTrip);
 
         redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
-        redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
+        redisService.setTimeToLive(redisKeyOrderBusTrip, 1);
 
 
         // Number of available tickets minus number of ticket

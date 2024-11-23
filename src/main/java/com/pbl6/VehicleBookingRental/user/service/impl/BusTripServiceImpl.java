@@ -7,6 +7,7 @@ import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResPickupAndDropOffLocation;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.*;
 import com.pbl6.VehicleBookingRental.user.service.BusTripService;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
@@ -151,6 +152,21 @@ public class BusTripServiceImpl implements BusTripService {
             throw new ApplicationException("Can't delete the bus trip scheduled");
         }
         this.busTripRepository.deleteById(busTripId);
+    }
+
+    @Override
+    public ResPickupAndDropOffLocation getPickupAndDropOffLocationById(int id) throws IdInvalidException {
+        BusTrip busTrip = this.busTripRepository.findById(id)
+                .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
+        String pickupLocations = busTrip.getPickupLocations();
+        List<String> pickupLocationsToList = Arrays.asList(pickupLocations.split("!"));
+        String dropOffLocations = busTrip.getDropOffLocations();
+        List<String> dropOffLocationsToList =  Arrays.asList(dropOffLocations.split("!"));
+        ResPickupAndDropOffLocation res = ResPickupAndDropOffLocation.builder()
+                .pickupLocations(pickupLocationsToList)
+                .dropOffLocations(dropOffLocationsToList)
+                .build();
+        return res;
     }
 
 

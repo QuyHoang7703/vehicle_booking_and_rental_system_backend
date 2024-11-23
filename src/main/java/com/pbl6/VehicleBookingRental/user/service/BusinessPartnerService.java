@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface BusinessPartnerService {
     boolean isRegistered(int accountId, PartnerTypeEnum partnerType);
@@ -23,5 +24,5 @@ public interface BusinessPartnerService {
     void refuseOrDeleteRegisterBusinessPartner(ReqPartnerAction reqPartnerAction) throws IdInvalidException, ApplicationException, IOException;
     BusinessPartner getBusinessPartnerById(int id) throws IdInvalidException;
     String getStatusRegisterPartner(PartnerTypeEnum partnerType) throws ApplicationException;
-    String getPolicies(int businessPartnerId) throws IdInvalidException;
+    List<String> getPolicies(int businessPartnerId) throws IdInvalidException;
 }

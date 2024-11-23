@@ -4,10 +4,8 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Utility;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.service.BusService;
-import com.pbl6.VehicleBookingRental.user.service.BusTripScheduleService;
-import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
-import com.pbl6.VehicleBookingRental.user.service.UtilityService;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResPickupAndDropOffLocation;
+import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
@@ -29,6 +27,7 @@ public class BusTripScheduleForUserController {
     private final BusinessPartnerService businessPartnerService;
     private final BusService busService;
     private final UtilityService utilityService;
+    private final BusTripService busTripService;
     @GetMapping("")
     public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleAvailableForUser(@Filter Specification<BusTripSchedule> spec,
                                                                                      Pageable pageable,
@@ -36,8 +35,8 @@ public class BusTripScheduleForUserController {
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable, departureDate));
     }
     @GetMapping("/policies/{businessPartnerId}")
-    public ResponseEntity<ResponseInfo<String>> getPolicies(@PathVariable("businessPartnerId") int businessPartnerId) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>(this.businessPartnerService.getPolicies(businessPartnerId)));
+    public ResponseEntity<List<String>> getPolicies(@PathVariable("businessPartnerId") int businessPartnerId) throws IdInvalidException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.businessPartnerService.getPolicies(businessPartnerId));
     }
 
     @GetMapping("/imagesOfBus/{busId}")
@@ -48,6 +47,11 @@ public class BusTripScheduleForUserController {
     @GetMapping("/utilities/{busId}")
     public ResponseEntity<List<Utility>> getUtilitiesOfBus(@PathVariable("busId") int busId) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.getAllUtilityByBusId(busId));
+    }
+
+    @GetMapping("/pickup-dropOff-locations/{busTripId}")
+    public ResponseEntity<ResPickupAndDropOffLocation> getPickupAndDropOffLocation(@PathVariable("busTripId") int busTripId) throws IdInvalidException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.getPickupAndDropOffLocationById(busTripId));
     }
 
 

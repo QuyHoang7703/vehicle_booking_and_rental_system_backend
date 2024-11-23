@@ -216,29 +216,6 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
             this.emailService.sendEmail(email, "Thông báo từ chối hợp tác", "refuse_partner", context);
         }
 
-//        if (reqPartnerAction.getPartnerType().equals(PartnerTypeEnum.BUS_PARTNER)) {
-//            this.imageService.deleteImages(businessPartner.getBusPartner().getId(), String.valueOf(PartnerTypeEnum.BUS_PARTNER));
-//            this.businessPartnerRepository.delete(businessPartner);
-//            this.bankAccountService.deleteBankAccount(businessPartner.getAccount().getId(), PartnerTypeEnum.BUS_PARTNER);
-//
-//            // Delete accountRole in delete business partner
-//            AccountRole accountRole = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.BUS_PARTNER));
-//            if(accountRole != null){
-//                this.accountRoleRepository.delete(accountRole);
-//            }
-//
-//        } else if (reqPartnerAction.getPartnerType().equals(PartnerTypeEnum.CAR_RENTAL_PARTNER)) {
-//            this.imageService.deleteImages(businessPartner.getCarRentalPartner().getId(), String.valueOf(PartnerTypeEnum.CAR_RENTAL_PARTNER));
-//            this.businessPartnerRepository.delete(businessPartner);
-//            this.bankAccountService.deleteBankAccount(businessPartner.getAccount().getId(), PartnerTypeEnum.CAR_RENTAL_PARTNER);
-//
-//            // Delete accountRole in delete business partner
-//            AccountRole accountRole = this.accountRoleService.getAccountRole(businessPartner.getAccount().getEmail(), String.valueOf(PartnerTypeEnum.CAR_RENTAL_PARTNER));
-//            if(accountRole != null){
-//                this.accountRoleRepository.delete(accountRole);
-//            }
-//        }
-
     }
 
     @Override
@@ -259,5 +236,13 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         }
 
         return null;
+    }
+
+    @Override
+    public String getPolicies(int businessPartnerId) throws IdInvalidException {
+        BusinessPartner businessPartner = this.businessPartnerRepository.findById(businessPartnerId)
+                .orElseThrow(() -> new IdInvalidException("Business partner not found"));
+
+        return businessPartner.getPolicy();
     }
 }

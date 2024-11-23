@@ -23,4 +23,5 @@ public interface BusinessPartnerService {
     void refuseOrDeleteRegisterBusinessPartner(ReqPartnerAction reqPartnerAction) throws IdInvalidException, ApplicationException, IOException;
     BusinessPartner getBusinessPartnerById(int id) throws IdInvalidException;
     String getStatusRegisterPartner(PartnerTypeEnum partnerType) throws ApplicationException;
+    String getPolicies(int businessPartnerId) throws IdInvalidException;
 }

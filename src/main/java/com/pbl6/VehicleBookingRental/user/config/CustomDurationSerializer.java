@@ -13,7 +13,7 @@ public class CustomDurationSerializer extends JsonSerializer<Duration> {
     public void serialize(Duration duration, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
         long hours = duration.toHours();
         long minutes = duration.minusHours(hours).toMinutes();
-        String formattedDuration = String.format("%02d:%02d", hours, minutes);
+        String formattedDuration = String.format("%02dh:%02dm", hours, minutes);
         jsonGenerator.writeString(formattedDuration);
     }
 }

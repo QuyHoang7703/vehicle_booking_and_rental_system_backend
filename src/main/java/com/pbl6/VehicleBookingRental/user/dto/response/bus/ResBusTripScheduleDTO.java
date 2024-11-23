@@ -15,29 +15,37 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResBusTripScheduleDTO {
-    private int idBusTripSchedule;
-    private String businessName;
-    private String busTypeName;
-    private String departureLocation;
-    private String arrivalLocation;
+    private int busTripScheduleId;
+    private BusinessPartnerInfo businessPartnerInfo;
+//    private int businessPartnerId;
+//    private String businessPartnerName;
+//    private String busTypeName;
+
+//    private String departureLocation;
+//    private String arrivalLocation;
+//    @JsonSerialize(using = CustomDurationSerializer.class)
+//    private Duration durationJourney;
+
+    private ResBusTripDTO.BusTripInfo busTripInfo;
+    private ResBusDTO busInfo;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime departureTime;
-    @JsonSerialize(using = CustomDurationSerializer.class)
-    private Duration durationJourney;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime arrivalTime;
     private double discountPercentage;
-    private double priceTicket;
+    private String priceTicket;
     private int availableSeats;
     private boolean isOperation;
 
-    public LocalTime getArrivalTime() {
-        if(this.departureTime != null && this.durationJourney != null) {
-            this.arrivalTime = this.departureTime.plus(this.durationJourney);
-            return this.arrivalTime;
-        }
-        return null;
-
+    @Data
+    @Builder
+    public static class BusinessPartnerInfo {
+        private int id;
+        private String name;
     }
+
+
 
 }

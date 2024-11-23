@@ -1,6 +1,8 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.bus;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.pbl6.VehicleBookingRental.user.config.CustomDurationSerializer;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import lombok.Builder;
 import lombok.Data;

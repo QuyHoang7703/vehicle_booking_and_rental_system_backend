@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.Bus;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Utility;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
@@ -92,5 +93,10 @@ public class UtilitySeviceImpl implements UtilityService {
         res.setResult(utilityList);
 
         return res;
+    }
+
+    @Override
+    public List<Utility> getAllUtilityByBusId(int busId) {
+        return this.utilityRepository.findBy_BusId(busId);
     }
 }

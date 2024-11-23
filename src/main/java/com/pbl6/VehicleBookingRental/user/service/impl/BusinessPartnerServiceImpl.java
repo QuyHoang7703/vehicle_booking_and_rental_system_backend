@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -239,10 +240,10 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     }
 
     @Override
-    public String getPolicies(int businessPartnerId) throws IdInvalidException {
+    public List<String> getPolicies(int businessPartnerId) throws IdInvalidException {
         BusinessPartner businessPartner = this.businessPartnerRepository.findById(businessPartnerId)
                 .orElseThrow(() -> new IdInvalidException("Business partner not found"));
-
-        return businessPartner.getPolicy();
+        String policies = businessPartner.getPolicy();
+        return Arrays.asList(policies.split("!"));
     }
 }

@@ -23,4 +23,5 @@ public interface BusService {
     ResultPaginationDTO getAllBuses(Specification<Bus> spec, Pageable pageable) throws IdInvalidException, ApplicationException;
     ResBusDTO convertToResBus(Bus bus) throws IdInvalidException;
     Map<Integer, String> getBusesByBusTypeId(String busTypeName) throws IdInvalidException, ApplicationException;
+    List<String> getImages(int busId) throws IdInvalidException;
 }

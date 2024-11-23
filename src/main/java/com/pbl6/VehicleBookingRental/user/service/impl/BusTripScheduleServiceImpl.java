@@ -6,6 +6,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailDTO;
@@ -13,10 +14,12 @@ import com.pbl6.VehicleBookingRental.user.repository.busPartner.BreakDayReposito
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
+import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -132,7 +135,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .departureTime(busTripSchedule.getDepartureTime())
                 .arrivalTime(busTripSchedule.getDepartureTime().plus(busTripSchedule.getBusTrip().getDurationJourney()))
                 .discountPercentage(busTripSchedule.getDiscountPercentage())
-                .priceTicket(busTripSchedule.getPriceTicket())
+                .priceTicket(CurrencyFormatterUtil.formatToVND(busTripSchedule.getPriceTicket()))
                 .startOperationDay(busTripSchedule.getStartOperationDay())
                 .availableSeats(busTripSchedule.getAvailableSeats()) // Có thể thay thế sau này khi order
                 .breakDays(busTripSchedule.getBreakDays())
@@ -150,22 +153,33 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
-    public ResBusTripScheduleDTO convertToResBusTripScheduleDTO(BusTripSchedule busTripSchedule) {
-        ResBusTripScheduleDTO res = ResBusTripScheduleDTO.builder()
-                .idBusTripSchedule(busTripSchedule.getId())
-                .businessName(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getBusinessName())
-                .busTypeName(busTripSchedule.getBus().getBusType().getName())
+    public ResBusTripScheduleDTO convertToResBusTripScheduleDTO(BusTripSchedule busTripSchedule) throws IdInvalidException {
+        ResBusDTO resBusDTO = this.busService.convertToResBus(busTripSchedule.getBus());
+
+        ResBusTripDTO.BusTripInfo busTripInfo = ResBusTripDTO.BusTripInfo.builder()
+                .id(busTripSchedule.getBusTrip().getId())
                 .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
                 .arrivalLocation(busTripSchedule.getBusTrip().getArrivalLocation())
-                .departureTime(busTripSchedule.getDepartureTime())
                 .durationJourney(busTripSchedule.getBusTrip().getDurationJourney())
+                .build();
+        ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = ResBusTripScheduleDTO.BusinessPartnerInfo.builder()
+                .id(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getId())
+                .name(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getBusinessName())
+                .build();
+        ResBusTripScheduleDTO res = ResBusTripScheduleDTO.builder()
+                .busTripScheduleId(busTripSchedule.getId())
+                .businessPartnerInfo(businessPartnerInfo)
+                .busInfo(resBusDTO)
+                .busTripInfo(busTripInfo)
+                .departureTime(busTripSchedule.getDepartureTime())
                 .discountPercentage(busTripSchedule.getDiscountPercentage())
-                .priceTicket(busTripSchedule.getPriceTicket())
-//                .arrivalTime(busTripSchedule.getDepartureTime().plus(busTripSchedule.getBusTrip().getDurationJourney()))
+                .priceTicket(CurrencyFormatterUtil.formatToVND(busTripSchedule.getPriceTicket()))
+                .arrivalTime(busTripSchedule.getDepartureTime().plus(busTripInfo.getDurationJourney()))
                 .availableSeats(busTripSchedule.getAvailableSeats())
                 .isOperation(busTripSchedule.isOperation())
                 .build();
-        res.setArrivalTime(res.getArrivalTime());
+
+//        res.setArrivalTime(busTripInfo.getD);
 
         return res;
     }
@@ -197,7 +211,13 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         res.setMeta(meta);
 
         List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = busTripSchedulePage.getContent().stream()
-                .map(this::convertToResBusTripScheduleDTO)
+                .map(busTripSchedule -> {
+                    try {
+                        return convertToResBusTripScheduleDTO(busTripSchedule);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .toList();
         res.setResult(resBusTripScheduleDTOS);
 
@@ -205,12 +225,18 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
-    public ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
+    public ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable, LocalDate departureDate) throws ApplicationException {
+        if(departureDate == null) {
+            departureDate = LocalDate.now();
+//            log.info("Departure: " + departureDate);
+        }
+        List<Long> validIds = busTripScheduleRepository.findBusTripScheduleIdsNotInBreakDays(departureDate);
         Specification<BusTripSchedule> newSpec = (root, query, criteriaBuilder) -> {
             Predicate predicateOperationDay = criteriaBuilder.lessThanOrEqualTo(root.get("startOperationDay"), LocalDate.now());
             Predicate predicateStatusOperation = criteriaBuilder.equal(root.get("isOperation"), true);
+            Predicate predicateValidIds = root.get("id").in(validIds); // Chỉ lấy các ID hợp lệ từ truy vấn
 
-            return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation);
+            return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds);
         };
         Specification<BusTripSchedule> finalSpec = spec.and(newSpec);
         Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findAll(finalSpec, pageable);
@@ -225,7 +251,13 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         res.setMeta(meta);
 
         List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = busTripSchedulePage.getContent().stream()
-                .map(this::convertToResBusTripScheduleDTO)
+                .map(busTripSchedule -> {
+                    try {
+                        return convertToResBusTripScheduleDTO(busTripSchedule);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .toList();
         res.setResult(resBusTripScheduleDTOS);
         return res;
@@ -233,7 +265,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     // @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 */2 * * * *")
     public void updateBusTripScheduleStatus() {
         LocalDate today = LocalDate.now();
         log.info("Today is: " + today);

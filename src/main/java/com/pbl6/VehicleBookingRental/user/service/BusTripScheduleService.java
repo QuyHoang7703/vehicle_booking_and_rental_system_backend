@@ -10,11 +10,13 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
+
 public interface BusTripScheduleService {
     BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException;
     ResBusTripScheduleDetailDTO convertToResBusTripScheduleDetailDTO(BusTripSchedule busTripSchedule);
     ResBusTripScheduleDetailDTO getBusTripScheduleById(int id) throws IdInvalidException;
-    ResBusTripScheduleDTO convertToResBusTripScheduleDTO(BusTripSchedule busTripSchedule);
+    ResBusTripScheduleDTO convertToResBusTripScheduleDTO(BusTripSchedule busTripSchedule) throws IdInvalidException;
     ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException;
-    ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException;
+    ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable, LocalDate departureDate) throws ApplicationException;
 }

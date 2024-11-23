@@ -62,4 +62,6 @@ public class BusController {
         return ResponseEntity.status(HttpStatus.OK).body(this.busService.getBusesByBusTypeId(nameBusType));
     }
 
+
+
 }

@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
@@ -44,10 +46,14 @@ public class BusTripScheduleController {
 
     }
 
-    @GetMapping("busTripSchedules/available")
-    public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleAvailableForUser(@Filter Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable));
-    }
+//    @GetMapping("busTripSchedules/available")
+//    public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleAvailableForUser(@Filter Specification<BusTripSchedule> spec,
+//                                                                                     Pageable pageable,
+//                                                                                     @RequestParam("departureDate")LocalDate departureDate) throws ApplicationException {
+//        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable, departureDate));
+//    }
+
+
 
 
 }

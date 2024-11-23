@@ -211,5 +211,14 @@ public class BusServiceImpl implements BusService {
         return map;
     }
 
+    @Override
+    public List<String> getImages(int busId) throws IdInvalidException {
+        List<String> imageUrls = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), busId)
+                .stream()
+                .map(Images::getPathImage)
+                .toList();
+        return imageUrls;
+    }
+
 
 }

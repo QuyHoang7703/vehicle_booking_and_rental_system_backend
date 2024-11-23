@@ -84,9 +84,9 @@ public class SecurityConfiguration {
                 "/api/v1/auth/**",
                 "/identity/auth/outbound/authentication",
                 "/ws/**",
-                "api/v1/busTripSchedules/available",
                 "/user/vehicle-register/all",
-                "/user/vehicle-register/get-vehicle-register"
+                "/user/vehicle-register/get-vehicle-register",
+                "/api/v1/user/busTripSchedules/**"
         };
         http
                 .csrf(c->c.disable())

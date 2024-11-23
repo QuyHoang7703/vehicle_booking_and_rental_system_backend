@@ -13,6 +13,7 @@ import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
+import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import lombok.RequiredArgsConstructor;
@@ -115,8 +116,8 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
             priceTotal = priceTotal * (1 - discountPercentage/100);
         }
 
-        orderInfo.setPricePerTicket(this.formatToVND(pricePerTicket));
-        orderInfo.setPriceTotal(this.formatToVND(priceTotal));
+        orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
+        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(priceTotal));
 
         // Create tripInfo
         ResOrderBusTripDTO.TripInfo tripInfo = ResOrderBusTripDTO.TripInfo.builder()
@@ -158,8 +159,4 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         return localDateTime.atZone(zoneId).toInstant();
     }
 
-    private String formatToVND(double amount) {
-        NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
-        return numberFormat.format(amount) + " VND";
-    }
 }

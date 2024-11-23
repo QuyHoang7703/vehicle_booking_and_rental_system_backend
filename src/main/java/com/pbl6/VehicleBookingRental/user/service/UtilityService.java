@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface UtilityService {
     Utility findById(int id) throws IdInvalidException;
     Utility createUtility(Utility reqUtility, MultipartFile utilityImage) throws ApplicationException;
@@ -15,5 +17,5 @@ public interface UtilityService {
     void deleteUtility(int idUtility) throws IdInvalidException;
     Utility getUtilityById(int idUtility) throws IdInvalidException;
     ResultPaginationDTO getAllUtility(Specification<Utility> specification, Pageable pageable);
-
+    List<Utility> getAllUtilityByBusId(int busId);
 }

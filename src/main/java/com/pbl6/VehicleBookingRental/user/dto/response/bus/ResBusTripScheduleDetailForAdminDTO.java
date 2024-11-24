@@ -11,7 +11,8 @@ import java.time.LocalTime;
 import java.util.List;
 @Data
 @Builder
-public class ResBusTripScheduleDetailDTO {
+// For admin
+public class ResBusTripScheduleDetailForAdminDTO {
     private int idBusTripSchedule;
     private ResBusTripDTO.BusTripInfo busTripInfo;
     private BusInfo busInfo;

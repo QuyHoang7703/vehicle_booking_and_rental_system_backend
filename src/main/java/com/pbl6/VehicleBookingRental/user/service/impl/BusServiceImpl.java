@@ -181,7 +181,7 @@ public class BusServiceImpl implements BusService {
 
         BusType busType = this.busTypeRepository.findById(bus.getBusType().getId())
                 .orElseThrow(() -> new IdInvalidException("Bus type is unavailable"));
-        resBus.setNameVehicleType(busType.getName());
+        resBus.setNameBusType(busType.getName());
 
         List<Images> images = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), bus.getId());
         resBus.setImageRepresentative(images.get(0).getPathImage());

@@ -76,12 +76,18 @@ public class OrderServiceImpl implements OrderService {
     public void handlePaymentSuccess(String transactionCode) throws IdInvalidException {
         String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
         if(keyOrder.contains("BUS_TRIP")) {
-            handleBusTripScheduleOrder(keyOrder);
+            handleBusTripScheduleOrder(keyOrder, transactionCode);
         }
 
         // Delete orderBusTrip, transactionCode in Redis
         redisService.deleteHashFile(transactionCode, "transactionCode");
         redisService.deleteHashFile(keyOrder, "order-detail");
+    }
+
+    @Override
+    public Orders findByTransactionCode(String transactionCode) throws ApplicationException {
+        return this.ordersRepo.findByTransactionCode(transactionCode)
+                .orElseThrow(() -> new ApplicationException("Order not found"));
     }
 
     private ResVnPayDTO createUrlRequestToVnPay (HttpServletRequest request, Double amount, String keyOrder) throws ApplicationException, IdInvalidException {
@@ -107,13 +113,14 @@ public class OrderServiceImpl implements OrderService {
 
         String transactionCode = vnpParamsMap.get("vnp_TxnRef");
 //        booking.setTransactionCode(transactionCode);
-        log.info("TransactionCode: " + transactionCode);
+
         redisService.setHashSet(transactionCode, "transactionCode", keyOrder);
         redisService.setTimeToLive(transactionCode, 4);
+
         return res;
     }
 
-    private void handleBusTripScheduleOrder(String keyOrderBusTrip) throws IdInvalidException {
+    private void handleBusTripScheduleOrder(String keyOrderBusTrip, String transactionCode) throws IdInvalidException {
         // Get data from redis
         Object rawJson = redisService.getHashValue(keyOrderBusTrip, "order-detail");
         // Convert json to orderBusTrip object
@@ -125,6 +132,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrder_type("BUS_TRIP_ORDER");
         order.setCustomerName(orderBusTripRedisDTO.getCustomerName());
         order.setCustomerPhoneNumber(orderBusTripRedisDTO.getCustomerPhoneNumber());
+        order.setTransactionCode(transactionCode);
 
         Account currentAccount = accountService.fetchAccountById(orderBusTripRedisDTO.getAccount_Id());
 

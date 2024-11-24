@@ -17,14 +17,6 @@ import java.time.LocalTime;
 public class ResBusTripScheduleDTO {
     private int busTripScheduleId;
     private BusinessPartnerInfo businessPartnerInfo;
-//    private int businessPartnerId;
-//    private String businessPartnerName;
-//    private String busTypeName;
-
-//    private String departureLocation;
-//    private String arrivalLocation;
-//    @JsonSerialize(using = CustomDurationSerializer.class)
-//    private Duration durationJourney;
 
     private ResBusTripDTO.BusTripInfo busTripInfo;
     private ResBusDTO busInfo;

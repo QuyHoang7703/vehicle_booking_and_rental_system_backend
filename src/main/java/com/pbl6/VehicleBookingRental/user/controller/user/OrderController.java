@@ -1,8 +1,12 @@
 package com.pbl6.VehicleBookingRental.user.controller.user;
 
+import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
+import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDetailDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResVnPayDTO;
+import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
 import com.pbl6.VehicleBookingRental.user.service.OrderService;
+import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,11 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.io.IOException;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/v1")
@@ -24,6 +24,7 @@ import java.io.IOException;
 @Slf4j
 public class OrderController {
     private final OrderService orderService;
+    private final OrderBusTripService orderBusTripService;
 
     @GetMapping("orders/create-payment")
     public ResponseEntity<ResVnPayDTO> createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException {
@@ -50,5 +51,17 @@ public class OrderController {
                     .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-failure?transactionId=" + transactionCode)
                     .build();
         }
+    }
+
+    @GetMapping("/orders/detail")
+    public ResponseEntity<ResOrderBusTripDetailDTO> getDetailOrderBusTripSchedule(@RequestParam("transactionCode") String transactionCode,
+                                                                                  @RequestParam("orderType") OrderTypeEnum orderType) throws ApplicationException{
+        if(orderType==OrderTypeEnum.BUS_TRIP_ORDER) {
+            Orders order = this.orderService.findByTransactionCode(transactionCode);
+            return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.convertToResOrderBusTripDetailDTO(order));
+        }
+        // if different types
+
+        return  ResponseEntity.status(HttpStatus.OK).body(null);
     }
 }

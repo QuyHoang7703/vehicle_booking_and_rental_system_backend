@@ -4,6 +4,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Utility;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResPickupAndDropOffLocation;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
@@ -52,6 +53,11 @@ public class BusTripScheduleForUserController {
     @GetMapping("/pickup-dropOff-locations/{busTripId}")
     public ResponseEntity<ResPickupAndDropOffLocation> getPickupAndDropOffLocation(@PathVariable("busTripId") int busTripId) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.getPickupAndDropOffLocationById(busTripId));
+    }
+
+    @GetMapping("/{busTripScheduleId}")
+    public ResponseEntity<ResBusTripScheduleDTO> getBusTripScheduleById(@PathVariable("busTripScheduleId") int busTripScheduleId) throws IdInvalidException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleByIdForUser(busTripScheduleId));
     }
 
 

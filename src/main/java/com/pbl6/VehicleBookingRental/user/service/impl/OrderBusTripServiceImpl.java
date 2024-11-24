@@ -1,25 +1,39 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.Bus;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
+import com.pbl6.VehicleBookingRental.user.dto.Meta;
+import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.redis.OrderBusTripRedisDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDetailDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.text.NumberFormat;
 import java.time.*;
 import java.util.*;
 
@@ -30,9 +44,10 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     private final OrdersRepo ordersRepo;
     private final AccountService accountService;
     private final RedisService<String, String, OrderBusTripRedisDTO> redisService;
-//    private final RedisService<String, String, Orders> redisServiceOrders;
     private final BusTripScheduleRepository busTripScheduleRepository;
     private final ObjectMapper objectMapper;
+    private final ImageRepository imageRepository;
+    private final BusService busService;
 
     @Override
     public OrderBusTripRedisDTO createOrderBusTrip(ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException{
@@ -73,83 +88,124 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setKey(redisKeyOrderBusTrip);
 
         redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
-        redisService.setTimeToLive(redisKeyOrderBusTrip, 1);
-
+        redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
 
         // Number of available tickets minus number of ticket
         busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() - reqOrderBusTripDTO.getNumberOfTicket());
         this.busTripScheduleRepository.save(busTripSchedule);
 
-
         return orderBusTripRedis;
     }
 
     @Override
-    public ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTripRedisDTO orderBusTripRedis) throws ApplicationException {
+    public ResOrderKey getKeyOfOrderBusTripRedisDTO(OrderBusTripRedisDTO orderBusTripRedisDTO) throws ApplicationException {
+        return ResOrderKey.builder()
+                .keyOrder(orderBusTripRedisDTO.getKey())
+                .build();
+    }
+
+    @Override
+    public ResOrderBusTripDetailDTO convertToResOrderBusTripDetailDTO(Orders order) throws ApplicationException {
         String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
         if(email==null){
-            throw new ApplicationException("Email is invalid");
+            throw new ApplicationException("Access token is invalid or expired");
         }
 
-        Account currentAccount = accountService.handleGetAccountByUsername(email);
-
-        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(orderBusTripRedis.getBusTripScheduleId())
-                .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
+        BusTripSchedule busTripSchedule = order.getOrderBusTrip().getBusTripSchedule();
 
         // Create customer info
-        ResOrderBusTripDTO.CustomerInfo customerInfo = ResOrderBusTripDTO.CustomerInfo.builder()
+        ResOrderBusTripDetailDTO.CustomerInfo customerInfo = ResOrderBusTripDetailDTO.CustomerInfo.builder()
                 .email(email)
-                .name(orderBusTripRedis.getCustomerName())
-                .phoneNumber(orderBusTripRedis.getCustomerPhoneNumber())
+                .name(order.getCustomerName())
+                .phoneNumber(order.getCustomerPhoneNumber())
                 .build();
+
+        OrderBusTrip orderBusTrip = order.getOrderBusTrip();
 
         // Create order info
-        ResOrderBusTripDTO.OrderInfo orderInfo = ResOrderBusTripDTO.OrderInfo.builder()
-                .orderId(orderBusTripRedis.getId())
-                .numberOfTicket(orderBusTripRedis.getNumberOfTicket())
-                .discountPercentage(busTripSchedule.getDiscountPercentage())
-                .orderDate(orderBusTripRedis.getOrderDate())
-                .build();
+        ResOrderBusTripDTO.OrderInfo orderInfo = this.createOrderInfo(orderBusTrip);
 
-        double pricePerTicket = busTripSchedule.getPriceTicket();
-        double priceTotal = pricePerTicket * orderBusTripRedis.getNumberOfTicket();
-        double discountPercentage = busTripSchedule.getDiscountPercentage();
-        if(discountPercentage != 0.0){
-            priceTotal = priceTotal * (1 - discountPercentage/100);
-        }
-
-        orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
-        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(priceTotal));
-
-        // Create tripInfo
-        ResOrderBusTripDTO.TripInfo tripInfo = ResOrderBusTripDTO.TripInfo.builder()
-                .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
-                .arrivalLocation(busTripSchedule.getBusTrip().getArrivalLocation())
-                .build();
-
-        // Calculate departureDateTime
-        LocalTime localTime = busTripSchedule.getDepartureTime();
-        LocalDate localDate = orderBusTripRedis.getDepartureDate();
-        Instant departureDateTime = this.changeInstant(localDate, localTime);
-        tripInfo.setDepartureDateTime(departureDateTime);
-
-        Duration duration = busTripSchedule.getBusTrip().getDurationJourney();
-        Instant arrivalDateTime = departureDateTime.plus(duration);
-        tripInfo.setArrivalDateTime(arrivalDateTime);
+        // Create trip info
+        ResOrderBusTripDTO.TripInfo tripInfo = this.createTripInfo(orderBusTrip);
 
         // Create busInfo
-        ResBusTripScheduleDetailDTO.BusInfo busInfo = ResBusTripScheduleDetailDTO.BusInfo.builder()
+        ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo = ResBusTripScheduleDetailForAdminDTO.BusInfo.builder()
                 .licensePlate(busTripSchedule.getBus().getLicensePlate())
                 .busType(busTripSchedule.getBus().getBusType())
                 .build();
 
-        ResOrderBusTripDTO res = ResOrderBusTripDTO.builder()
+        ResOrderBusTripDetailDTO res = ResOrderBusTripDetailDTO.builder()
                 .customerInfo(customerInfo)
                 .orderInfo(orderInfo)
                 .tripInfo(tripInfo)
                 .busInfo(busInfo)
-                .key(orderBusTripRedis.getKey())
                 .build();
+
+
+        return res;
+    }
+
+    @Override
+    public ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTrip orderBusTrip) throws ApplicationException, IdInvalidException {
+        Bus bus = orderBusTrip.getBusTripSchedule().getBus();
+
+        ResBusDTO busInfo = this.busService.convertToResBus(bus);
+
+        ResOrderBusTripDTO.OrderInfo orderInfo = this.createOrderInfo(orderBusTrip);
+
+        ResOrderBusTripDTO.TripInfo tripInfo= this.createTripInfo(orderBusTrip);
+
+        ResOrderBusTripDTO res = ResOrderBusTripDTO.builder()
+                .busInfo(busInfo)
+                .orderInfo(orderInfo)
+                .tripInfo(tripInfo)
+                .build();
+        return res;
+    }
+
+    @Override
+    public ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, boolean isGone) throws ApplicationException {
+        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
+        if(email==null){
+            throw new ApplicationException("Access token is invalid or expired");
+        }
+        Specification<OrderBusTrip> newSpec = (root, query, criteriaBuilder) -> {
+            Join<OrderBusTrip, Account> accountJoin = root.join("account");
+            Predicate orderOfAccount = criteriaBuilder.equal(accountJoin.get("email"), email);
+
+            Predicate statusOfOrder = isGone ? criteriaBuilder.lessThan(root.get("departureDate"), LocalDate.now())
+                    : criteriaBuilder.greaterThanOrEqualTo(root.get("departureDate"), LocalDate.now());
+
+            Join<OrderBusTrip, Orders> orderJoin = root.join("order");
+            query.orderBy(criteriaBuilder.desc(orderJoin.get("create_at")));
+            return criteriaBuilder.and(orderOfAccount, statusOfOrder);
+        };
+
+        Specification<OrderBusTrip> finalSpec = spec.and(newSpec);
+
+        Page<OrderBusTrip> page = this.orderBusTripRepository.findAll(finalSpec, pageable);
+
+        ResultPaginationDTO res = new ResultPaginationDTO();
+
+        Meta meta = new Meta();
+
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(page.getTotalPages());
+        meta.setTotal(page.getTotalElements());
+
+        List<ResOrderBusTripDTO> resOrderBusTripDTOS = page.getContent().stream()
+                .map(orderBusTrip -> {
+                    try {
+                        return this.convertToResOrderBusTripDTO(orderBusTrip);
+                    } catch (ApplicationException | IdInvalidException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+
+        res.setMeta(meta);
+        res.setResult(resOrderBusTripDTOS);
 
         return res;
     }
@@ -159,6 +215,52 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         LocalDateTime localDateTime = localDate.atTime(localTime);
         ZoneId zoneId = ZoneId.systemDefault(); // Múi giờ hệ thống
         return localDateTime.atZone(zoneId).toInstant();
+    }
+
+    private ResOrderBusTripDTO.OrderInfo createOrderInfo(OrderBusTrip orderBusTrip) {
+        ResOrderBusTripDTO.OrderInfo orderInfo = ResOrderBusTripDTO.OrderInfo.builder()
+                .orderId(orderBusTrip.getId())
+                .transactionCode(orderBusTrip.getOrder().getTransactionCode())
+                .numberOfTicket(orderBusTrip.getNumberOfTicket())
+                .orderDate(orderBusTrip.getOrder().getCreate_at())
+                .build();
+
+        BusTripSchedule busTripSchedule = orderBusTrip.getBusTripSchedule();
+
+        double pricePerTicket = busTripSchedule.getPriceTicket();
+        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
+        double discountPercentage = busTripSchedule.getDiscountPercentage();
+        if(discountPercentage != 0.0){
+            priceTotal = priceTotal * (1 - discountPercentage/100);
+        }
+
+        orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
+        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(priceTotal));
+        orderInfo.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
+
+        return orderInfo;
+    }
+
+    private ResOrderBusTripDTO.TripInfo createTripInfo(OrderBusTrip orderBusTrip) {
+        BusTripSchedule busTripSchedule = orderBusTrip.getBusTripSchedule();
+
+        // Create trip info
+        ResOrderBusTripDTO.TripInfo tripInfo = ResOrderBusTripDTO.TripInfo.builder()
+                .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
+                .arrivalLocation(busTripSchedule.getBusTrip().getArrivalLocation())
+                .build();
+
+        // Calculate departureDateTime
+        LocalTime localTime = busTripSchedule.getDepartureTime();
+        LocalDate localDate = orderBusTrip.getDepartureDate();
+        Instant departureDateTime = this.changeInstant(localDate, localTime);
+        tripInfo.setDepartureDateTime(departureDateTime);
+
+        Duration duration = busTripSchedule.getBusTrip().getDurationJourney();
+        Instant arrivalDateTime = departureDateTime.plus(duration);
+        tripInfo.setArrivalDateTime(arrivalDateTime);
+
+        return tripInfo;
     }
 
 }

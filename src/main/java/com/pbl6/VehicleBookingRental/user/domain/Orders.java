@@ -24,6 +24,7 @@ public class Orders {
     private Instant create_at;
     private String customerName;
     private String customerPhoneNumber;
+    private String transactionCode;
 
     @OneToOne(mappedBy = "order",cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn

@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class ResBusDTO {
     private int busId;
     private String licensePlate;
-    private String nameVehicleType;
+    private String nameBusType;
     private String imageRepresentative;
 }

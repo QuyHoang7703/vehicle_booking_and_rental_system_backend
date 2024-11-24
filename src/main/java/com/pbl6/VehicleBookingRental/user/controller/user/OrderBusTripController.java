@@ -1,12 +1,16 @@
 package com.pbl6.VehicleBookingRental.user.controller.user;
 
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
+import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.redis.OrderBusTripRedisDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
 import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +23,16 @@ public class OrderBusTripController {
 
 
     @PostMapping("orderBusTrips")
-    public ResponseEntity<ResOrderBusTripDTO> createOrderBusTrip(@RequestBody ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException {
+    public ResponseEntity<ResOrderKey> createOrderBusTrip(@RequestBody ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException {
         OrderBusTripRedisDTO orderBusTripRedis = this.orderBusTripService.createOrderBusTrip(reqOrderBusTripDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.orderBusTripService.convertToResOrderBusTripDTO(orderBusTripRedis));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.orderBusTripService.getKeyOfOrderBusTripRedisDTO(orderBusTripRedis));
+    }
+
+    @GetMapping("orderBusTrips")
+    public ResponseEntity<ResultPaginationDTO> getAllOrderBusTrips(@Filter Specification<OrderBusTrip> spec,
+                                                                   Pageable pageable,
+                                                                   @RequestParam(value = "isGone", required = false) boolean isGone) throws ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getAllOrderBusTrip(spec, pageable, isGone));
     }
 
 

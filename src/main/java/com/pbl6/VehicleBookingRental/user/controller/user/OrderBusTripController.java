@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 public class OrderBusTripController {
     private final OrderBusTripService orderBusTripService;
 
-
     @PostMapping("orderBusTrips")
     public ResponseEntity<ResOrderKey> createOrderBusTrip(@RequestBody ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException {
         OrderBusTripRedisDTO orderBusTripRedis = this.orderBusTripService.createOrderBusTrip(reqOrderBusTripDTO);

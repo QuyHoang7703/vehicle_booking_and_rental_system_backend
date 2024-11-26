@@ -37,11 +37,11 @@ public class VehicleRegisterController {
     public ResponseEntity<?> register_vehicle(
             @RequestPart("vehicleRegisterInfo") VehicleRegister vehicleRegister,
             @RequestParam("service_type") int service_type,
-            @RequestParam("no_driver_price") double no_driver_price,
-            @RequestParam("driver_price") double driver_price,
+            @RequestParam(value = "no_driver_price",required = false) double no_driver_price,
+            @RequestParam(value = "driver_price",required = false) double driver_price,
             @RequestParam("vehicle_type_id") int vehicle_type_id,
-            @RequestParam("car_rental_partner_id") int car_rental_partner_id,
-            @RequestParam(value = "vehicleRegisterImages") List<MultipartFile> images
+            @RequestParam(value = "car_rental_partner_id") int car_rental_partner_id,
+            @RequestParam(value = "vehicleRegisterImages",required = false) List<MultipartFile> images
 
     ){
         CarRentalPartner carRentalPartner = vehicleRegisterInterface.findCarRentalPartnerById(car_rental_partner_id);
@@ -87,7 +87,7 @@ public class VehicleRegisterController {
     }
     @PatchMapping("/update-vehicle-rental-service")
     public ResponseEntity<?> update_vehicle_rental_service(@RequestPart("vehicleRentalService") VehicleRentalServiceDTO vehicleRentalServiceDTO,
-                                                           @RequestParam(value = "vehicleRegisterImages") List<MultipartFile>images){
+                                                           @RequestParam(value = "vehicleRegisterImages",required = false) List<MultipartFile>images){
         RestResponse<String> restResponse = new RestResponse<>();
         restResponse.setStatusCode(200);
 

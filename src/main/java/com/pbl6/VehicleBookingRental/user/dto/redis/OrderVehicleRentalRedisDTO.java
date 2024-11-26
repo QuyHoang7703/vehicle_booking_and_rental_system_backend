@@ -1,32 +1,35 @@
-package com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO;
-
+package com.pbl6.VehicleBookingRental.user.dto.redis;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.List;
 
 @Data
-public class VehicleRentalOrdersDTO {
-    private int id;
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class OrderVehicleRentalRedisDTO {
+    private String id;
     private String customerName;
     private String customerPhoneNumber;
-    private Instant created_at;
+    private int numberOfVehicles;
+    private double price;
+    private double priceTotal;
     private Instant start_rental_time;
     private Instant end_rental_time;
     private String pickup_location;
-    private double total;
-    private String status;
     private double voucher_value;
     private double voucher_percentage;
-    private int amount;
     private double car_deposit;
     private double reservation_fee;
-    private double price;
+    private Instant created_at;
 
+    private int account_Id;
     private int vehicle_rental_service_id;
-    private int account_id;
-
+    private String key;
 }

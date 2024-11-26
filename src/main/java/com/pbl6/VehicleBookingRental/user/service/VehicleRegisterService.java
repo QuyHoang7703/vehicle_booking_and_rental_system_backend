@@ -1,11 +1,13 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
+import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServiceDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
+import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.CarRentalPartnerRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRegisterRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
@@ -17,8 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class VehicleRegisterService implements VehicleRegisterInterface {
@@ -32,6 +36,8 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     private CarRentalPartnerRepo carRentalPartnerRepo;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private ImageRepository imageRepository;
     @Override
     public VehicleType findVehicleTypeById(int id) {
         return vehicleTypeRepo.findById(id).orElse(null);
@@ -95,6 +101,14 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                 vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
+                List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
+                List<String> imagePaths = Optional.ofNullable(images)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .map(image->{
+                            return image.getPathImage();
+                        }).collect(Collectors.toList());
+                vehicleRentalServiceDTO.setImagesVehicleRegister(imagePaths);
             }else{
                 return null;
             }
@@ -190,6 +204,14 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
                 vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
+                List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
+                List<String> imagePaths = Optional.ofNullable(images)
+                        .orElse(Collections.emptyList())
+                        .stream()
+                        .map(image->{
+                            return image.getPathImage();
+                        }).collect(Collectors.toList());
+                vehicleRentalServiceDTO.setImagesVehicleRegister(imagePaths);
                 //
                 vehicleRentalServiceDTO.setId(carRentalService.getId());
                 vehicleRentalServiceDTO.setPrice(carRentalService.getPrice());
@@ -248,6 +270,14 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
 
+                List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
+                List<String> imagePaths = Optional.ofNullable(images)
+                        .orElse(Collections.emptyList())
+                                .stream()
+                                        .map(image->{
+                                             return image.getPathImage();
+                                        }).collect(Collectors.toList());
+                vehicleRentalServiceDTO.setImagesVehicleRegister(imagePaths);
                 // Thêm DTO vào danh sách kết quả
                 vehicleRentalServiceDTOList.add(vehicleRentalServiceDTO);
             }

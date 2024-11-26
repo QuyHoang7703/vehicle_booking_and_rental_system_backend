@@ -1,23 +1,24 @@
-
 services:
   server:
     build:
       context: .
-      target: development
     ports:
       - 8080:8080
       - 8000:8000
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
-    develop:
-      watch:
-        - action: rebuild
-          path: .
+      - GG_Client_ID=633378178838-f03bbm50mpmuvpnntrafa06ge68fe28s.apps.googleusercontent.com
+      - GG_Client_Secret=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
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+
   db:
-    image: mysql
+    image: mysql:latest
     restart: always
     volumes:
       - mysql-db-data:/var/lib/mysql
@@ -29,9 +30,29 @@ services:
     ports:
       - 3308:3306
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "vehicle_booking_rental", "--password=vehicle_booking_rental"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "vehicle_booking_rental", "--password=vehicle_booking_rental" ]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:latest
+    restart: always
+    tty: true
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/data
+    command: sh -cx "redis-server --daemonize yes && redis-cli config set notify-keyspace-events KEA && sleep infinity"
+  redisInsight:
+    image: redis/redisinsight:latest
+    restart: always
+    ports:
+      - 5540:5540
+    volumes:
+      - redis_insight_volumes_data:/db
+
 volumes:
   mysql-db-data:
+  redis-data:
+  redis_insight_volumes_data:

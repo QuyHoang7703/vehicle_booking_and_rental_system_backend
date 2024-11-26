@@ -41,6 +41,7 @@ public class OrderController {
         if (status.equals("00")) {
             this.orderService.handlePaymentSuccess(transactionCode);
             log.info("PAYMENT SUCCESSFULLY");
+
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-success?transactionId=" + transactionCode)
                     .build();

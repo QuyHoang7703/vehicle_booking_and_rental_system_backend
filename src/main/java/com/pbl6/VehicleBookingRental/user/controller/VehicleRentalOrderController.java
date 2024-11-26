@@ -6,6 +6,7 @@ import com.pbl6.VehicleBookingRental.user.dto.OpenRouteServiceDTO;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalOrdersDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRentalOrdersInterface;
 import com.pbl6.VehicleBookingRental.user.service.impl.OSRImplement;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -24,17 +25,8 @@ public class VehicleRentalOrderController {
     private VehicleRentalOrdersInterface vehicleRentalOrdersInterface;
 
     @PostMapping("/ordering")
-    public ResponseEntity<?> orderingVehicleService(@RequestBody VehicleRentalOrdersDTO vehicleRentalOrdersDTO){
-        RestResponse<String> restResponse = new RestResponse<>();
-        restResponse.setStatusCode(200);
-        boolean result = vehicleRentalOrdersInterface.save_order(vehicleRentalOrdersDTO);
-        vehicleRentalOrdersInterface.update_amount(vehicleRentalOrdersDTO.getVehicle_rental_service_id(),vehicleRentalOrdersDTO.getAmount());
-        if(result){
-            restResponse.setMessage("Ordering successfully !");
-        }else{
-            restResponse.setMessage("Ordering failed !");
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(restResponse);
+    public ResponseEntity<?> orderingVehicleService(@RequestBody VehicleRentalOrdersDTO vehicleRentalOrdersDTO) throws ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.create_order_Rental(vehicleRentalOrdersDTO));
     }
     @GetMapping("/getDistance")
     public ResponseEntity<?> getDistance(@RequestBody List<LocationDTO> locationDTOS){

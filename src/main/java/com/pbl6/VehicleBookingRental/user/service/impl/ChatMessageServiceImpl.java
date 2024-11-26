@@ -1,20 +1,21 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.nimbusds.jose.util.Pair;
+import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.chat.Conversation;
 import com.pbl6.VehicleBookingRental.user.domain.chat.ConversationAccount;
 import com.pbl6.VehicleBookingRental.user.domain.chat.Message;
 import com.pbl6.VehicleBookingRental.user.dto.chat_dto.MessageDTO;
+import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.chat.ConversationAccountRepo;
 import com.pbl6.VehicleBookingRental.user.repository.chat.ConversationRepo;
 import com.pbl6.VehicleBookingRental.user.repository.chat.MessageRepo;
 import com.pbl6.VehicleBookingRental.user.service.ChatMessageService;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +26,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     private  MessageRepo messageRepo;
     @Autowired
     private ConversationAccountRepo conversationAccountRepo;
+    @Autowired
+    private AccountRepository accountRepository;
     @Override
     public List<MessageDTO> getMessageByConservationAndSender(int conversation_id, int sender_id,String sender_type) {
         List<Message> messages = messageRepo.findMessagesByConversationAndSender(conversation_id,sender_id,sender_type);
@@ -49,12 +52,24 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public List<Integer> getAccountConnected(int conversation_id, int account_id, String role_account) {
-        List<ConversationAccount> conversationAccountList =
-                conversationAccountRepo.getConnectedAccount(conversation_id,account_id,role_account);
-        return Optional.ofNullable(conversationAccountList)
+    public List<Pair<Integer, String>> getAccountConnected(int account_id, String role_account) {
+        List<ConversationAccount> connectedAccount = new ArrayList<>();
+        // Find conversation relate account_id
+        List<ConversationAccount> conversationByAccountId = conversationAccountRepo.getConversationAccountByAccount(account_id,role_account);
+
+        // Each conversation , get connected account
+        if(conversationByAccountId != null){
+            for(ConversationAccount i : conversationByAccountId){
+                List<ConversationAccount> conversationAccountList =
+                        conversationAccountRepo.getConnectedAccountWithConversation
+                                (i.getConversation().getId(),account_id,role_account);
+                connectedAccount.addAll(conversationAccountList);
+            }
+        }
+
+        return Optional.ofNullable(connectedAccount)
                 .orElse(Collections.emptyList())
-                .stream().map(conversationAccount -> conversationAccount.getAccount().getId())
+                .stream().map(conversationAccount -> Pair.of(conversationAccount.getAccount().getId(),conversationAccount.getRoleAccount()) )
                 .collect(Collectors.toList());
     }
     @Override
@@ -70,8 +85,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             messageDTO.setSeen_at(lastMessage.getSeen_at());
             messageDTO.setSendAt(lastMessage.getSendAt());
             messageDTO.setConversation_id(lastMessage.getConversation().getId());
-            messageDTO.setRecipientId(lastMessage.getRecipientId());
-            messageDTO.setRecipient_type(lastMessage.getRecipient_type());
         }
         return messageDTO;
     }
@@ -85,9 +98,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         message.setSeen(messageDTO.isSeen());
         message.setSender_type(messageDTO.getSender_type());
         message.setSenderId(messageDTO.getSenderId());
-        message.setSender_type(messageDTO.getSender_type());
-        message.setRecipientId(messageDTO.getRecipientId());
-        message.setRecipient_type(messageDTO.getRecipient_type());
 
         Optional<Conversation> conversation = conversationRepo.findById(messageDTO.getConversation_id());
         if(conversation.isPresent()){
@@ -113,9 +123,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 message.get().setSeen(messageDTO.isSeen());
                 message.get().setSender_type(messageDTO.getSender_type());
                 message.get().setSenderId(messageDTO.getSenderId());
-                message.get().setSender_type(messageDTO.getSender_type());
-                message.get().setRecipientId(messageDTO.getRecipientId());
-                message.get().setRecipient_type(messageDTO.getRecipient_type());
 
                 Optional<Conversation> conversation = conversationRepo.findById(messageDTO.getConversation_id());
                 if(conversation.isPresent()){
@@ -127,5 +134,37 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             }
         }
         return messageDTO;
+    }
+
+    @Override
+    public boolean createConversation(int senderId,String senderType,int recipientId,String recipientType)  {
+        try{
+            // create conversation
+            Conversation conversation = new Conversation();
+            conversation.setCreateAt(new Date());
+            Conversation savedConversation = conversationRepo.save(conversation);
+            //create conversation account
+            Account accountSender = accountRepository.findById(senderId).orElseThrow(()-> new ApplicationException("Account not found !"));
+            Account accountRecipient = accountRepository.findById(senderId).orElseThrow(()-> new ApplicationException("Account not found !"));
+
+            ConversationAccount conversationAccount1 = new ConversationAccount();
+            conversationAccount1.setAccount(accountSender);
+            conversationAccount1.setRoleAccount(senderType);
+            conversationAccount1.setConversation(savedConversation);
+
+            ConversationAccount conversationAccount2 = new ConversationAccount();
+            conversationAccount2.setAccount(accountRecipient);
+            conversationAccount2.setRoleAccount(recipientType);
+            conversationAccount2.setConversation(savedConversation);
+
+            //
+            conversationAccountRepo.save(conversationAccount1);
+            conversationAccountRepo.save(conversationAccount2);
+            return true;
+        }catch (Exception e){
+            System.out.println(e.getLocalizedMessage());
+            return false;
+        }
+
     }
 }

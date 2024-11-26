@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.domain.notification;
 
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,11 +17,8 @@ public class NotificationAccount {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
-    @Column(name = "is_seen")
-    private boolean isSeen;
     @Column(name = "account_type")
-    private PartnerTypeEnum partnerType;
+    private AccountEnum partnerType;
     // Many-to-One relationship với Notification
     @ManyToOne
     @JoinColumn(name = "notification_id")

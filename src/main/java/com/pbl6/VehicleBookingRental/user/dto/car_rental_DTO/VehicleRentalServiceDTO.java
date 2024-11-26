@@ -3,6 +3,7 @@ package com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class VehicleRentalServiceDTO {
@@ -22,6 +23,7 @@ public class VehicleRentalServiceDTO {
     private String policy;
     private double rating_total;
     private int amount;
+    private List<String> imagesVehicleRegister;
     private int vehicle_register_id;
     private int vehicle_type_id;
 }

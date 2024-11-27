@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.domain.car_rental;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
@@ -19,8 +20,8 @@ public class CarRentalOrders {
     @Id
     @Column(name = "order_id")
     private String id;
-    private Date start_rental_time;
-    private Date end_rental_time;
+    private Instant start_rental_time;
+    private Instant end_rental_time;
     private String pickup_location;
     private double total;
     private Instant created_at;

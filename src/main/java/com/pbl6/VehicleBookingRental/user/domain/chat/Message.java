@@ -39,8 +39,4 @@ public class Message {
     private int senderId;
     @Column(name = "sender_type")
     private String sender_type;
-    @Column(name = "recipient_id")
-    private int recipientId;
-    @Column(name = "recipient_type")
-    private String recipient_type;
 }

@@ -23,6 +23,8 @@ public class Notification {
 
     @Column(length = 255)
     private String title;
+    @Column(name="is_seen")
+    private boolean isSeen;
     @Column(name="type")
     private NotificationTypeEnum type;
     @Column(columnDefinition = "TEXT")

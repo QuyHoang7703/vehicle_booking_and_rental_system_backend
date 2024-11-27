@@ -6,9 +6,9 @@ delete from business_partner;
 delete from conversation_account;
 delete from message;
 delete from conversation;
-
-
---  dữ liệu bảng business_partner
+SET GLOBAL time_zone = '+07:00';
+use vehicle_booking_rental
+-- dữ liệu bảng business_partner
 INSERT INTO business_partner 
 (address, approval_status, avatar, business_name, email_of_representative, name_of_representative, partner_type, phone_of_representative, account_id) 
 VALUES 
@@ -64,13 +64,36 @@ INSERT INTO conversation (create_at) VALUES
                                          ('2024-10-29 09:25:47'),
                                          ('2024-10-29 10:02:11');
 INSERT INTO conversation_account (conversation_id,account_id,role_account) VALUES
-                                         (11,1,'USER'),
-                                         (11,2,'USER');
+                                         (1,1,'USER'),
+                                         (1,2,'USER'),
+                                         (2,3,'USER'),
+                                         (2,2,'CAR_RENTAL_PARTNER'),
+                                         (3,3,'USER'),
+                                         (3,2,'USER');
 INSERT INTO message
     (content, is_seen, seen_at, send_at, sender_id,sender_type ,recipient_id,recipient_type,conversation_id) VALUES
-     ('Hello, how are you?', 1, '2024-10-29 08:10:00.000000', '2024-10-29 08:05:00.000000', 1,'USER',2,'USER', 11),
-     ('I am doing well, thanks!', 1, '2024-10-29 08:12:00.000000', '2024-10-29 08:06:00.000000', 2,'USER',1,'USER', 11),
-     ('What about you?', 0, NULL, '2024-10-29 08:07:00.000000', 1,'USER',2,'USER', 11),
-     ('I am great too!', 1, '2024-10-29 08:15:00.000000', '2024-10-29 08:10:00.000000', 2,'USER',1,'USER', 11),
-     ('Are we meeting later?', 0, NULL, '2024-10-29 08:20:00.000000', 1,'USER',2,'USER', 11);
+     ('Hello, how are you?', 1, '2024-10-29 08:10:00.000000', '2024-10-29 08:05:00.000000', 1,'USER',2,'USER', 1),
+     ('I am doing well, thanks!', 1, '2024-10-29 08:12:00.000000', '2024-10-29 08:06:00.000000', 2,'USER',1,'USER', 1),
+     ('What about you?', 0, NULL, '2024-10-29 08:07:00.000000', 1,'USER',2,'USER', 1),
+     ('I am great too!', 1, '2024-10-29 08:15:00.000000', '2024-10-29 08:10:00.000000', 2,'USER',1,'USER', 1),
+     ('Are we meeting later?', 0, NULL, '2024-10-29 08:20:00.000000', 1,'USER',2,'USER', 1);
+
+INSERT INTO notification (create_at, message, title, type,is_seen)
+VALUES
+    ('2024-11-01 10:00:00', 'Bạn có một đơn đặt xe mới', 'Đơn thuê xe mới', 0,0), 
+    ('2024-11-01 08:00:00', 'Yêu cầu thuê xe của bạn đã được chấp nhận.', 'Xác nhận thuê xe', 1,0),
+    ('2024-11-02 09:15:00', 'Xe bạn thuê đã được trả thành công.', 'Xác nhận trả xe', 1,0);
+
+--    ADMIN : 0
+--     USER : 1
+--     BUS_PARTNER: 2
+--     CAR_RENTAL_PARTNER: 3
+--     DRIVER:4
+INSERT INTO account_notification ( account_type, account_id, notification_id)
+VALUES
+    ( 1, 3, 3), 
+    ( 1, 3, 2), 
+    (3, 2, 1); 
+
+
 

@@ -1,15 +1,23 @@
 package com.pbl6.VehicleBookingRental.user.controller;
 
+import com.pbl6.VehicleBookingRental.user.domain.RestResponse;
 import com.pbl6.VehicleBookingRental.user.dto.chat_dto.MessageDTO;
+import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
 import com.pbl6.VehicleBookingRental.user.service.ChatMessageService;
+import com.pbl6.VehicleBookingRental.user.service.NotificationService;
+import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -18,16 +26,16 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     @Autowired
     private ChatMessageService chatMessageService;
+    @Autowired
+    private final NotificationService notificationService;
     @MessageMapping("/chat/send-message")
-    public void processMessage(@Payload MessageDTO messageDTO){
-        MessageDTO storedMessage = chatMessageService.saveMessage(messageDTO);
+    public void processMessage(@Payload MessageDTO messageReq){
+        MessageDTO storedMessage = chatMessageService.saveMessage(messageReq);
         messagingTemplate.convertAndSendToUser(
-                String.valueOf(storedMessage.getRecipientId()),
-                String.format("/%s/queue/messages",storedMessage.getRecipient_type()),
+                String.valueOf(messageReq.getRecipientId()),
+                String.format("/%s/queue/messages",messageReq.getRecipient_type()),
                 MessageDTO.builder()
                         .id(storedMessage.getId())
-                        .recipient_type(storedMessage.getRecipient_type())
-                        .recipientId(storedMessage.getRecipientId())
                         .senderId(storedMessage.getSenderId())
                         .sender_type(storedMessage.getSender_type())
                         .seen_at(storedMessage.getSeen_at())
@@ -39,11 +47,11 @@ public class ChatController {
         );
     }
     @MessageMapping("/chat/update-message")
-    public void updateMessage(@Payload MessageDTO messageDTO){
-        MessageDTO storedMessage = chatMessageService.updateMessage(messageDTO);
+    public void updateMessage(@Payload MessageDTO messageReq){
+        MessageDTO storedMessage = chatMessageService.updateMessage(messageReq);
         messagingTemplate.convertAndSendToUser(
-                String.format("%s",storedMessage.getRecipientId()),
-                String.format("/%s/queue/messages",storedMessage.getRecipientId(),storedMessage.getRecipient_type()),
+                String.format("%s",messageReq.getRecipientId()),
+                String.format("/%s/queue/messages",messageReq.getRecipient_type()),
                 MessageDTO.builder()
                         .id(storedMessage.getId())
                         .recipient_type(storedMessage.getRecipient_type())
@@ -60,11 +68,10 @@ public class ChatController {
     }
     @GetMapping("/chat/get-connected-account")
     public ResponseEntity<?> getConnectedUser
-            (@RequestParam("conversation_id") int conversation_id,
-             @RequestParam("account_id") int account_id,
+            (@RequestParam("account_id") int account_id,
              @RequestParam("role_account") String role_account){
         return ResponseEntity.status(HttpStatus.OK).
-                body(chatMessageService.getAccountConnected(conversation_id,account_id,role_account));
+                body(chatMessageService.getAccountConnected(account_id,role_account));
     }
     @GetMapping("/chat/last-message")
     public ResponseEntity<?> getLastMessage(@RequestParam("conversation_id") int conversation_id){
@@ -78,5 +85,24 @@ public class ChatController {
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageService.
                 getMessageByConservationAndSender(conversation_id,sender_id,sender_type));
     }
-
+    @PostMapping("/chat/create-conversation")
+    public ResponseEntity<?> createConversation(@RequestParam("sender_id") int sender_id,
+                                                @RequestParam("sender_type") String sender_type,
+                                                @RequestParam("recipient_id") int recipient_id,
+                                                @RequestParam("recipient_type") String recipient_type)
+    {
+        RestResponse<String> restResponse = new RestResponse<>();
+        restResponse.setStatusCode(200);
+        boolean result = chatMessageService.createConversation(sender_id,sender_type,recipient_id,recipient_type);
+        if(result){
+            restResponse.setMessage("Create successfully !");
+        }else{
+            restResponse.setMessage("Create failed !");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(restResponse);
+    }
+    @GetMapping("/notification/get-notification-by-userId")
+    ResponseEntity<?> getNotifications(@RequestParam("account_id")int account_id,@RequestParam("account_type") AccountEnum role_account){
+        return ResponseEntity.status(HttpStatus.OK).body(notificationService.getNotificationByAccountIdAndRoleAccount(account_id,role_account));
+    }
 }

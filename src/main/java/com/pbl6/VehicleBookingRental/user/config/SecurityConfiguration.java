@@ -86,7 +86,8 @@ public class SecurityConfiguration {
                 "/ws/**",
                 "/user/vehicle-register/all",
                 "/user/vehicle-register/get-vehicle-register",
-                "/api/v1/user/busTripSchedules/**"
+                "/api/v1/user/busTripSchedules/**",
+                "/user/vehicle-register/filters-rental-service"
         };
         http
                 .csrf(c->c.disable())

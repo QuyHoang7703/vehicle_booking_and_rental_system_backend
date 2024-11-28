@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
@@ -12,6 +13,7 @@ import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.redis.OrderBusTripRedisDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDetailDTO;
@@ -122,6 +124,9 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
         OrderBusTrip orderBusTrip = order.getOrderBusTrip();
 
+        // Create businessPartner info
+        ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = this.createBusinessPartnerInfo(orderBusTrip);
+
         // Create order info
         ResOrderBusTripDTO.OrderInfo orderInfo = this.createOrderInfo(orderBusTrip);
 
@@ -136,6 +141,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
         ResOrderBusTripDetailDTO res = ResOrderBusTripDetailDTO.builder()
                 .customerInfo(customerInfo)
+                .businessPartnerInfo(businessPartnerInfo)
                 .orderInfo(orderInfo)
                 .tripInfo(tripInfo)
                 .busInfo(busInfo)
@@ -147,8 +153,14 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
     @Override
     public ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTrip orderBusTrip) throws ApplicationException, IdInvalidException {
-        Bus bus = orderBusTrip.getBusTripSchedule().getBus();
+//        BusinessPartner businessPartner = orderBusTrip.getBusTripSchedule().getBus().getBusPartner().getBusinessPartner();
+//        ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = ResBusTripScheduleDTO.BusinessPartnerInfo.builder()
+//                .id(businessPartner.getId())
+//                .name(businessPartner.getBusinessName())
+//                .build();
+        ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = this.createBusinessPartnerInfo(orderBusTrip);
 
+        Bus bus = orderBusTrip.getBusTripSchedule().getBus();
         ResBusDTO busInfo = this.busService.convertToResBus(bus);
 
         ResOrderBusTripDTO.OrderInfo orderInfo = this.createOrderInfo(orderBusTrip);
@@ -156,6 +168,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         ResOrderBusTripDTO.TripInfo tripInfo= this.createTripInfo(orderBusTrip);
 
         ResOrderBusTripDTO res = ResOrderBusTripDTO.builder()
+                .businessPartner(businessPartnerInfo)
                 .busInfo(busInfo)
                 .orderInfo(orderInfo)
                 .tripInfo(tripInfo)
@@ -257,10 +270,20 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         tripInfo.setDepartureDateTime(departureDateTime);
 
         Duration duration = busTripSchedule.getBusTrip().getDurationJourney();
+        tripInfo.setDurationJourney(duration);
         Instant arrivalDateTime = departureDateTime.plus(duration);
         tripInfo.setArrivalDateTime(arrivalDateTime);
+
 
         return tripInfo;
     }
 
+    private ResBusTripScheduleDTO.BusinessPartnerInfo createBusinessPartnerInfo(OrderBusTrip orderBusTrip) {
+        BusinessPartner businessPartner = orderBusTrip.getBusTripSchedule().getBus().getBusPartner().getBusinessPartner();
+        ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = ResBusTripScheduleDTO.BusinessPartnerInfo.builder()
+                .id(businessPartner.getId())
+                .name(businessPartner.getBusinessName())
+                .build();
+        return businessPartnerInfo;
+    }
 }

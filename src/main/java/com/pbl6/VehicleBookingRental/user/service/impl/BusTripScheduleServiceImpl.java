@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
+import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
@@ -12,8 +13,10 @@ import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDet
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BreakDayRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
+import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -43,6 +46,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BusService busService;
     private final BreakDayRepository breakDayRepository;
     private final BusinessPartnerService businessPartnerService;
+    private final ImageRepository imageRepository;
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
 
@@ -152,22 +156,34 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     @Override
     public ResBusTripScheduleDTO convertToResBusTripScheduleDTO(BusTripSchedule busTripSchedule) throws IdInvalidException {
-        ResBusDTO resBusDTO = this.busService.convertToResBus(busTripSchedule.getBus());
+//        ResBusDTO resBusDTO = this.busService.convertToResBus(busTripSchedule.getBus());
+        // Create bus info
+        Bus bus = busTripSchedule.getBus();
+        Images imageOfBus = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), bus.getId()).get(0);
+        ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo = ResBusTripScheduleDetailForAdminDTO.BusInfo.builder()
+                .licensePlate(bus.getLicensePlate())
+                .imageRepresentative(imageOfBus.getPathImage())
+                .busType(bus.getBusType())
+                .build();
 
+        // Create busTrip info
         ResBusTripDTO.BusTripInfo busTripInfo = ResBusTripDTO.BusTripInfo.builder()
                 .id(busTripSchedule.getBusTrip().getId())
                 .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
                 .arrivalLocation(busTripSchedule.getBusTrip().getArrivalLocation())
                 .durationJourney(busTripSchedule.getBusTrip().getDurationJourney())
                 .build();
+
+        // Create busPartner info
         ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = ResBusTripScheduleDTO.BusinessPartnerInfo.builder()
                 .id(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getId())
                 .name(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getBusinessName())
                 .build();
+
         ResBusTripScheduleDTO res = ResBusTripScheduleDTO.builder()
                 .busTripScheduleId(busTripSchedule.getId())
                 .businessPartnerInfo(businessPartnerInfo)
-                .busInfo(resBusDTO)
+                .busInfo(busInfo)
                 .busTripInfo(busTripInfo)
                 .departureTime(busTripSchedule.getDepartureTime())
                 .discountPercentage(busTripSchedule.getDiscountPercentage())

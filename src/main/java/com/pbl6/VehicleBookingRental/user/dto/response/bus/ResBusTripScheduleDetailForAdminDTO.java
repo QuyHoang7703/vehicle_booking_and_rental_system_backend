@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.bus;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusType;
 import lombok.Builder;
@@ -30,8 +31,10 @@ public class ResBusTripScheduleDetailForAdminDTO {
 
     @Data
     @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class BusInfo{
         private String licensePlate;
+        private String imageRepresentative;
         private BusType busType;
     }
 

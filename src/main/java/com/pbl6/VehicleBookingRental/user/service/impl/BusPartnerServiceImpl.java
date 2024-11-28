@@ -130,6 +130,12 @@ public class BusPartnerServiceImpl implements BusPartnerService {
                 .orElseThrow(() -> new IdInvalidException("BusPartner not found"));
     }
 
+    @Override
+    public List<String> getNameBusiness() {
+
+        return List.of();
+    }
+
 
     private ResBusPartnerDTO.BusPartnerInfo createBusPartnerInfo(BusPartner busPartner) throws Exception {
         ResBusPartnerDTO.BusPartnerInfo busPartnerInfo = new ResBusPartnerDTO.BusPartnerInfo();

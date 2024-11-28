@@ -39,5 +39,9 @@ public class BusPartnerController {
         return ResponseEntity.status(HttpStatus.OK).body(resBusinessPartnerDTO);
     }
 
+    @GetMapping("/bus-partner/businessName")
+    public ResponseEntity<List<String>> getAllBusinessNames() {
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
 
 }

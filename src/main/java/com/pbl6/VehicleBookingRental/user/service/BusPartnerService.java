@@ -18,6 +18,7 @@ public interface BusPartnerService {
     public BusPartner getBusPartnerByBusinessPartnerId(int id) throws IdInvalidException;
     public ResBusPartnerDTO convertToResBusPartnerDTO(BusPartner busPartner) throws Exception;
     BusPartner findById(int id) throws IdInvalidException;
+    List<String> getNameBusiness();
 //    public void verifyRegister(int id, String partnerType) throws IdInValidException;
 //    @Transactional
 //    public void cancelPartnership(int id, String partnerType) throws IdInValidException;

@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Duration;
 import java.time.LocalTime;
 @Data
 @Builder
@@ -19,7 +18,8 @@ public class ResBusTripScheduleDTO {
     private BusinessPartnerInfo businessPartnerInfo;
 
     private ResBusTripDTO.BusTripInfo busTripInfo;
-    private ResBusDTO busInfo;
+    private ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo;
+//    private ResBusDTO busInfo;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime departureTime;

@@ -15,6 +15,7 @@ import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.order.ResCustomerInfoForOrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDetailDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
@@ -26,11 +27,13 @@ import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -41,6 +44,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderBusTripServiceImpl implements OrderBusTripService {
     private final OrderBusTripRepository orderBusTripRepository;
     private final OrdersRepo ordersRepo;
@@ -219,6 +223,74 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
         res.setMeta(meta);
         res.setResult(resOrderBusTripDTOS);
+
+        return res;
+    }
+
+    @Override
+    public void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException {
+        OrderBusTrip orderBusTrip = this.orderBusTripRepository.findById(orderBusTripId)
+                .orElseThrow(() -> new IdInvalidException("Order Bus Trip not found"));
+
+        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
+        if(email==null){
+            throw new ApplicationException("Access token is invalid or expired");
+        }
+        Account currentAccount = this.accountService.handleGetAccountByUsername(email);
+        if(!orderBusTrip.getAccount().equals(currentAccount)){
+            throw new ApplicationException("You don't have permission to cancel this order bus trip");
+        }
+
+        Instant orderTime = orderBusTrip.getOrder().getCreate_at();
+        Instant timeCancel = Instant.now();
+        Duration duration = Duration.between(orderTime, timeCancel);
+        if(duration.toMinutes()>2) {
+            throw new ApplicationException("You can't cancel this order because it has exceed the time limit");
+        }
+
+        orderBusTrip.setStatus(OrderStatusEnum.CANCELLED);
+        log.info("Canceled order bus trip");
+        this.orderBusTripRepository.save(orderBusTrip);
+    }
+
+    @Override
+    public ResultPaginationDTO getCustomersByOrderBusTrip(int busTripScheduleId, Specification<OrderBusTrip> spec, Pageable pageable) {
+        Specification<OrderBusTrip> getByOrderBusTripSpec = (root, query, criteriaBuilder) -> {
+            Join<OrderBusTrip, BusTripSchedule> joinBusTripSchedule = root.join("busTripSchedule");
+            return criteriaBuilder.equal(joinBusTripSchedule.get("id"), busTripScheduleId);
+        };
+        Specification<OrderBusTrip> finalSpec = spec.and(getByOrderBusTripSpec);
+        Page<OrderBusTrip> page = this.orderBusTripRepository.findAll(finalSpec, pageable);
+        ResultPaginationDTO res = new ResultPaginationDTO();
+
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(page.getTotalPages());
+        meta.setTotal(page.getTotalElements());
+
+        res.setMeta(meta);
+
+        List<ResCustomerInfoForOrderBusTrip> list = page.getContent().stream()
+                .map(orderBusTrip -> this.convertToResCustomerInfoForOrderBusTrip(orderBusTrip))
+                .toList();
+
+        res.setResult(list);
+        return res;
+    }
+
+    private ResCustomerInfoForOrderBusTrip convertToResCustomerInfoForOrderBusTrip(OrderBusTrip orderBusTrip){
+        Account account = orderBusTrip.getAccount();
+
+        ResCustomerInfoForOrderBusTrip res = ResCustomerInfoForOrderBusTrip.builder()
+                .name(account.getName())
+                .email(account.getEmail())
+                .phoneNumber(account.getPhoneNumber())
+                .orderTime(orderBusTrip.getOrder().getCreate_at())
+                .numberOfTicker(orderBusTrip.getNumberOfTicket())
+                .totalPrice(CurrencyFormatterUtil.formatToVND(orderBusTrip.getPriceTotal()))
+                .cancelTime(orderBusTrip.getOrder().getCancelTime())
+                .build();
 
         return res;
     }

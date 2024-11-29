@@ -25,6 +25,7 @@ public class Orders {
     private String customerName;
     private String customerPhoneNumber;
     private String transactionCode;
+    private Instant cancelTime;
 
     @OneToOne(mappedBy = "order",cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
@@ -47,6 +48,11 @@ public class Orders {
     @PrePersist
     public void prePersist(){
         this.create_at = Instant.now();
+    }
+
+    @PreUpdate
+    public void preUpdate(){
+        this.cancelTime = Instant.now();
     }
 
 }

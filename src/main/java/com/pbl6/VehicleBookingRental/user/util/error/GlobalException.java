@@ -23,15 +23,6 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalException {
-//    @ExceptionHandler(JDBCException.class)
-//    public ResponseEntity<RestResponse<Object>> handleSqlExceptionHelper(JDBCException ex) {
-//        RestResponse<Object> res = new RestResponse<Object>();
-//        res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
-//        res.setMessage(ex.getMessage());
-//        res.setError("Internal Server Error 1");
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
-//    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<RestResponse<Object>> handleAllException(Exception ex) {
         RestResponse<Object> res = new RestResponse<Object>();
@@ -55,7 +46,8 @@ public class GlobalException {
             SQLIntegrityConstraintViolationException.class,
             UsernameNotFoundException.class,
             BadCredentialsException.class,
-            IdInvalidException.class
+            IdInvalidException.class,
+            ApplicationException.class
     })
     public ResponseEntity<RestResponse<Object>> handleException(Exception ex) {
         RestResponse<Object> restResponse = new RestResponse<Object>();

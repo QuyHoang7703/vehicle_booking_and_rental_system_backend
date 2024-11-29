@@ -178,6 +178,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = ResBusTripScheduleDTO.BusinessPartnerInfo.builder()
                 .id(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getId())
                 .name(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getBusinessName())
+                .accountId(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getAccount().getId())
                 .build();
 
         ResBusTripScheduleDTO res = ResBusTripScheduleDTO.builder()

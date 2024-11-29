@@ -26,9 +26,7 @@ import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRenta
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.VnPayUtil;
-import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
-import com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum;
-import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.*;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -122,6 +120,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ApplicationException("Order not found"));
     }
 
+
     private ResVnPayDTO createUrlRequestToVnPay (HttpServletRequest request, Double amount, String keyOrder) throws ApplicationException, IdInvalidException {
         // Create request payment with params to call VnPay's API
         String bankCode = request.getParameter("bankCode");
@@ -174,6 +173,7 @@ public class OrderServiceImpl implements OrderService {
         orderBusTrip.setNumberOfTicket(orderBusTripRedisDTO.getNumberOfTicket());
         orderBusTrip.setPriceTotal(orderBusTripRedisDTO.getPriceTotal());
         orderBusTrip.setDepartureDate(orderBusTripRedisDTO.getDepartureDate());
+        orderBusTrip.setStatus(OrderStatusEnum.COMPLETED);
         orderBusTrip.setAccount(currentAccount);
 
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(orderBusTripRedisDTO.getBusTripScheduleId())

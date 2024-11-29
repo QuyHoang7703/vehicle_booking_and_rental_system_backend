@@ -19,23 +19,26 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
-@PreAuthorize("hasRole('ADMIN')")
+
 public class UtilityController {
     private final UtilityService utilityService;
 
     @PostMapping("/utilities")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Utility> createUtility(@RequestPart("utilityInfo") Utility utility
             , @RequestPart(value = "utilityImage", required = false) MultipartFile utilityImage) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.utilityService.createUtility(utility, utilityImage));
     }
 
     @PutMapping("/utilities")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Utility> updateUtility(@RequestPart("utilityInfo") Utility utility
             , @RequestPart(value = "utilityImage", required = false) MultipartFile utilityImage) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.updateUtility(utility, utilityImage));
     }
 
     @DeleteMapping("/utilities")
+    @PreAuthorize("hasRole('ADMIN')")
     @ApiMessage("Deleted this utility")
     public ResponseEntity<Void> deleteUtility(@RequestParam("idUtility") int idUtility) throws IdInvalidException {
         this.utilityService.deleteUtility(idUtility);
@@ -49,6 +52,7 @@ public class UtilityController {
     }
 
     @GetMapping("/utilities")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Utility> getUtilityById(@RequestParam("utilityId") int utilityId) throws IdInvalidException {
         return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.getUtilityById(utilityId));
     }

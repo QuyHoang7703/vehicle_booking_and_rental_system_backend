@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.repository.busPartner;
 
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTrip;
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -20,4 +22,6 @@ public interface BusTripRepository extends JpaRepository<BusTrip, Integer>, JpaS
     List<BusTrip> findBusTripByDepartureLocationAndArrivalLocation(@Param("busPartnerId") int busPartnerId,
                                                                    @Param("departureLocation") String departureLocation,
                                                                    @Param("arrivalLocation") String arrivalLocation);
+
+
 }

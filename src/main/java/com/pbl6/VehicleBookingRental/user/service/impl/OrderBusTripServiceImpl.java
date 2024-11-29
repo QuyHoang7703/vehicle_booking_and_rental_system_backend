@@ -97,8 +97,8 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
 
         // Number of available tickets minus number of ticket
-        busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() - reqOrderBusTripDTO.getNumberOfTicket());
-        this.busTripScheduleRepository.save(busTripSchedule);
+//        busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() - reqOrderBusTripDTO.getNumberOfTicket());
+//        this.busTripScheduleRepository.save(busTripSchedule);
 
         return orderBusTripRedis;
     }
@@ -241,16 +241,29 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
             throw new ApplicationException("You don't have permission to cancel this order bus trip");
         }
 
-        Instant orderTime = orderBusTrip.getOrder().getCreate_at();
-        Instant timeCancel = Instant.now();
-        Duration duration = Duration.between(orderTime, timeCancel);
-        if(duration.toMinutes()>2) {
-            throw new ApplicationException("You can't cancel this order because it has exceed the time limit");
-        }
+        // Lấy ngày và giờ khởi hành của chuyến xe
+        LocalDate departureDate = orderBusTrip.getDepartureDate();
+        LocalTime departureTime = orderBusTrip.getBusTripSchedule().getDepartureTime();
+        // Chuyển thành kiểu LocalDateTime để tạo ra Instant
+        LocalDateTime departureDateTime = departureDate.atTime(departureTime);
+        Instant departureInstant = departureDateTime.toInstant(ZoneOffset.UTC);
 
+        log.info("Departure Instant: " + departureInstant);
+        log.info("Cancel Date: " + Instant.now().atZone(ZoneId.of("Asia/Ho_Chi_Minh")));
+        log.info("Departure Date: " + departureDate);
+        log.info("Cancel LocalDate: " + LocalDate.now());
+
+        // So sánh ngày khởi hành với ngày hủy đơn
+        if(departureDate.equals(LocalDate.now())){
+            Duration duration = Duration.between(departureInstant, Instant.now().atZone(ZoneId.of("Asia/Ho_Chi_Minh")));
+            if(duration.toMinutes()>3) {
+                throw new ApplicationException("You can't cancel this order because it has exceed the time limit");
+            }
+        }
         orderBusTrip.setStatus(OrderStatusEnum.CANCELLED);
         log.info("Canceled order bus trip");
         this.orderBusTripRepository.save(orderBusTrip);
+
     }
 
     @Override

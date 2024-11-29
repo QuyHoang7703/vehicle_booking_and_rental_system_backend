@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class OpenRouteServiceDTO {
-    private int duration;
+    private String duration;
     private double distance;
 }

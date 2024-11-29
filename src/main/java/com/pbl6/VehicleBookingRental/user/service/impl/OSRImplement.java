@@ -14,6 +14,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 @Service
 public class OSRImplement implements OSRService {
@@ -54,7 +55,7 @@ public class OSRImplement implements OSRService {
             JsonArray rowDurations =  durations.get(0).getAsJsonArray();
             JsonArray rowDistances = distances.get(0).getAsJsonArray();
             openRouteServiceDTO.setDistance(rowDistances.get(1).getAsInt()/1000.0);
-            openRouteServiceDTO.setDuration(rowDurations.get(1).getAsInt());
+            openRouteServiceDTO.setDuration(convertSecondsToHHmm(rowDurations.get(1).getAsInt()));
             System.out.println("Từ Đà Nẵng đến Nam Định:");
             System.out.println("Thời gian: " +openRouteServiceDTO.getDuration());
             System.out.println("Khoảng cách: " + openRouteServiceDTO.getDistance() + " km");
@@ -64,4 +65,20 @@ public class OSRImplement implements OSRService {
         }
         return openRouteServiceDTO;
     }
+
+    private String convertSecondsToHHmm(int seconds) {
+        Duration duration = Duration.ofSeconds(seconds);
+        long hours = duration.toHours();
+//        long minutes = duration.minusHours(hours).toMinutes();
+        long minutes = duration.toMinutes() % 60;
+        if(minutes>0 && minutes<=30) {
+            minutes = 30;
+        }
+        else{
+            minutes = 0;
+            hours ++;
+        }
+        return String.format("%02dh:%02dm", hours, minutes);
+    }
+
 }

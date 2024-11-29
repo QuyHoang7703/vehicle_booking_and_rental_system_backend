@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.dto.request.bus;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
+import com.pbl6.VehicleBookingRental.user.dto.LocationDTO;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -19,4 +20,6 @@ public class ReqBusTripScheduleDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate startOperationDay;
     private List<BreakDay> breakDays;
+
+//    private LocationDTO departure
 }

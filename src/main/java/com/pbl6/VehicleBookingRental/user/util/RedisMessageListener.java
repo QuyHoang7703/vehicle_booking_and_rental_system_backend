@@ -43,7 +43,7 @@ public class RedisMessageListener implements MessageListener {
 
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(Integer.parseInt(busTripScheduleId))
                 .orElseThrow(() -> new RuntimeException("BusTripSchedule not found"));
-        busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() + Integer.parseInt(numberOfTicket));
+//        busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() + Integer.parseInt(numberOfTicket));
         this.busTripScheduleRepository.save(busTripSchedule);
         log.info("BusTripSchedule updated number of seats");
     }

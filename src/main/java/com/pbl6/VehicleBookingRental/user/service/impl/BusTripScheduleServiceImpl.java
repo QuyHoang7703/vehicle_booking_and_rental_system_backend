@@ -14,13 +14,16 @@ import com.pbl6.VehicleBookingRental.user.repository.busPartner.BreakDayReposito
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
+import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +51,8 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BreakDayRepository breakDayRepository;
     private final BusinessPartnerService businessPartnerService;
     private final ImageRepository imageRepository;
+    private final OrderBusTripRepository orderBusTripRepository;
+
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
 
@@ -118,7 +124,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
-    public ResBusTripScheduleDetailForAdminDTO convertToResBusTripScheduleDetailDTO(BusTripSchedule busTripSchedule) {
+    public ResBusTripScheduleDetailForAdminDTO convertToResBusTripScheduleDetailDTO(BusTripSchedule busTripSchedule, LocalDate departureDate) {
         ResBusTripDTO.BusTripInfo busTripInfo = ResBusTripDTO.BusTripInfo.builder()
                 .id(busTripSchedule.getBusTrip().getId())
                 .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
@@ -139,7 +145,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .discountPercentage(busTripSchedule.getDiscountPercentage())
                 .priceTicket(CurrencyFormatterUtil.formatToVND(busTripSchedule.getPriceTicket()))
                 .startOperationDay(busTripSchedule.getStartOperationDay())
-                .availableSeats(busTripSchedule.getAvailableSeats()) // Có thể thay thế sau này khi order
+                .availableSeats(this.getAvailableNumberOfSeatsByDepartureDate(busTripSchedule, departureDate)) // Có thể thay thế sau này khi order
                 .breakDays(busTripSchedule.getBreakDays())
                 .isOperation(busTripSchedule.isOperation())
                 .build();
@@ -147,15 +153,15 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
-    public ResBusTripScheduleDetailForAdminDTO getBusTripScheduleById(int id) throws IdInvalidException {
+    public ResBusTripScheduleDetailForAdminDTO getBusTripScheduleById(int id, LocalDate departureDate) throws IdInvalidException {
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(id)
                 .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
         log.info("Get busTripSchedule with id {} from mysql ", id);
-        return this.convertToResBusTripScheduleDetailDTO(busTripSchedule);
+        return this.convertToResBusTripScheduleDetailDTO(busTripSchedule, departureDate);
     }
 
     @Override
-    public ResBusTripScheduleDTO convertToResBusTripScheduleDTO(BusTripSchedule busTripSchedule) throws IdInvalidException {
+    public ResBusTripScheduleDTO convertToResBusTripScheduleDTO(BusTripSchedule busTripSchedule, LocalDate departureDate) throws IdInvalidException {
 //        ResBusDTO resBusDTO = this.busService.convertToResBus(busTripSchedule.getBus());
         // Create bus info
         Bus bus = busTripSchedule.getBus();
@@ -181,6 +187,8 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .accountId(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getAccount().getId())
                 .build();
 
+        int availableNumberOfSeats = this.getAvailableNumberOfSeatsByDepartureDate(busTripSchedule, departureDate);
+
         ResBusTripScheduleDTO res = ResBusTripScheduleDTO.builder()
                 .busTripScheduleId(busTripSchedule.getId())
                 .businessPartnerInfo(businessPartnerInfo)
@@ -190,7 +198,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .discountPercentage(busTripSchedule.getDiscountPercentage())
                 .priceTicket(CurrencyFormatterUtil.formatToVND(busTripSchedule.getPriceTicket()))
                 .arrivalTime(busTripSchedule.getDepartureTime().plus(busTripInfo.getDurationJourney()))
-                .availableSeats(busTripSchedule.getAvailableSeats())
+                .availableSeats(availableNumberOfSeats)
                 .isOperation(busTripSchedule.isOperation())
                 .build();
 
@@ -228,7 +236,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = busTripSchedulePage.getContent().stream()
                 .map(busTripSchedule -> {
                     try {
-                        return convertToResBusTripScheduleDTO(busTripSchedule);
+                            return convertToResBusTripScheduleDTO(busTripSchedule, null);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -251,7 +259,27 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
             Predicate predicateStatusOperation = criteriaBuilder.equal(root.get("isOperation"), true);
             Predicate predicateValidIds = root.get("id").in(validIds); // Chỉ lấy các ID hợp lệ từ truy vấn
 
-            return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds);
+            // Giờ khởi hành lớn hơn giờ hiện tại là 1 tiếng
+            LocalDate currentDate = LocalDate.now();
+
+            Path<LocalTime> departureTime = root.get("departureTime");
+
+            // Kết hợp thành LocalDateTime
+            Expression<LocalDateTime> departureDateTime = criteriaBuilder.function(
+                    "TIMESTAMP", LocalDateTime.class,
+                    criteriaBuilder.literal(currentDate), departureTime
+            );
+
+            // So sánh với LocalDateTime hiện tại + 1 giờ
+            LocalDateTime validTime = LocalDateTime.now().plusHours(1);
+
+//            LocalDate test = LocalDate.now();
+//            LocalDateTime test2 = LocalDateTime.of(test, LocalTime.of(23, 0)).plusHours(1);
+//            log.info("Test2: " + test2);
+
+            Predicate predicateValidTime = criteriaBuilder.greaterThan(departureDateTime, validTime);
+
+            return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds, predicateValidTime);
         };
         Specification<BusTripSchedule> finalSpec = spec.and(newSpec);
         Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findAll(finalSpec, pageable);
@@ -265,10 +293,11 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         res.setMeta(meta);
 
+        LocalDate finalDepartureDate = departureDate;
         List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = busTripSchedulePage.getContent().stream()
                 .map(busTripSchedule -> {
                     try {
-                        return convertToResBusTripScheduleDTO(busTripSchedule);
+                        return convertToResBusTripScheduleDTO(busTripSchedule, finalDepartureDate);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -283,7 +312,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(busTripScheduleId)
                 .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
 
-        return this.convertToResBusTripScheduleDTO(busTripSchedule);
+        return this.convertToResBusTripScheduleDTO(busTripSchedule, null);
     }
 
     // @Scheduled(cron = "0 0 0 * * ?")
@@ -292,6 +321,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     public void updateBusTripScheduleStatus() {
         LocalDate today = LocalDate.now();
         log.info("Today is: " + today);
+
         List<BusTripSchedule> busTripSchedules = busTripScheduleRepository.findSchedulesBeforeToday(today);
         List<BusTripSchedule> updatedBusTripSchedules = new ArrayList<>();
         for (BusTripSchedule busTripSchedule : busTripSchedules) {
@@ -309,6 +339,19 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         busTripScheduleRepository.saveAll(updatedBusTripSchedules);
         log.info("Updated status operation for all schedules");
+    }
+
+    private int getAvailableNumberOfSeatsByDepartureDate(BusTripSchedule busTripSchedule, LocalDate departureDate) {
+        // Find orderBusTrip by departureDate and busTripScheduleId to calculate rest numberOfTicket
+        int availableNumberOfSeats = busTripSchedule.getAvailableSeats();
+        List<OrderBusTrip> orderBusTrips = this.orderBusTripRepository.findByDepartureDateAndBusTripScheduleId(departureDate, busTripSchedule.getId());
+        if(orderBusTrips!=null && !orderBusTrips.isEmpty()) {
+            for(OrderBusTrip orderBusTrip : orderBusTrips) {
+                availableNumberOfSeats -= orderBusTrip.getNumberOfTicket();
+            }
+        }
+
+        return availableNumberOfSeats;
     }
 
 

@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
@@ -27,14 +29,15 @@ public class BusTripScheduleController {
     @PostMapping("busTripSchedules")
     public ResponseEntity<ResBusTripScheduleDetailForAdminDTO> createBusTripSchedule(@RequestBody ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws ApplicationException, IdInvalidException {
         BusTripSchedule busTripSchedule = busTripScheduleService.createBusTripSchedule(reqBusTripScheduleDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.busTripScheduleService.convertToResBusTripScheduleDetailDTO(busTripSchedule));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.busTripScheduleService.convertToResBusTripScheduleDetailDTO(busTripSchedule, null));
     }
 
     @PreAuthorize("hasRole('BUS_PARTNER')")
     @GetMapping("busTripSchedules")
-    public ResponseEntity<ResBusTripScheduleDetailForAdminDTO> getBusTripScheduleDetail(@RequestParam("busTripScheduleId") int busTripScheduleId) throws IdInvalidException {
+    public ResponseEntity<ResBusTripScheduleDetailForAdminDTO> getBusTripScheduleDetail(@RequestParam("busTripScheduleId") int busTripScheduleId,
+                                                                                        @RequestParam("departureDate")LocalDate departureDate) throws IdInvalidException {
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleById(busTripScheduleId));
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleById(busTripScheduleId, departureDate));
     }
 
     @GetMapping("busTripSchedules/get-all")

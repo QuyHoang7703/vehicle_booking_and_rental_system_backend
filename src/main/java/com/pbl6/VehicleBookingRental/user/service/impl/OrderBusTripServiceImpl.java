@@ -355,6 +355,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = ResBusTripScheduleDTO.BusinessPartnerInfo.builder()
                 .id(businessPartner.getId())
                 .name(businessPartner.getBusinessName())
+                .accountId(businessPartner.getAccount().getId())
                 .build();
         return businessPartnerInfo;
     }

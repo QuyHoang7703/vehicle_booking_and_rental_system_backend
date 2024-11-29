@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
+import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,7 +29,7 @@ public class OrderBusTrip {
 
     private double priceTotal;
 
-//    private String status;
+    private OrderStatusEnum status;
 
 //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalDate departureDate;

@@ -6,13 +6,16 @@ import com.pbl6.VehicleBookingRental.user.dto.redis.OrderBusTripRedisDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
 import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
+import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -32,6 +35,18 @@ public class OrderBusTripController {
                                                                    Pageable pageable,
                                                                    @RequestParam(value = "isGone", required = false) boolean isGone) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getAllOrderBusTrip(spec, pageable, isGone));
+    }
+
+    @PatchMapping("/orderBusTrips/cancel-order/{orderId}")
+    public ResponseEntity<Void> cancelOrder(@PathVariable("orderId") String orderId) throws ApplicationException, IdInvalidException {
+        this.orderBusTripService.cancelOrderBusTrip(orderId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping("orderBusTrips/{busTripScheduleId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResultPaginationDTO> getCustomersByOrderBusTrip(@PathVariable("busTripScheduleId") int busTripScheduleId, @Filter Specification<OrderBusTrip> spec, Pageable pageable) throws ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getCustomersByOrderBusTrip(busTripScheduleId, spec, pageable));
     }
 
 

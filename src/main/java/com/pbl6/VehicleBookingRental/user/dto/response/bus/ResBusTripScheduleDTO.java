@@ -36,6 +36,7 @@ public class ResBusTripScheduleDTO {
     public static class BusinessPartnerInfo {
         private int id;
         private String name;
+        private int accountId;
     }
 
 

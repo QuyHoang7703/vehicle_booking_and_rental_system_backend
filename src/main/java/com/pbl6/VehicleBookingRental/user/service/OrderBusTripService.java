@@ -20,4 +20,6 @@ public interface OrderBusTripService {
     ResOrderBusTripDetailDTO convertToResOrderBusTripDetailDTO(Orders orders) throws ApplicationException;
     ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTrip orderBusTrip) throws ApplicationException, IdInvalidException;
     ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, boolean isGone) throws ApplicationException;
+    void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException;
+    ResultPaginationDTO getCustomersByOrderBusTrip(int busTripScheduleId, Specification<OrderBusTrip> spec, Pageable pageable);
 }

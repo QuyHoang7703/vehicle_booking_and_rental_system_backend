@@ -114,4 +114,5 @@ public class BusinessPartnerController {
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>(status));
     }
 
+
 }

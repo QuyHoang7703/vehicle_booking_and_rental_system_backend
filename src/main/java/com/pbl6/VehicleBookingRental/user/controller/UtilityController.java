@@ -46,6 +46,7 @@ public class UtilityController {
     }
 
     @GetMapping("/utilities-all")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('BUS_PARTNER')")
     @ApiMessage("Fetch all utilities")
     public ResponseEntity<ResultPaginationDTO> getAllUtilities(@Filter Specification<Utility> spec, Pageable pageable) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.getAllUtility(spec, pageable));

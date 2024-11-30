@@ -131,9 +131,9 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     }
 
     @Override
-    public List<String> getNameBusiness() {
+    public List<String> getNamesBusPartner() {
 
-        return List.of();
+        return this.busPartnerRepository.getNamesBusPartner();
     }
 
 

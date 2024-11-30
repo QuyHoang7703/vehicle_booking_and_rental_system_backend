@@ -33,7 +33,7 @@ public class OrderBusTripController {
     @GetMapping("orderBusTrips")
     public ResponseEntity<ResultPaginationDTO> getAllOrderBusTrips(@Filter Specification<OrderBusTrip> spec,
                                                                    Pageable pageable,
-                                                                   @RequestParam(value = "isGone", required = false) boolean isGone) throws ApplicationException {
+                                                                   @RequestParam(value = "isGone", required = false) Boolean isGone) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getAllOrderBusTrip(spec, pageable, isGone));
     }
 

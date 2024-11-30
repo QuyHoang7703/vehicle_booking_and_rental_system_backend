@@ -40,8 +40,10 @@ public class BusPartnerController {
     }
 
     @GetMapping("/bus-partner/businessName")
-    public ResponseEntity<List<String>> getAllBusinessNames() {
-        return ResponseEntity.status(HttpStatus.OK).body(null);
+    public ResponseEntity<List<String>> getNamesBusPartner() {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busPartnerService.getNamesBusPartner());
     }
+
+
 
 }

@@ -181,7 +181,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     }
 
     @Override
-    public ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, boolean isGone) throws ApplicationException {
+    public ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, Boolean isGone) throws ApplicationException {
         String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
         if(email==null){
             throw new ApplicationException("Access token is invalid or expired");
@@ -189,12 +189,15 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         Specification<OrderBusTrip> newSpec = (root, query, criteriaBuilder) -> {
             Join<OrderBusTrip, Account> accountJoin = root.join("account");
             Predicate orderOfAccount = criteriaBuilder.equal(accountJoin.get("email"), email);
+            Join<OrderBusTrip, Orders> orderJoin = root.join("order");
+            query.orderBy(criteriaBuilder.desc(orderJoin.get("create_at")));
 
+            if(isGone==null) {
+                return criteriaBuilder.and(orderOfAccount);
+            }
             Predicate statusOfOrder = isGone ? criteriaBuilder.lessThan(root.get("departureDate"), LocalDate.now())
                     : criteriaBuilder.greaterThanOrEqualTo(root.get("departureDate"), LocalDate.now());
 
-            Join<OrderBusTrip, Orders> orderJoin = root.join("order");
-            query.orderBy(criteriaBuilder.desc(orderJoin.get("create_at")));
             return criteriaBuilder.and(orderOfAccount, statusOfOrder);
         };
 

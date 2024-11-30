@@ -19,7 +19,7 @@ public interface OrderBusTripService {
     ResOrderKey getKeyOfOrderBusTripRedisDTO(OrderBusTripRedisDTO orderBusTripRedisDTO) throws ApplicationException;
     ResOrderBusTripDetailDTO convertToResOrderBusTripDetailDTO(Orders orders) throws ApplicationException;
     ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTrip orderBusTrip) throws ApplicationException, IdInvalidException;
-    ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, boolean isGone) throws ApplicationException;
+    ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, Boolean isGone) throws ApplicationException;
     void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException;
     ResultPaginationDTO getCustomersByOrderBusTrip(int busTripScheduleId, Specification<OrderBusTrip> spec, Pageable pageable);
 }

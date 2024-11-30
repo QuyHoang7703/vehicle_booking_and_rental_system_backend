@@ -18,6 +18,7 @@ public class ResOrderBusTripDetailDTO {
     private ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo;
     private ResOrderBusTripDTO.OrderInfo orderInfo;
     private ResOrderBusTripDTO.TripInfo tripInfo;
+    private Instant cancelTime;
 //    private String key;
 
     @Data

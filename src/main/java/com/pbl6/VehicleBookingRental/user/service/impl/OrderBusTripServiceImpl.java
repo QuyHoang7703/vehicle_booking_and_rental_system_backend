@@ -149,6 +149,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 .orderInfo(orderInfo)
                 .tripInfo(tripInfo)
                 .busInfo(busInfo)
+                .cancelTime(order.getCancelTime())
                 .build();
 
 
@@ -176,6 +177,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 .busInfo(busInfo)
                 .orderInfo(orderInfo)
                 .tripInfo(tripInfo)
+                .cancelTime(orderBusTrip.getOrder().getCancelTime())
                 .build();
         return res;
     }
@@ -267,6 +269,10 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         log.info("Canceled order bus trip");
         this.orderBusTripRepository.save(orderBusTrip);
 
+        Orders order = orderBusTrip.getOrder();
+        order.setCancelTime(Instant.now());
+        this.ordersRepo.save(order);
+
     }
 
     @Override
@@ -347,6 +353,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
         // Create trip info
         ResOrderBusTripDTO.TripInfo tripInfo = ResOrderBusTripDTO.TripInfo.builder()
+                .id(orderBusTrip.getBusTripSchedule().getBusTrip().getId())
                 .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
                 .arrivalLocation(busTripSchedule.getBusTrip().getArrivalLocation())
                 .build();

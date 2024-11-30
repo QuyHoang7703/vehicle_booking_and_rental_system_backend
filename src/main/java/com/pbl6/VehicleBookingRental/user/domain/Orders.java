@@ -50,9 +50,5 @@ public class Orders {
         this.create_at = Instant.now();
     }
 
-    @PreUpdate
-    public void preUpdate(){
-        this.cancelTime = Instant.now();
-    }
 
 }

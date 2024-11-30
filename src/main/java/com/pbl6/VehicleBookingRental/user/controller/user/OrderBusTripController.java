@@ -44,7 +44,7 @@ public class OrderBusTripController {
     }
 
     @GetMapping("orderBusTrips/{busTripScheduleId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('BUS_PARTNER')")
     public ResponseEntity<ResultPaginationDTO> getCustomersByOrderBusTrip(@PathVariable("busTripScheduleId") int busTripScheduleId, @Filter Specification<OrderBusTrip> spec, Pageable pageable) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getCustomersByOrderBusTrip(busTripScheduleId, spec, pageable));
     }

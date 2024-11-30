@@ -18,6 +18,7 @@ import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepositor
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -347,7 +348,9 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         List<OrderBusTrip> orderBusTrips = this.orderBusTripRepository.findByDepartureDateAndBusTripScheduleId(departureDate, busTripSchedule.getId());
         if(orderBusTrips!=null && !orderBusTrips.isEmpty()) {
             for(OrderBusTrip orderBusTrip : orderBusTrips) {
-                availableNumberOfSeats -= orderBusTrip.getNumberOfTicket();
+                if(orderBusTrip.getStatus().equals(OrderStatusEnum.COMPLETED)){
+                    availableNumberOfSeats -= orderBusTrip.getNumberOfTicket();
+                }
             }
         }
 

@@ -116,8 +116,17 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Orders findByTransactionCode(String transactionCode) throws ApplicationException {
-        return this.ordersRepo.findByTransactionCode(transactionCode)
+        String email = SecurityUtil.getCurrentLogin().isPresent()?SecurityUtil.getCurrentLogin().get():null;
+        if(email==null) {
+            throw new ApplicationException("Access token not found or expired");
+        }
+        Account account = this.accountService.handleGetAccountByUsername(email);
+        Orders orders = this.ordersRepo.findByTransactionCode(transactionCode)
                 .orElseThrow(() -> new ApplicationException("Order not found"));
+        if(!orders.getOrderBusTrip().getAccount().equals(account)) {
+            throw new ApplicationException("You don't have permission to see this order");
+        }
+        return orders;
     }
 
 

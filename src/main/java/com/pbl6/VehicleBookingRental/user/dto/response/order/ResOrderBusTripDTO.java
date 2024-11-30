@@ -19,6 +19,7 @@ public class ResOrderBusTripDTO {
     private OrderInfo orderInfo;
     private TripInfo tripInfo;
     private ResBusDTO busInfo;
+    private Instant cancelTime;
 //    private ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo;
 
     @Data
@@ -40,6 +41,7 @@ public class ResOrderBusTripDTO {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class TripInfo {
+        private int id;
         private String departureLocation;
         private String arrivalLocation;
         private Instant departureDateTime;

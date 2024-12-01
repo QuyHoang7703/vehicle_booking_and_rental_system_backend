@@ -23,7 +23,7 @@ public class ConversationAccount {
 
     // Many-to-One relationship với Conversation
     @ManyToOne
-    @JoinColumn(name = "conversation_id", insertable = false, updatable = false)
+    @JoinColumn(name = "conversation_id",nullable = false)
     private Conversation conversation;
     @ManyToOne
     @JoinColumn (name = "account_id", nullable = false)

@@ -58,18 +58,6 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
     private final RedisService<String, String, OrderVehicleRentalRedisDTO> redisService;
 
 
-    @Override
-    public boolean update_amount(int vehicle_rental_service_id, int amount) {
-        Optional<CarRentalService> carRentalService = vehicleRentalServiceRepo.findById(vehicle_rental_service_id);
-        if (carRentalService.isPresent()) {
-            VehicleRegister vehicleRegister = carRentalService.get().getVehicleRegister();
-            vehicleRegister.setAmount(vehicleRegister.getAmount() - amount);
-            carRentalService.get().setVehicleRegister(vehicleRegister);
-            vehicleRentalServiceRepo.save(carRentalService.get());
-            return true;
-        }
-        return false;
-    }
     //create order using redis
     @Override
     public OrderVehicleRentalRedisDTO create_order_Rental(VehicleRentalOrdersDTO vehicleRentalOrdersDTO) throws ApplicationException {

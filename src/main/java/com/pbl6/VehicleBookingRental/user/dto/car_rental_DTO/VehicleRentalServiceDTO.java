@@ -12,6 +12,7 @@ public class VehicleRentalServiceDTO {
     private int type;
     private String location;
     private String manufacturer;
+    private String vehicleLife;
     private String description;
     private int quantity;
     private String status;
@@ -24,6 +25,8 @@ public class VehicleRentalServiceDTO {
     private double rating_total;
     private int amount;
     private List<String> imagesVehicleRegister;
+    private String partnerName;
+    private String partnerPhoneNumber;
     private int vehicle_register_id;
     private int vehicle_type_id;
 }

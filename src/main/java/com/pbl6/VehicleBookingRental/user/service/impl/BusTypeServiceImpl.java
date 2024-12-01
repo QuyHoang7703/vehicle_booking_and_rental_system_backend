@@ -32,13 +32,18 @@ public class BusTypeServiceImpl implements BusTypeService {
 
     @Override
     public ResBusType createBusType(BusType busType) throws Exception {
-        if(this.busTypeRepository.existsByNameAndNumberOfSeatAndChairType(busType.getName(), busType.getNumberOfSeat(), busType.getChairType())) {
-            throw new ApplicationException("This bus type has already existed");
-        }
-
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
 
         log.info("ID BUSINESS PARTNER: " + businessPartner.getId());
+        if(this.busTypeRepository.existsByNameAndNumberOfSeatAndChairTypeAndBusPartnerId(
+                busType.getName(),
+                busType.getNumberOfSeat(),
+                busType.getChairType(),
+                businessPartner.getBusPartner().getId())) {
+            throw new ApplicationException("This bus type has already existed");
+        }
+
+
 //        BusPartner busPartnerDb = this.busPartnerService.findById(busType.getBusPartner().getId());
         busType.setBusPartner(businessPartner.getBusPartner());
         this.busTypeRepository.save(busType);

@@ -93,12 +93,9 @@ public class ChatController {
     {
         RestResponse<String> restResponse = new RestResponse<>();
         restResponse.setStatusCode(200);
-        boolean result = chatMessageService.createConversation(sender_id,sender_type,recipient_id,recipient_type);
-        if(result){
-            restResponse.setMessage("Create successfully !");
-        }else{
-            restResponse.setMessage("Create failed !");
-        }
+        int conversationId = chatMessageService.createConversation(sender_id,sender_type,recipient_id,recipient_type);
+        restResponse.setMessage("Conversation Id " + String.valueOf(conversationId));
+        restResponse.setData(String.valueOf(conversationId));
         return ResponseEntity.status(HttpStatus.OK).body(restResponse);
     }
     @GetMapping("/notification/get-notification-by-userId")

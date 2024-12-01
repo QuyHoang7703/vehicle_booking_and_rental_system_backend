@@ -16,5 +16,5 @@ public interface ChatMessageService {
 
     public MessageDTO saveMessage(MessageDTO messageDTO);
     public MessageDTO updateMessage(MessageDTO messageDTO);
-    public boolean createConversation(int senderId,String senderType,int recipientId,String recipientType) ;
+    public Integer createConversation(int senderId,String senderType,int recipientId,String recipientType) ;
 }

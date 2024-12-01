@@ -22,6 +22,7 @@ public class VehicleRegister {
     private int id;
     private String location;
     private String manufacturer;
+    private String vehicle_life;
     private String description;
     private int quantity;
     private String status;

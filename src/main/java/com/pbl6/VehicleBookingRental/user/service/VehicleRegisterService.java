@@ -101,6 +101,9 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                 vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
+                vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
+                vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
+                vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
                 List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
                 List<String> imagePaths = Optional.ofNullable(images)
                         .orElse(Collections.emptyList())
@@ -138,6 +141,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRegister.get().setRating_total(vehicleRentalServiceDTO.getRating_total());
                 vehicleRegister.get().setAmount(vehicleRentalServiceDTO.getAmount());
                 vehicleRegister.get().setLocation(vehicleRentalServiceDTO.getLocation());
+                vehicleRegister.get().setVehicle_life(vehicleRentalServiceDTO.getVehicleLife());
 
             }
 
@@ -204,6 +208,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
                 vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
+                vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
                 List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
                 List<String> imagePaths = Optional.ofNullable(images)
                         .orElse(Collections.emptyList())
@@ -269,6 +274,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                 vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
+                vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
 
                 List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
                 List<String> imagePaths = Optional.ofNullable(images)
@@ -282,9 +288,17 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTOList.add(vehicleRentalServiceDTO);
             }
         }
-
         return vehicleRentalServiceDTOList;
     }
-
+    public List<String> getExistFilterValue(String properties){
+        List<String> result = new ArrayList<>();
+        if(properties.equalsIgnoreCase("location")){
+            result = vehicleRegisterRepository.findDistinctLocation();
+        }
+        if(properties.equalsIgnoreCase("manufacturer")){
+            result = vehicleRegisterRepository.findDistinctManufacturer();
+        }
+        return result;
+    }
 }
 

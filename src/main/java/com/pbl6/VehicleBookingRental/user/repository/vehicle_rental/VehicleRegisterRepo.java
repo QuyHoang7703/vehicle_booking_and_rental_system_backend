@@ -25,4 +25,12 @@ public interface VehicleRegisterRepo extends JpaRepository<VehicleRegister,Integ
             @Param("location") String location,
             @Param("manufacturer") String manufacturer,
             @Param("vehicle_type_name") String vehicleType);
+    // Lấy danh sách giá trị DISTINCT của thuộc tính 'color'
+    @Query("SELECT DISTINCT v.location FROM VehicleRegister v")
+    List<String> findDistinctLocation();
+
+    // Lấy danh sách giá trị DISTINCT của thuộc tính 'brand'
+    @Query("SELECT DISTINCT v.manufacturer FROM VehicleRegister v")
+    List<String> findDistinctManufacturer();
+
 }

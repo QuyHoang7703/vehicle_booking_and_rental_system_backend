@@ -7,6 +7,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+
 @Repository
 public interface ConversationAccountRepo extends JpaRepository<ConversationAccount,Integer> {
 
@@ -24,4 +26,17 @@ public interface ConversationAccountRepo extends JpaRepository<ConversationAccou
             (@Param("conversation_id") int conversation_id,
              @Param("account_id") int account_id,
              @Param("role_account") String role_account);
+    @Query("""
+        SELECT ca1.conversation.id 
+        FROM ConversationAccount ca1
+        JOIN ConversationAccount ca2 ON ca1.conversation.id = ca2.conversation.id
+        WHERE ca1.account.id = :senderId AND ca1.roleAccount = :senderType
+          AND ca2.account.id = :recipientId AND ca2.roleAccount = :recipientType
+    """)
+    Optional<Integer> findExistingConversation(
+            @Param("senderId") int senderId,
+            @Param("senderType") String senderType,
+            @Param("recipientId") int recipientId,
+            @Param("recipientType") String recipientType
+    );
 }

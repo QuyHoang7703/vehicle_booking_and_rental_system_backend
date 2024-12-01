@@ -1,6 +1,5 @@
 package com.pbl6.VehicleBookingRental.user.controller;
 
-import com.amazonaws.services.dynamodbv2.xspec.M;
 import com.pbl6.VehicleBookingRental.user.domain.RestResponse;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
@@ -8,10 +7,8 @@ import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServiceDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
-import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRentalInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,7 +27,6 @@ public class VehicleRegisterController {
                                                      @RequestParam("status")String status,
                                                      @RequestParam("car_rental_partner_id") int car_rental_partner_id)
     {
-
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.get_all_by_service_type(service_type,status,car_rental_partner_id));
     }
     @PostMapping("/register")
@@ -124,5 +120,9 @@ public class VehicleRegisterController {
     )
     {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.filter_by_vehicle_attribute(location,manufacturer,vehicle_type));
+    }
+    @GetMapping("/get-exist-filter-properties")
+    public ResponseEntity<?> getExistFilterValue(@RequestParam("properties") String properties){
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.getExistFilterValue(properties));
     }
 }

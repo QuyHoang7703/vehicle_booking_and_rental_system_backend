@@ -12,6 +12,7 @@ import com.pbl6.VehicleBookingRental.user.repository.chat.ConversationRepo;
 import com.pbl6.VehicleBookingRental.user.repository.chat.MessageRepo;
 import com.pbl6.VehicleBookingRental.user.service.ChatMessageService;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +39,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 MessageDTO messageDTO = new MessageDTO();
                 messageDTO.setId(message.getId());
                 messageDTO.setSenderId(message.getSenderId());
+                messageDTO.setSender_type(message.getSender_type());
                 messageDTO.setContent(message.getContent());
                 messageDTO.setSeen(message.isSeen());
                 messageDTO.setSeen_at(message.getSeen_at());
@@ -65,7 +67,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                                 (i.getConversation().getId(),account_id,role_account);
                 connectedAccount.addAll(conversationAccountList);
             }
-        }
+    }
 
         return Optional.ofNullable(connectedAccount)
                 .orElse(Collections.emptyList())
@@ -137,16 +139,28 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     }
 
     @Override
-    public boolean createConversation(int senderId,String senderType,int recipientId,String recipientType)  {
-        try{
-            // create conversation
+    @Transactional
+    public Integer createConversation(int senderId, String senderType, int recipientId, String recipientType) {
+        try {
+            Optional<Integer> conversationId = conversationAccountRepo.findExistingConversation(senderId,senderType,recipientId,recipientType);
+            if(conversationId.isPresent()){
+                return conversationId.get();
+            }
+            // Create conversation
             Conversation conversation = new Conversation();
             conversation.setCreateAt(new Date());
             Conversation savedConversation = conversationRepo.save(conversation);
-            //create conversation account
-            Account accountSender = accountRepository.findById(senderId).orElseThrow(()-> new ApplicationException("Account not found !"));
-            Account accountRecipient = accountRepository.findById(senderId).orElseThrow(()-> new ApplicationException("Account not found !"));
 
+            // Find accounts
+            List<Account> accounts = accountRepository.findAllById(Arrays.asList(senderId, recipientId));
+            if (accounts.size() != 2) {
+                throw new ApplicationException("One or both accounts not found!");
+            }
+
+            Account accountSender = accounts.stream().filter(acc -> acc.getId() == senderId).findFirst().orElseThrow(() -> new ApplicationException("Sender not found!"));
+            Account accountRecipient = accounts.stream().filter(acc -> acc.getId() == recipientId).findFirst().orElseThrow(() -> new ApplicationException("Recipient not found!"));
+
+            // Create conversation accounts
             ConversationAccount conversationAccount1 = new ConversationAccount();
             conversationAccount1.setAccount(accountSender);
             conversationAccount1.setRoleAccount(senderType);
@@ -157,14 +171,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             conversationAccount2.setRoleAccount(recipientType);
             conversationAccount2.setConversation(savedConversation);
 
-            //
-            conversationAccountRepo.save(conversationAccount1);
-            conversationAccountRepo.save(conversationAccount2);
-            return true;
-        }catch (Exception e){
-            System.out.println(e.getLocalizedMessage());
-            return false;
-        }
+            // Save conversation accounts
+            conversationAccountRepo.saveAll(Arrays.asList(conversationAccount1, conversationAccount2));
 
+            return savedConversation.getId();
+        } catch (Exception e) {
+            System.out.println(e.getLocalizedMessage());
+            return null;
+        }
     }
 }

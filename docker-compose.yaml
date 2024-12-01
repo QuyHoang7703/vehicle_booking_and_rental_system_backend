@@ -6,7 +6,7 @@ services:
       - 8080:8080
       - 8000:8000
     depends_on:
-      db:
+      db1:
         condition: service_healthy
       redis:
         condition: service_started
@@ -17,7 +17,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
 
-  db:
+  db1:
     image: mysql:latest
     restart: always
     volumes:

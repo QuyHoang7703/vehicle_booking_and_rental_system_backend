@@ -26,5 +26,5 @@ public interface VehicleRegisterInterface {
 
     public boolean update_status(int vehicleRegisterId, String status);
     public List<VehicleRentalServiceDTO> filter_by_vehicle_attribute(String location,String manufacture,String vehicle_type);
-
+    public List<String>getExistFilterValue(String properties);
 }

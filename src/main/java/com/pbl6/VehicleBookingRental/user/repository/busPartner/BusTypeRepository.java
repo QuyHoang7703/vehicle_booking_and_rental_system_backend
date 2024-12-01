@@ -7,5 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BusTypeRepository extends JpaRepository<BusType, Integer>, JpaSpecificationExecutor<BusType> {
-    boolean existsByNameAndNumberOfSeatAndChairType(String name, int numberOfSeat, String chairType);
+    boolean existsByNameAndNumberOfSeatAndChairTypeAndBusPartnerId(String name, int numberOfSeat, String chairType, int busPartner_id);
 }

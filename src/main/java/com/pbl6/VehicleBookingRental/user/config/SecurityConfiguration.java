@@ -86,6 +86,7 @@ public class SecurityConfiguration {
                 "/ws/**",
                 "/user/vehicle-register/all",
                 "/user/vehicle-register/get-vehicle-register",
+                "/user/vehicle-register/get-exist-filter-properties",
                 "/api/v1/user/busTripSchedules/**",
                 "/user/vehicle-register/filters-rental-service",
                 "api/v1/vehicle-types-all",

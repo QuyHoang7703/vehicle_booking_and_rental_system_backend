@@ -16,4 +16,5 @@ public interface BusPartnerRepository extends JpaRepository<BusPartner, Integer>
     @Query("SELECT bsn.businessName FROM BusinessPartner bsn " +
             "JOIN BusPartner bpn ON bsn.busPartner.id = bpn.id")
     List<String> getNamesBusPartner();
+    Optional<BusPartner> findBusPartnerByBusinessPartner_AccountId(int accountId);
 }

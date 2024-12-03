@@ -21,5 +21,4 @@ public class ReqBusTripScheduleDTO {
     private LocalDate startOperationDay;
     private List<BreakDay> breakDays;
 
-//    private LocationDTO departure
 }

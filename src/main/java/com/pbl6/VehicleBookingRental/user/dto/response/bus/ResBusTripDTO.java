@@ -25,6 +25,5 @@ public class ResBusTripDTO {
         private int id;
         private String departureLocation;
         private String arrivalLocation;
-        private Duration durationJourney;
     }
 }

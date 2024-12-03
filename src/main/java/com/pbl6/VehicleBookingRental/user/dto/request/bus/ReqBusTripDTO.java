@@ -11,7 +11,5 @@ public class ReqBusTripDTO {
     private int id;
     private String departureLocation;
     private String arrivalLocation;
-    private Duration durationJourney;
     private List<String> pickupLocations;
-    private List<String> dropOffLocations;
 }

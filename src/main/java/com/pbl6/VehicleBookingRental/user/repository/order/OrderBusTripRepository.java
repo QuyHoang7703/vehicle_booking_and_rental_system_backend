@@ -11,4 +11,6 @@ import java.util.List;
 @Repository
 public interface OrderBusTripRepository extends JpaRepository<OrderBusTrip, String>, JpaSpecificationExecutor<OrderBusTrip> {
     List<OrderBusTrip> findByDepartureDateAndBusTripScheduleId(LocalDate departureDate, int busTripScheduleId);
+
+
 }

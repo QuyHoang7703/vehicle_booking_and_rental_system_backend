@@ -21,11 +21,11 @@ public class BusTrip {
     private int id ;
     private String  departureLocation ;
     private String arrivalLocation ;
-    private Duration durationJourney ;
+//    private Duration durationJourney ;
     @Column(columnDefinition = "MEDIUMTEXT")
     private String pickupLocations;
-    @Column(columnDefinition = "MEDIUMTEXT")
-    private String dropOffLocations;
+//    @Column(columnDefinition = "MEDIUMTEXT")
+//    private String dropOffLocations;
 
     @ManyToOne
     @JoinColumn(name = "bus_partner_id")
@@ -37,4 +37,6 @@ public class BusTrip {
     @JsonIgnore
     private List<BusTripSchedule> busTripSchedules;
 
+    @OneToMany(mappedBy = "busTrip")
+    private List<DropOffLocation> dropOffLocations;
 }

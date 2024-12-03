@@ -7,6 +7,7 @@ import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Bus;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.DropOffLocation;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
@@ -21,6 +22,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDeta
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.busPartner.DropOffLocationRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
@@ -54,6 +56,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     private final ObjectMapper objectMapper;
     private final ImageRepository imageRepository;
     private final BusService busService;
+    private final DropOffLocationRepository dropOffLocationRepository;
 
     @Override
     public OrderBusTripRedisDTO createOrderBusTrip(ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException{
@@ -63,20 +66,19 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         }
         Account currentAccount = accountService.handleGetAccountByUsername(email);
 
-        String orderId = UUID.randomUUID().toString().replaceAll("-", "");
+        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(reqOrderBusTripDTO.getProvince(), reqOrderBusTripDTO.getBusTripScheduleId())
+                .orElseThrow(() -> new ApplicationException("Drop off location not found"));
 
-//        Random random = new Random();
-//        int orderId = 100000 + random.nextInt(900000);
+        String orderId = UUID.randomUUID().toString().replaceAll("-", "");
 
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(reqOrderBusTripDTO.getBusTripScheduleId())
                 .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
-
 
         OrderBusTripRedisDTO orderBusTripRedis = new OrderBusTripRedisDTO();
         orderBusTripRedis.setId(orderId);
         orderBusTripRedis.setNumberOfTicket(reqOrderBusTripDTO.getNumberOfTicket());
         orderBusTripRedis.setDepartureDate(reqOrderBusTripDTO.getDepartureDate());
-        orderBusTripRedis.setPriceTotal(reqOrderBusTripDTO.getNumberOfTicket()*busTripSchedule.getPriceTicket());
+        orderBusTripRedis.setPriceTotal(reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket());
         orderBusTripRedis.setAccount_Id(currentAccount.getId());
         orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
         orderBusTripRedis.setCustomerName(reqOrderBusTripDTO.getCustomerName());
@@ -334,15 +336,15 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
         BusTripSchedule busTripSchedule = orderBusTrip.getBusTripSchedule();
 
-        double pricePerTicket = busTripSchedule.getPriceTicket();
-        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
+//        double pricePerTicket = busTripSchedule.getPriceTicket();
+//        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
         double discountPercentage = busTripSchedule.getDiscountPercentage();
-        if(discountPercentage != 0.0){
-            priceTotal = priceTotal * (1 - discountPercentage/100);
-        }
+//        if(discountPercentage != 0.0){
+//            priceTotal = priceTotal * (1 - discountPercentage/100);
+//        }
 
-        orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
-        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(priceTotal));
+//        orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
+//        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(priceTotal));
         orderInfo.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
 
         return orderInfo;
@@ -364,10 +366,10 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         Instant departureDateTime = this.changeInstant(localDate, localTime);
         tripInfo.setDepartureDateTime(departureDateTime);
 
-        Duration duration = busTripSchedule.getBusTrip().getDurationJourney();
-        tripInfo.setDurationJourney(duration);
-        Instant arrivalDateTime = departureDateTime.plus(duration);
-        tripInfo.setArrivalDateTime(arrivalDateTime);
+//        Duration duration = busTripSchedule.getBusTrip().getDurationJourney();
+//        tripInfo.setDurationJourney(duration);
+//        Instant arrivalDateTime = departureDateTime.plus(duration);
+//        tripInfo.setArrivalDateTime(arrivalDateTime);
 
 
         return tripInfo;

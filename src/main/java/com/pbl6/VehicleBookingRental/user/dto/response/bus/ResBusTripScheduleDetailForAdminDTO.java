@@ -19,10 +19,10 @@ public class ResBusTripScheduleDetailForAdminDTO {
     private BusInfo busInfo;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime departureTime;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
-    private LocalTime arrivalTime;
+//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+//    private LocalTime arrivalTime;
     private double discountPercentage;
-    private String priceTicket;
+//    private String priceTicket;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate startOperationDay;
     private int availableSeats;

@@ -29,4 +29,14 @@ public interface BusTripScheduleRepository extends JpaRepository<BusTripSchedule
     List<Long> findBusTripScheduleIdsNotInBreakDays(@Param("departureDate") LocalDate departureDate);
 
     boolean existsByBusTrip_IdAndBus_Id(int busTripId, int busId);
+
+//    @Query("SELECT bts from BusTripSchedule bts " +
+//            "JOIN bts.busTrip bt " +
+//            "JOIN bt.dropOffLocations dol " +
+//            "WHERE bt.departureLocation = :departureLocation " +
+//            "AND dol.province = :arrivalProvince")
+//    Page<BusTripSchedule> findForUser(Specification<BusTripSchedule> spec,
+//                                      Pageable pageable,
+//                                      @Param("departureLocation") String departureLocation,
+//                                      @Param("arrivalProvince") String arrivalProvince);
 }

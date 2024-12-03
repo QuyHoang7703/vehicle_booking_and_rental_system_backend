@@ -33,8 +33,9 @@ public class BusTripScheduleForUserController {
     public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleAvailableForUser(@Filter Specification<BusTripSchedule> spec,
                                                                                      Pageable pageable,
                                                                                      @RequestParam(value = "departureDate", required = false) LocalDate departureDate,
+                                                                                     @RequestParam("departureLocation") String departureLocation,
                                                                                      @RequestParam("arrivalProvince") String arrivalProvince) throws ApplicationException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable, departureDate, arrivalProvince));
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable, departureLocation, arrivalProvince, departureDate));
     }
     @GetMapping("/policies/{businessPartnerId}")
     public ResponseEntity<List<String>> getPolicies(@PathVariable("businessPartnerId") int businessPartnerId) throws IdInvalidException {

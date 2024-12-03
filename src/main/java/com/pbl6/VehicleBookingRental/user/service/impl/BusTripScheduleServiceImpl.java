@@ -226,7 +226,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
-    public ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable, LocalDate departureDate, String arrivalProvince) throws ApplicationException {
+    public ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable,String departureLocation, String arrivalProvince, LocalDate departureDate) throws ApplicationException {
         if(departureDate == null) {
             departureDate = LocalDate.now();
 //            log.info("Departure: " + departureDate);
@@ -256,8 +256,11 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 //            log.info("Test2: " + test2);
 
             Predicate predicateValidTime = criteriaBuilder.greaterThan(departureDateTime, validTime);
-
-            return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds, predicateValidTime);
+            Join<BusTripSchedule, BusTrip> joinBusTrip = root.join("busTrip");
+            Predicate pre1 = criteriaBuilder.equal(joinBusTrip.get("departureLocation"), departureLocation);
+            Join<BusTrip, DropOffLocation> joinDropOffLocation = joinBusTrip.join("dropOffLocations");
+            Predicate pre2 = criteriaBuilder.equal(joinDropOffLocation.get("province"), arrivalProvince);
+            return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds, predicateValidTime, pre1, pre2);
         };
         Specification<BusTripSchedule> finalSpec = spec.and(newSpec);
         Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findAll(finalSpec, pageable);

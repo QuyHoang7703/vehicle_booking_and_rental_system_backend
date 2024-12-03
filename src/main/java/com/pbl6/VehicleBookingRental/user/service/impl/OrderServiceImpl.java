@@ -209,14 +209,18 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setMessage("Bạn có một đơn đặt xe mới ");
         notificationDTO.setTitle("Đơn đặt xe mới");
         notificationDTO.setType(NotificationTypeEnum.NEW_BOOKING);
-        notificationDTO.setCreate_at(new Date());
+        notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
         createNotificationToPartner(accountIdOfBusPartner,  AccountEnum.BUS_PARTNER,notificationDTO);
     }
 
     private void createNotificationToPartner(int accountIdOfPartner,  AccountEnum partnerTypeEnum,NotificationDTO notificationDTO) {
         Notification notification = new Notification();
-        notification.setCreate_at(notificationDTO.getCreate_at());
+        notification.setCreate_at(
+                Optional.ofNullable(notificationDTO.getCreate_at())
+                        .map(instant -> new Date(instant.toEpochMilli()))
+                        .orElse(null)
+        );
         notification.setType(notificationDTO.getType());
         notification.setTitle(notificationDTO.getTitle());
         notification.setMessage(notificationDTO.getMessage());
@@ -238,7 +242,7 @@ public class OrderServiceImpl implements OrderService {
                                 .type(notification.getType())
                                 .title(notification.getTitle())
                                 .message(notification.getMessage())
-                                .create_at(notification.getCreate_at())
+                                .create_at(notification.getCreate_at()!=null ? notification.getCreate_at().toInstant():null )
                                 .isSeen(notification.isSeen())
                                 .build());
 
@@ -294,7 +298,7 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setMessage("Bạn có một đơn đặt xe mới ");
         notificationDTO.setTitle("Đơn thuê xe mới");
         notificationDTO.setType(NotificationTypeEnum.NEW_BOOKING);
-        notificationDTO.setCreate_at(new Date());
+        notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
         createNotificationToPartner(accountIdOfVehicleRentalPartner,  AccountEnum.CAR_RENTAL_PARTNER,notificationDTO);
     }

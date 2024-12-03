@@ -55,8 +55,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 messageDTO.setSender_type(message.getSender_type());
                 messageDTO.setContent(message.getContent());
                 messageDTO.setSeen(message.isSeen());
-                messageDTO.setSeen_at(message.getSeen_at());
-                messageDTO.setSendAt(message.getSendAt());
+                messageDTO.setSeen_at(message.getSeen_at() != null ? message.getSeen_at().toInstant() : null);
+                messageDTO.setSendAt(message.getSendAt() != null ? message.getSendAt().toInstant() : null);
                 messageDTO.setConversation_id(message.getConversation().getId());
 
                 messageDTOS.add(messageDTO);
@@ -133,8 +133,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                         MessageDTO lastMessage = lastMessageOfConversation(conversationAccount.getConversation().getId());
                         if (lastMessage != null) {
                             // Cập nhật thông tin `sendAt`
-                            sideBarDTO.setSendAt(lastMessage.getSendAt().toInstant());
-
+                            sideBarDTO.setSendAt(lastMessage.getSendAt());
+                            sideBarDTO.setSeen(lastMessage.isSeen());
                             // Kiểm tra xem tin nhắn cuối có phải do tài khoản này gửi không
                             if (accountId == lastMessage.getSenderId() && roleAccount.equals(lastMessage.getSender_type())) {
                                 sideBarDTO.setLastMessage(lastMessage.getContent());
@@ -142,9 +142,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                                 sideBarDTO.setLastMessage("Bạn: " + lastMessage.getContent());
                             }
                         } else {
-                            // Nếu không có tin nhắn nào
+                            // If no message
                             sideBarDTO.setLastMessage("No messages yet");
-                            sideBarDTO.setSendAt(null); // Hoặc để giá trị mặc định
+                            sideBarDTO.setSendAt(null);
                         }
                     }catch (Exception e){
                         System.out.println(e.getLocalizedMessage());
@@ -164,8 +164,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             messageDTO.setSender_type(lastMessage.getSender_type());
             messageDTO.setContent(lastMessage.getContent());
             messageDTO.setSeen(lastMessage.isSeen());
-            messageDTO.setSeen_at(lastMessage.getSeen_at());
-            messageDTO.setSendAt(lastMessage.getSendAt());
+            messageDTO.setSeen_at(lastMessage.getSeen_at() != null ? lastMessage.getSeen_at().toInstant() : null);
+            messageDTO.setSendAt(lastMessage.getSendAt() != null ? lastMessage.getSendAt().toInstant() : null);
             messageDTO.setConversation_id(lastMessage.getConversation().getId());
         }
         return messageDTO;
@@ -175,8 +175,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
     public MessageDTO saveMessage(MessageDTO messageDTO) {
         Message message = new Message();
         message.setContent(messageDTO.getContent());
-        message.setSendAt(messageDTO.getSendAt());
-        message.setSeen_at(messageDTO.getSeen_at());
+        message.setSendAt(
+                Optional.ofNullable(messageDTO.getSendAt())
+                .map(instant -> new Date(instant.toEpochMilli()))
+                .orElse(null));
+        message.setSeen_at(
+                Optional.ofNullable(messageDTO.getSeen_at())
+                .map(instant -> new Date(instant.toEpochMilli()))
+                .orElse(null));
         message.setSeen(messageDTO.isSeen());
         message.setSender_type(messageDTO.getSender_type());
         message.setSenderId(messageDTO.getSenderId());
@@ -199,8 +205,14 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if(message.isPresent()){
             try{
                 message.get().setContent(messageDTO.getContent());
-                message.get().setSendAt(messageDTO.getSendAt());
-                message.get().setSeen_at(messageDTO.getSeen_at());
+                message.get().setSendAt(
+                        Optional.ofNullable(messageDTO.getSendAt())
+                                .map(instant -> new Date(instant.toEpochMilli()))
+                                .orElse(null));
+                message.get().setSeen_at(
+                        Optional.ofNullable(messageDTO.getSeen_at())
+                                .map(instant -> new Date(instant.toEpochMilli()))
+                                .orElse(null));
                 message.get().setSeen(messageDTO.isSeen());
                 message.get().setSender_type(messageDTO.getSender_type());
                 message.get().setSenderId(messageDTO.getSenderId());
@@ -272,8 +284,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     messageDTO.setSender_type(message.getSender_type());
                     messageDTO.setContent(message.getContent());
                     messageDTO.setSeen(message.isSeen());
-                    messageDTO.setSeen_at(message.getSeen_at());
-                    messageDTO.setSendAt(message.getSendAt());
+                    messageDTO.setSeen_at(message.getSeen_at() != null ? message.getSeen_at().toInstant() : null);
+                    messageDTO.setSendAt(message.getSendAt() != null ? message.getSendAt().toInstant() : null);
                     messageDTO.setConversation_id(message.getConversation().getId());
                     return messageDTO;
                 }).collect(Collectors.toList());

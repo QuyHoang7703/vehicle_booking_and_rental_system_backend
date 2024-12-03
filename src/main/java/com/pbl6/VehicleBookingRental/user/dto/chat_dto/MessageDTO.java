@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.Date;
 @Data
 @AllArgsConstructor
@@ -15,9 +16,9 @@ import java.util.Date;
 public class MessageDTO {
     private int id;
     private String content;
-    private Date sendAt;
+    private Instant sendAt;
     private boolean isSeen;
-    private Date seen_at;
+    private Instant seen_at;
     private int conversation_id;
     private int senderId;
     private String sender_type;

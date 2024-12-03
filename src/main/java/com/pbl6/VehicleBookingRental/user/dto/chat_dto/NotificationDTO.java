@@ -4,6 +4,7 @@ import com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.util.Date;
 @Data
 @RequiredArgsConstructor
@@ -14,6 +15,6 @@ public class NotificationDTO {
     private String title;
     private String message;
     private boolean isSeen;
-    private Date create_at;
+    private Instant create_at;
     private NotificationTypeEnum type;
 }

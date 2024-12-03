@@ -13,5 +13,6 @@ public class AccountSideBarDTO {
     private String roleAccount;
     private String lastMessage;
     private Instant sendAt;
+    private boolean isSeen;
     private String avatarUrl;
 }

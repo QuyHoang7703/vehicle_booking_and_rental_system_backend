@@ -17,7 +17,11 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -66,6 +70,7 @@ public class ChatController {
                         .build()
         );
     }
+
     @GetMapping("/chat/get-connected-account")
     public ResponseEntity<?> getConnectedUser
             (@RequestParam("account_id") int account_id,

@@ -18,4 +18,5 @@ public interface MessageRepo extends JpaRepository<Message,Integer> {
 
     @Query("SELECT m FROM Message m WHERE m.conversation.id = :conversation_id ORDER BY m.sendAt DESC LIMIT 1 " )
     public Message findLastMessageOfSenderId (@Param("conversation_id") int conversation_id);
+    public List<Message> getMessagesByConversationId(int conversation_id);
 }

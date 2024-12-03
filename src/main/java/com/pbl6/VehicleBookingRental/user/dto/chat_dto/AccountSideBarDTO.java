@@ -7,6 +7,7 @@ import java.time.Instant;
 @Data
 public class AccountSideBarDTO {
     private int accountId;
+    private int conversationId;
     private String nameRepresentation;
     private String businessName;
     private String roleAccount;

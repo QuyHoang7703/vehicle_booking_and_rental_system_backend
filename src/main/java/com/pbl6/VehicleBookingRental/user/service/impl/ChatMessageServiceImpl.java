@@ -92,6 +92,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                         String roleAccount = conversationAccount.getRoleAccount();
                         sideBarDTO.setAccountId(accountId);
                         sideBarDTO.setRoleAccount(roleAccount);
+                        sideBarDTO.setConversationId(conversationAccount.getConversation().getId());
                         switch (roleAccount){
                             case "CAR_RENTAL_PARTNER":
                             {
@@ -138,7 +139,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                             if (accountId == lastMessage.getSenderId() && roleAccount.equals(lastMessage.getSender_type())) {
                                 sideBarDTO.setLastMessage(lastMessage.getContent());
                             } else {
-                                sideBarDTO.setLastMessage("You: " + lastMessage.getContent());
+                                sideBarDTO.setLastMessage("Bạn: " + lastMessage.getContent());
                             }
                         } else {
                             // Nếu không có tin nhắn nào
@@ -258,4 +259,24 @@ public class ChatMessageServiceImpl implements ChatMessageService {
             return null;
         }
     }
+
+    @Override
+    public List<MessageDTO> getMessagesByConversationId(int conversationId) {
+        List<Message> messages = messageRepo.getMessagesByConversationId(conversationId);
+        return Optional.ofNullable(messages)
+                .orElse(Collections.emptyList())
+                .stream().map(message -> {
+                    MessageDTO messageDTO = new MessageDTO();
+                    messageDTO.setId(message.getId());
+                    messageDTO.setSenderId(message.getSenderId());
+                    messageDTO.setSender_type(message.getSender_type());
+                    messageDTO.setContent(message.getContent());
+                    messageDTO.setSeen(message.isSeen());
+                    messageDTO.setSeen_at(message.getSeen_at());
+                    messageDTO.setSendAt(message.getSendAt());
+                    messageDTO.setConversation_id(message.getConversation().getId());
+                    return messageDTO;
+                }).collect(Collectors.toList());
+    }
+
 }

@@ -102,4 +102,8 @@ public class ChatController {
     ResponseEntity<?> getNotifications(@RequestParam("account_id")int account_id,@RequestParam("account_type") AccountEnum role_account){
         return ResponseEntity.status(HttpStatus.OK).body(notificationService.getNotificationByAccountIdAndRoleAccount(account_id,role_account));
     }
+    @GetMapping("/chat/get-message-by-conversation-id")
+    ResponseEntity<?> getMessageByConversationId(@RequestParam("conversation_id") int conversation_id){
+        return ResponseEntity.status(HttpStatus.OK).body(chatMessageService.getMessagesByConversationId(conversation_id));
+    }
 }

@@ -139,7 +139,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                             if (accountId == lastMessage.getSenderId() && roleAccount.equals(lastMessage.getSender_type())) {
                                 sideBarDTO.setLastMessage(lastMessage.getContent());
                             } else {
-                                sideBarDTO.setLastMessage("You: " + lastMessage.getContent());
+                                sideBarDTO.setLastMessage("Bạn: " + lastMessage.getContent());
                             }
                         } else {
                             // Nếu không có tin nhắn nào

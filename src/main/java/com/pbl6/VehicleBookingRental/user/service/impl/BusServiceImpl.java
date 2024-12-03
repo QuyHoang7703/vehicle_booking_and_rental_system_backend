@@ -129,7 +129,7 @@ public class BusServiceImpl implements BusService {
         if(!busDb.getBusPartner().equals(businessPartner.getBusPartner())) {
             throw new ApplicationException("You are not authorized to delete this bus");
         }
-        if(busDb.getBusTripSchedules()!=null) {
+        if(busDb.getBusTripSchedules()!=null && !busDb.getBusTripSchedules().isEmpty()) {
             throw new ApplicationException("This bus is serving for a bus trip schedule");
         }
         this.busRepository.delete(busDb);

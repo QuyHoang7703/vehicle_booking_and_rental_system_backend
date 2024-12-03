@@ -33,6 +33,7 @@ public class BusTripServiceImpl implements BusTripService {
     @Override
     public BusTrip createBusTrip(ReqBusTripDTO reqBusTripDTO) throws ApplicationException {
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+
         List<BusTrip> busTrips = this.busTripRepository.findBusTripByDepartureLocationAndArrivalLocation(businessPartner.getBusPartner().getId(),
                 reqBusTripDTO.getDepartureLocation(), reqBusTripDTO.getArrivalLocation());
 
@@ -43,11 +44,8 @@ public class BusTripServiceImpl implements BusTripService {
         BusTrip busTrip = new BusTrip();
         busTrip.setDepartureLocation(reqBusTripDTO.getDepartureLocation());
         busTrip.setArrivalLocation(reqBusTripDTO.getArrivalLocation());
-        busTrip.setDurationJourney(reqBusTripDTO.getDurationJourney());
         List<String> pickupLocations = reqBusTripDTO.getPickupLocations();
         busTrip.setPickupLocations(String.join("!", pickupLocations));
-        List<String> dropOffLocations = reqBusTripDTO.getDropOffLocations();
-        busTrip.setDropOffLocations(String.join("!", dropOffLocations));
         busTrip.setBusPartner(businessPartner.getBusPartner());
 
         return busTripRepository.save(busTrip);
@@ -62,17 +60,15 @@ public class BusTripServiceImpl implements BusTripService {
             throw new ApplicationException("You don't have the right business partner");
         }
 
+        // Check busTrip has busTripSchedule ? -> Can't update
         if(busTripDb.getBusTripSchedules()!=null && !busTripDb.getBusTripSchedules().isEmpty()) {
             throw new ApplicationException("Can't update this bus trip scheduled");
         }
 
         busTripDb.setDepartureLocation(reqBusTripDTO.getDepartureLocation());
         busTripDb.setArrivalLocation(reqBusTripDTO.getArrivalLocation());
-        busTripDb.setDurationJourney(reqBusTripDTO.getDurationJourney());
         List<String> pickupLocations = reqBusTripDTO.getPickupLocations();
         busTripDb.setPickupLocations(String.join("!", pickupLocations));
-        List<String> dropOffLocations = reqBusTripDTO.getDropOffLocations();
-        busTripDb.setDropOffLocations(String.join("!", dropOffLocations));
         return this.busTripRepository.save(busTripDb);
     }
 
@@ -88,15 +84,11 @@ public class BusTripServiceImpl implements BusTripService {
         String pickupLocations = busTrip.getPickupLocations();
         List<String> pickupLocationsToList = Arrays.asList(pickupLocations.split("!"));
 
-        String dropOffLocations = busTrip.getDropOffLocations();
-        List<String> dropOffLocationsToList =  Arrays.asList(dropOffLocations.split("!"));
-
         ResBusTripDTO.BusTripInfo busTripInfo = this.convertToBusTripInfo(busTrip);
 
         ResBusTripDTO resBusTripDTO = ResBusTripDTO.builder()
                 .busTripInfo(busTripInfo)
                 .pickupLocations(pickupLocationsToList)
-                .dropOffLocations(dropOffLocationsToList)
                 .build();
         return resBusTripDTO;
     }
@@ -135,7 +127,7 @@ public class BusTripServiceImpl implements BusTripService {
                 .id(busTrip.getId())
                 .departureLocation(busTrip.getDepartureLocation())
                 .arrivalLocation(busTrip.getArrivalLocation())
-                .durationJourney(busTrip.getDurationJourney())
+//                .durationJourney(busTrip.getDurationJourney())
                 .build();
         return busTripInfo;
     }
@@ -160,11 +152,8 @@ public class BusTripServiceImpl implements BusTripService {
                 .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
         String pickupLocations = busTrip.getPickupLocations();
         List<String> pickupLocationsToList = Arrays.asList(pickupLocations.split("!"));
-        String dropOffLocations = busTrip.getDropOffLocations();
-        List<String> dropOffLocationsToList =  Arrays.asList(dropOffLocations.split("!"));
         ResPickupAndDropOffLocation res = ResPickupAndDropOffLocation.builder()
                 .pickupLocations(pickupLocationsToList)
-                .dropOffLocations(dropOffLocationsToList)
                 .build();
         return res;
     }

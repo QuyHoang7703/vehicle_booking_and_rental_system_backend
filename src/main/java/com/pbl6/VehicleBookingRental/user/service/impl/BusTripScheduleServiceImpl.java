@@ -232,35 +232,37 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 //            log.info("Departure: " + departureDate);
         }
         List<Long> validIds = busTripScheduleRepository.findBusTripScheduleIdsNotInBreakDays(departureDate);
+        LocalDate finalDepartureDate1 = departureDate;
         Specification<BusTripSchedule> newSpec = (root, query, criteriaBuilder) -> {
             Predicate predicateOperationDay = criteriaBuilder.lessThanOrEqualTo(root.get("startOperationDay"), LocalDate.now());
             Predicate predicateStatusOperation = criteriaBuilder.equal(root.get("isOperation"), true);
             Predicate predicateValidIds = root.get("id").in(validIds); // Chỉ lấy các ID hợp lệ từ truy vấn
 
-            // Giờ khởi hành lớn hơn giờ hiện tại là 1 tiếng
-            LocalDate currentDate = LocalDate.now();
-
-            Path<LocalTime> departureTime = root.get("departureTime");
-
-            // Kết hợp thành LocalDateTime
-            Expression<LocalDateTime> departureDateTime = criteriaBuilder.function(
-                    "TIMESTAMP", LocalDateTime.class,
-                    criteriaBuilder.literal(currentDate), departureTime
-            );
-
-            // So sánh với LocalDateTime hiện tại + 1 giờ
-            LocalDateTime validTime = LocalDateTime.now().plusHours(0);
-
-//            LocalDate test = LocalDate.now();
-//            LocalDateTime test2 = LocalDateTime.of(test, LocalTime.of(23, 0)).plusHours(1);
-//            log.info("Test2: " + test2);
-
-            Predicate predicateValidTime = criteriaBuilder.greaterThan(departureDateTime, validTime);
             Join<BusTripSchedule, BusTrip> joinBusTrip = root.join("busTrip");
             Predicate pre1 = criteriaBuilder.equal(joinBusTrip.get("departureLocation"), departureLocation);
             Join<BusTrip, DropOffLocation> joinDropOffLocation = joinBusTrip.join("dropOffLocations");
             Predicate pre2 = criteriaBuilder.equal(joinDropOffLocation.get("province"), arrivalProvince);
-            return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds, predicateValidTime, pre1, pre2);
+
+
+            if(finalDepartureDate1.isAfter(LocalDate.now())){
+                return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds, pre1, pre2);
+            }else{
+                // Giờ khởi hành lớn hơn giờ hiện tại là 1 tiếng
+                LocalDate currentDate = LocalDate.now();
+
+                Path<LocalTime> departureTime = root.get("departureTime");
+
+                // Kết hợp thành LocalDateTime
+                Expression<LocalDateTime> departureDateTime = criteriaBuilder.function(
+                        "TIMESTAMP", LocalDateTime.class,
+                        criteriaBuilder.literal(currentDate), departureTime
+                );
+
+                // So sánh với LocalDateTime hiện tại + 1 giờ
+                LocalDateTime validTime = LocalDateTime.now().plusHours(0);
+                Predicate predicateValidTime = criteriaBuilder.greaterThan(departureDateTime, validTime);
+                return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds, predicateValidTime, pre1, pre2);
+            }
         };
         Specification<BusTripSchedule> finalSpec = spec.and(newSpec);
         Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findAll(finalSpec, pageable);

@@ -31,6 +31,7 @@ public class ResBusTripScheduleDTO {
     private String priceTicket;
     private int availableSeats;
     private boolean isOperation;
+    private String journey;
 
     @Data
     @Builder

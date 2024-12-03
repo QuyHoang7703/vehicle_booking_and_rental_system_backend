@@ -39,6 +39,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -112,7 +113,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .build();
 
         ResBusTripScheduleDetailForAdminDTO res = ResBusTripScheduleDetailForAdminDTO.builder()
-                .idBusTripSchedule(busTripSchedule.getId())
+                .busTripScheduleId(busTripSchedule.getId())
                 .busTripInfo(busTripInfo)
                 .busInfo(busInfo)
                 .departureTime(busTripSchedule.getDepartureTime())
@@ -225,7 +226,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
-    public ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable, LocalDate departureDate) throws ApplicationException {
+    public ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable, LocalDate departureDate, String arrivalProvince) throws ApplicationException {
         if(departureDate == null) {
             departureDate = LocalDate.now();
 //            log.info("Departure: " + departureDate);
@@ -280,10 +281,10 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 //                    }
 //                })
 //                .toList();
-        List<List<ResBusTripScheduleDTO>> resBusTripScheduleDTOS = busTripSchedulePage.getContent().stream()
-                .map(busTripSchedule -> {
+        List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = busTripSchedulePage.getContent().stream()
+                .flatMap(busTripSchedule -> {
                     try {
-                        return convertToResBusTripScheduleDTO2(busTripSchedule, finalDepartureDate);
+                        return convertToResBusTripScheduleDTO2(busTripSchedule, finalDepartureDate, arrivalProvince).stream();
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -343,12 +344,15 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
 
-    public List<ResBusTripScheduleDTO> convertToResBusTripScheduleDTO2(BusTripSchedule busTripSchedule, LocalDate departureDate) throws IdInvalidException {
+    public List<ResBusTripScheduleDTO> convertToResBusTripScheduleDTO2(BusTripSchedule busTripSchedule, LocalDate departureDate, String arrivalProvince) throws IdInvalidException {
         List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = new ArrayList<>();
 
         List<DropOffLocation> dropOffLocations = busTripSchedule.getBusTrip().getDropOffLocations();
 
         for(DropOffLocation dropOffLocation : dropOffLocations) {
+            if(!dropOffLocation.getProvince().equals(arrivalProvince)) {
+                continue;
+            }
             // Create bus info
             Bus bus = busTripSchedule.getBus();
             Images imageOfBus = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), bus.getId()).get(0);
@@ -387,6 +391,11 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                     .arrivalTime(busTripSchedule.getDepartureTime().plus(dropOffLocation.getJourneyDuration()))
                     .availableSeats(availableNumberOfSeats)
                     .isOperation(busTripSchedule.isOperation())
+                    .journey(String.format("Vé thuộc chặng chuyến %s %s %s - %s",
+                            busTripSchedule.getDepartureTime(),
+                            DateTimeFormatter.ofPattern("dd-MM-yyyy").format(departureDate),
+                            busTripInfo.getDepartureLocation(),
+                            busTripSchedule.getBusTrip().getArrivalLocation()))
                     .build();
             resBusTripScheduleDTOS.add(res);
         }
@@ -395,6 +404,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         return resBusTripScheduleDTOS;
     }
+
 
 
 }

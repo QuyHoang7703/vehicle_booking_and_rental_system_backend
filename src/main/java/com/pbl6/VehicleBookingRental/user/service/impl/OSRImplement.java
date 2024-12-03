@@ -78,7 +78,7 @@ public class OSRImplement implements OSRService {
             minutes = 0;
             hours ++;
         }
-        return String.format("%02d:%02d", hours, minutes);
+        return String.format("%02dh:%02dm", hours, minutes);
     }
 
 }

@@ -180,9 +180,16 @@ public class OrderServiceImpl implements OrderService {
         OrderBusTrip orderBusTrip = new OrderBusTrip();
         orderBusTrip.setId(orderBusTripRedisDTO.getId());
         orderBusTrip.setNumberOfTicket(orderBusTripRedisDTO.getNumberOfTicket());
+        orderBusTrip.setPricePerTicket(orderBusTripRedisDTO.getPricePerTicket());
         orderBusTrip.setPriceTotal(orderBusTripRedisDTO.getPriceTotal());
-        orderBusTrip.setDepartureDate(orderBusTripRedisDTO.getDepartureDate());
         orderBusTrip.setStatus(OrderStatusEnum.COMPLETED);
+        orderBusTrip.setDepartureLocation(orderBusTripRedisDTO.getDepartureLocation());
+        orderBusTrip.setArrivalLocation(orderBusTripRedisDTO.getArrivalLocation());
+        orderBusTrip.setJourneyDuration(orderBusTripRedisDTO.getJourneyDuration());
+        orderBusTrip.setDiscountPercentage(orderBusTripRedisDTO.getDiscountPercentage());
+        orderBusTrip.setDepartureTime(orderBusTripRedisDTO.getDepartureTime());
+        orderBusTrip.setDepartureDate(orderBusTripRedisDTO.getDepartureDate());
+
         orderBusTrip.setAccount(currentAccount);
 
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(orderBusTripRedisDTO.getBusTripScheduleId())

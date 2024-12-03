@@ -18,5 +18,5 @@ public interface BusTripService {
     ResultPaginationDTO getAllBusTrips(Specification<BusTrip> specification, Pageable pageable) throws ApplicationException;
     ResBusTripDTO.BusTripInfo convertToBusTripInfo(BusTrip busTrip);
     void deleteBusTrip(int busTripId) throws IdInvalidException, ApplicationException;
-    ResPickupAndDropOffLocation getPickupAndDropOffLocationById(int id) throws IdInvalidException;
+    ResPickupAndDropOffLocation getPickupAndDropOffLocationById(int id, String arrivalProvince) throws IdInvalidException, ApplicationException;
 }

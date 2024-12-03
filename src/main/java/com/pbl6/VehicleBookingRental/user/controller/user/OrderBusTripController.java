@@ -6,6 +6,7 @@ import com.pbl6.VehicleBookingRental.user.dto.redis.OrderBusTripRedisDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
 import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
+import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -38,6 +39,7 @@ public class OrderBusTripController {
     }
 
     @PatchMapping("/orderBusTrips/cancel-order/{orderId}")
+    @ApiMessage("Cancelled this order successfully")
     public ResponseEntity<Void> cancelOrder(@PathVariable("orderId") String orderId) throws ApplicationException, IdInvalidException {
         this.orderBusTripService.cancelOrderBusTrip(orderId);
         return ResponseEntity.status(HttpStatus.OK).body(null);

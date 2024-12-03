@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -27,12 +28,22 @@ public class OrderBusTrip {
 
     private int numberOfTicket;
 
+    private double pricePerTicket;
+
     private double priceTotal;
 
     private OrderStatusEnum status;
 
+    private String departureLocation;
+
+    private String arrivalLocation;
+
+    private double discountPercentage;
+
 //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
+    private LocalTime departureTime;
     private LocalDate departureDate;
+    private Duration journeyDuration;
 
 //    private Instant departureDateTime;
 //    private Instant arrivalDateTime;

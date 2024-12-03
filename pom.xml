@@ -76,6 +76,7 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
@@ -154,7 +155,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
-<!--			<version>2.15.0</version> &lt;!&ndash; Hoặc phiên bản mới nhất &ndash;&gt;-->
+			<version>2.18.2</version> <!-- Hoặc phiên bản mới nhất -->
 		</dependency>
 
 	</dependencies>

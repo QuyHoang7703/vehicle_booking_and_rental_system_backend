@@ -1,6 +1,8 @@
 package com.pbl6.VehicleBookingRental.user.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +45,8 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Autowired
     private final SecurityUtil securityUtil;
+    @Autowired
+    private final JacksonConfig jacksonConfig;
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
@@ -112,10 +117,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public boolean configureMessageConverters(List<MessageConverter> messageConverters) {
         DefaultContentTypeResolver resolver = new DefaultContentTypeResolver();
         resolver.setDefaultMimeType(APPLICATION_JSON);
+        ObjectMapper objectMapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+
+        // Đăng ký CustomInstantSerializer chỉ cho Instant
+        module.addSerializer( Instant.class, new CustomInstantSerializer());
+        objectMapper.registerModule(new JavaTimeModule()); // Đăng ký module cho Java 8 Time API
+        objectMapper.registerModule(module);
+
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        converter.setObjectMapper(new ObjectMapper());
+        converter.setObjectMapper(objectMapper);
         converter.setContentTypeResolver(resolver);
         messageConverters.add(converter);
+
         return false;
     }
 

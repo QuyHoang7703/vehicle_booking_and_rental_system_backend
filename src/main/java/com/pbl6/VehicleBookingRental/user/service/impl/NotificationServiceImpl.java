@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
     private final SimpMessagingTemplate messagingTemplate ;
     private final NotificationAccountRepo notificationAccountRepo;
-    private final NotificationRepo notificationRepo;
+
     @Override
     public void sendNotification(int recipientId, String recipientType, NotificationDTO notificationDTO) {
         messagingTemplate.convertAndSendToUser(
@@ -50,7 +50,7 @@ public class NotificationServiceImpl implements NotificationService {
                     notificationDTO.setTitle(notification.getTitle());
                     notificationDTO.setSeen(notification.isSeen());
                     notificationDTO.setMessage(notification.getMessage());
-                    notificationDTO.setCreate_at(notification.getCreate_at());
+                    notificationDTO.setCreate_at(notification.getCreate_at() !=null ? notification.getCreate_at().toInstant():null);
                     return notificationDTO;
                 }).collect(Collectors.toList());
     }

@@ -87,6 +87,9 @@ public class BusTypeServiceImpl implements BusTypeService {
         if(!busTypeDb.getBusPartner().equals(businessPartner.getBusPartner())) {
             throw new ApplicationException("You do not have permission to delete this bus type");
         }
+        if(busTypeDb.getBuses()!=null && !busTypeDb.getBuses().isEmpty()) {
+            throw new ApplicationException("This bus type has been used for other buses");
+        }
         this.busTypeRepository.delete(busTypeDb);
     }
 

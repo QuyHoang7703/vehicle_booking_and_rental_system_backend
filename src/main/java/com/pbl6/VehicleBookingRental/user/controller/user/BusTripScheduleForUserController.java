@@ -32,8 +32,9 @@ public class BusTripScheduleForUserController {
     @GetMapping("")
     public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleAvailableForUser(@Filter Specification<BusTripSchedule> spec,
                                                                                      Pageable pageable,
-                                                                                     @RequestParam(value = "departureDate", required = false) LocalDate departureDate) throws ApplicationException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable, departureDate));
+                                                                                     @RequestParam(value = "departureDate", required = false) LocalDate departureDate,
+                                                                                     @RequestParam("arrivalProvince") String arrivalProvince) throws ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable, departureDate, arrivalProvince));
     }
     @GetMapping("/policies/{businessPartnerId}")
     public ResponseEntity<List<String>> getPolicies(@PathVariable("businessPartnerId") int businessPartnerId) throws IdInvalidException {
@@ -50,9 +51,10 @@ public class BusTripScheduleForUserController {
         return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.getAllUtilityByBusId(busId));
     }
 
-    @GetMapping("/pickup-dropOff-locations/{busTripId}")
-    public ResponseEntity<ResPickupAndDropOffLocation> getPickupAndDropOffLocation(@PathVariable("busTripId") int busTripId) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.getPickupAndDropOffLocationById(busTripId));
+    @GetMapping("/pickup-dropOff-locations")
+    public ResponseEntity<ResPickupAndDropOffLocation> getPickupAndDropOffLocation(@RequestParam("busTripScheduleId") int busTripScheduleId,
+                                                                                   @RequestParam("arrivalProvince") String arrivalProvince) throws IdInvalidException, ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.getPickupAndDropOffLocationById(busTripScheduleId, arrivalProvince));
     }
 
     @GetMapping("/{busTripScheduleId}")

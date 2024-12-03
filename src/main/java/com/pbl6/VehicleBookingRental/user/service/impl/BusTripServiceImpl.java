@@ -24,12 +24,15 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class BusTripServiceImpl implements BusTripService {
     private final BusTripRepository busTripRepository;
     private final BusinessPartnerService businessPartnerService;
+    private final DropOffLocationRepository dropOffLocationRepository;
+    private final BusTripScheduleRepository busTripScheduleRepository;
     @Override
     public BusTrip createBusTrip(ReqBusTripDTO reqBusTripDTO) throws ApplicationException {
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
@@ -147,13 +150,19 @@ public class BusTripServiceImpl implements BusTripService {
     }
 
     @Override
-    public ResPickupAndDropOffLocation getPickupAndDropOffLocationById(int id) throws IdInvalidException {
-        BusTrip busTrip = this.busTripRepository.findById(id)
-                .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
-        String pickupLocations = busTrip.getPickupLocations();
+    public ResPickupAndDropOffLocation getPickupAndDropOffLocationById(int busTripScheduleId, String arrivalProvince) throws IdInvalidException, ApplicationException {
+        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(busTripScheduleId)
+                .orElseThrow(()-> new IdInvalidException("BusTripSchedule not found"));
+        String pickupLocations = busTripSchedule.getBusTrip().getPickupLocations();
         List<String> pickupLocationsToList = Arrays.asList(pickupLocations.split("!"));
+
+        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(arrivalProvince, busTripScheduleId)
+                .orElseThrow(()-> new ApplicationException("DropOffLocation not found"));
+
+        List<String> dropOffLocationToList = Arrays.asList(dropOffLocation.getDropOffLocation().split("!"));
         ResPickupAndDropOffLocation res = ResPickupAndDropOffLocation.builder()
                 .pickupLocations(pickupLocationsToList)
+                .dropOffLocations(dropOffLocationToList)
                 .build();
         return res;
     }

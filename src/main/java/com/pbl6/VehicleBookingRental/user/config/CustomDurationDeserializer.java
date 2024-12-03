@@ -14,10 +14,10 @@ public class CustomDurationDeserializer extends JsonDeserializer<Duration> {
     public Duration deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
         String value = jsonParser.getText().trim();
         // Check value with suitable format "HH:mm"
-        if(value.matches("\\d{2}:\\d{2}")){
+        if(value.matches("\\d{2}h:\\d{2}m")){
             String[] parts = value.split(":");
-            int hours = Integer.parseInt(parts[0]);
-            int minutes = Integer.parseInt(parts[1]);
+            int hours = Integer.parseInt(parts[0].replace("h", ""));
+            int minutes = Integer.parseInt(parts[1].replace("m", ""));
             return Duration.ofHours(hours).plusMinutes(minutes);
         }
         // Nếu chuỗi không phải định dạng "HH:mm", ném ngoại lệ

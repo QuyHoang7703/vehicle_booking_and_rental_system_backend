@@ -75,19 +75,23 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
 
         OrderBusTripRedisDTO orderBusTripRedis = new OrderBusTripRedisDTO();
+
         orderBusTripRedis.setId(orderId);
-        orderBusTripRedis.setNumberOfTicket(reqOrderBusTripDTO.getNumberOfTicket());
-        orderBusTripRedis.setDepartureDate(reqOrderBusTripDTO.getDepartureDate());
-        orderBusTripRedis.setPriceTotal(reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket());
-        orderBusTripRedis.setAccount_Id(currentAccount.getId());
-        orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
         orderBusTripRedis.setCustomerName(reqOrderBusTripDTO.getCustomerName());
         orderBusTripRedis.setCustomerPhoneNumber(reqOrderBusTripDTO.getCustomerPhoneNumber());
+        orderBusTripRedis.setAccount_Id(currentAccount.getId());
+        orderBusTripRedis.setNumberOfTicket(reqOrderBusTripDTO.getNumberOfTicket());
+        orderBusTripRedis.setPricePerTicket(dropOffLocation.getPriceTicket());
+        orderBusTripRedis.setPriceTotal(reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket());
+        orderBusTripRedis.setDepartureLocation(busTripSchedule.getBusTrip().getDepartureLocation());
+        orderBusTripRedis.setArrivalLocation(dropOffLocation.getProvince());
+        orderBusTripRedis.setDepartureTime(busTripSchedule.getDepartureTime());
+        orderBusTripRedis.setDepartureDate(reqOrderBusTripDTO.getDepartureDate());
+        orderBusTripRedis.setJourneyDuration(dropOffLocation.getJourneyDuration());
+        orderBusTripRedis.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
+        orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
         orderBusTripRedis.setOrderDate(Instant.now());
 
-//        String redisKeyOrder = "order:" + currentAccount.getEmail();
-//        redisService.setHashSet(redisKeyOrder, orderId, orde);
-        // Save orderBusTrip trong redis
         String redisKeyOrderBusTrip = "order:" + currentAccount.getEmail()
                 + "-" + "BUS_TRIP"
                 + "-" + orderId
@@ -248,6 +252,10 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
             throw new ApplicationException("You don't have permission to cancel this order bus trip");
         }
 
+        if(orderBusTrip.getStatus().equals(OrderStatusEnum.CANCELLED)) {
+            throw new ApplicationException("Order Bus Trip cancelled");
+        }
+
         // Lấy ngày và giờ khởi hành của chuyến xe
         LocalDate departureDate = orderBusTrip.getDepartureDate();
         LocalTime departureTime = orderBusTrip.getBusTripSchedule().getDepartureTime();
@@ -336,16 +344,16 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
         BusTripSchedule busTripSchedule = orderBusTrip.getBusTripSchedule();
 
-//        double pricePerTicket = busTripSchedule.getPriceTicket();
-//        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
-        double discountPercentage = busTripSchedule.getDiscountPercentage();
-//        if(discountPercentage != 0.0){
-//            priceTotal = priceTotal * (1 - discountPercentage/100);
-//        }
+        double pricePerTicket = orderBusTrip.getPricePerTicket();
+        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
+        double discountPercentage = orderBusTrip.getDiscountPercentage();
+        if(discountPercentage != 0.0){
+            priceTotal = priceTotal * (1 - discountPercentage/100);
+        }
 
-//        orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
-//        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(priceTotal));
-        orderInfo.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
+        orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
+        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(priceTotal));
+        orderInfo.setDiscountPercentage(discountPercentage);
 
         return orderInfo;
     }
@@ -356,21 +364,20 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         // Create trip info
         ResOrderBusTripDTO.TripInfo tripInfo = ResOrderBusTripDTO.TripInfo.builder()
                 .id(orderBusTrip.getBusTripSchedule().getBusTrip().getId())
-                .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
-                .arrivalLocation(busTripSchedule.getBusTrip().getArrivalLocation())
+                .departureLocation(orderBusTrip.getDepartureLocation())
+                .arrivalLocation(orderBusTrip.getArrivalLocation())
                 .build();
 
         // Calculate departureDateTime
-        LocalTime localTime = busTripSchedule.getDepartureTime();
+        LocalTime localTime = orderBusTrip.getDepartureTime();
         LocalDate localDate = orderBusTrip.getDepartureDate();
         Instant departureDateTime = this.changeInstant(localDate, localTime);
         tripInfo.setDepartureDateTime(departureDateTime);
 
-//        Duration duration = busTripSchedule.getBusTrip().getDurationJourney();
-//        tripInfo.setDurationJourney(duration);
-//        Instant arrivalDateTime = departureDateTime.plus(duration);
-//        tripInfo.setArrivalDateTime(arrivalDateTime);
-
+        Duration duration = orderBusTrip.getJourneyDuration();
+        tripInfo.setDurationJourney(duration);
+        Instant arrivalDateTime = departureDateTime.plus(duration);
+        tripInfo.setArrivalDateTime(arrivalDateTime);
 
         return tripInfo;
     }

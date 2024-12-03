@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 // For admin
 public class ResBusTripScheduleDetailForAdminDTO {
-    private int idBusTripSchedule;
+    private int busTripScheduleId;
     private ResBusTripDTO.BusTripInfo busTripInfo;
     private BusInfo busInfo;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")

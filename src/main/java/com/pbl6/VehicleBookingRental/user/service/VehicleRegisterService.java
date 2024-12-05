@@ -38,6 +38,8 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     private ImageService imageService;
     @Autowired
     private ImageRepository imageRepository;
+    @Autowired
+    private  BusinessPartnerService businessPartnerService;
     @Override
     public VehicleType findVehicleTypeById(int id) {
         return vehicleTypeRepo.findById(id).orElse(null);
@@ -178,53 +180,52 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     }
 
     @Override
-    public List<VehicleRentalServiceDTO> filter_by_vehicle_attribute(String location, String manufacturer, String vehicle_type) {
+    public List<VehicleRentalServiceDTO> filter_by_vehicle_attribute(String location, String manufacturer, String vehicle_type,int service_type) {
         List<VehicleRentalServiceDTO> vehicleRentalServiceDTOList = new ArrayList<>();
-        System.out.println(location);
-        System.out.println(manufacturer);
-        System.out.println(vehicle_type);
         List<VehicleRegister> vehicleRegisterList =
                 vehicleRegisterRepository.findVehicleRegisterByLocationOrManufacturerOrVehicleType_Name
                         (location,manufacturer,vehicle_type);
-//        System.out.println(vehicleRegisterList);
 
         for(VehicleRegister vehicleRegister : vehicleRegisterList){
             List<CarRentalService> carRentalServiceList = vehicleRegister.getTypeOfRentalServiceList();
 
             for(CarRentalService carRentalService : carRentalServiceList){
-                VehicleRentalServiceDTO vehicleRentalServiceDTO = new VehicleRentalServiceDTO();
+                //Lấy ra các car_ rental_service bằng service_type, value = 2 thì lấy cả hai
+                if(service_type == 2 || carRentalService.getType() == service_type){
+                    VehicleRentalServiceDTO vehicleRentalServiceDTO = new VehicleRentalServiceDTO();
 
-                // Thiết lập các thuộc tính từ đối tượng VehicleRegister
-                vehicleRentalServiceDTO.setManufacturer(vehicleRegister.getManufacturer());
-                vehicleRentalServiceDTO.setDescription(vehicleRegister.getDescription());
-                vehicleRentalServiceDTO.setQuantity(vehicleRegister.getQuantity());
-                vehicleRentalServiceDTO.setStatus(vehicleRegister.getStatus());
-                vehicleRentalServiceDTO.setDate_of_status(vehicleRegister.getDate_of_status());
-                vehicleRentalServiceDTO.setDiscount_percentage(vehicleRegister.getDiscount_percentage());
-                vehicleRentalServiceDTO.setCar_deposit(vehicleRegister.getCar_deposit());
-                vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
-                vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
-                vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
-                vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
-                vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
-                vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
-                vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
-                vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
-                vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
-                List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
-                List<String> imagePaths = Optional.ofNullable(images)
-                        .orElse(Collections.emptyList())
-                        .stream()
-                        .map(image->{
-                            return image.getPathImage();
-                        }).collect(Collectors.toList());
-                vehicleRentalServiceDTO.setImagesVehicleRegister(imagePaths);
-                //
-                vehicleRentalServiceDTO.setId(carRentalService.getId());
-                vehicleRentalServiceDTO.setPrice(carRentalService.getPrice());
-                vehicleRentalServiceDTO.setType(carRentalService.getType());
+                    // Thiết lập các thuộc tính từ đối tượng VehicleRegister
+                    vehicleRentalServiceDTO.setManufacturer(vehicleRegister.getManufacturer());
+                    vehicleRentalServiceDTO.setDescription(vehicleRegister.getDescription());
+                    vehicleRentalServiceDTO.setQuantity(vehicleRegister.getQuantity());
+                    vehicleRentalServiceDTO.setStatus(vehicleRegister.getStatus());
+                    vehicleRentalServiceDTO.setDate_of_status(vehicleRegister.getDate_of_status());
+                    vehicleRentalServiceDTO.setDiscount_percentage(vehicleRegister.getDiscount_percentage());
+                    vehicleRentalServiceDTO.setCar_deposit(vehicleRegister.getCar_deposit());
+                    vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
+                    vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
+                    vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
+                    vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
+                    vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
+                    vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
+                    vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
+                    vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
+                    vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
+                    List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
+                    List<String> imagePaths = Optional.ofNullable(images)
+                            .orElse(Collections.emptyList())
+                            .stream()
+                            .map(image->{
+                                return image.getPathImage();
+                            }).collect(Collectors.toList());
+                    vehicleRentalServiceDTO.setImagesVehicleRegister(imagePaths);
+                    //
+                    vehicleRentalServiceDTO.setId(carRentalService.getId());
+                    vehicleRentalServiceDTO.setPrice(carRentalService.getPrice());
+                    vehicleRentalServiceDTO.setType(carRentalService.getType());
 
-                vehicleRentalServiceDTOList.add(vehicleRentalServiceDTO);
+                    vehicleRentalServiceDTOList.add(vehicleRentalServiceDTO);
+                }
               }
         }
 

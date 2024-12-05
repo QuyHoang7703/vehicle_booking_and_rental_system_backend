@@ -87,6 +87,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
 
                 // Thiết lập các thuộc tính từ đối tượng VehicleRegister
                 vehicleRentalServiceDTO.setManufacturer(vehicleRegister.getManufacturer());
+                vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
                 vehicleRentalServiceDTO.setDescription(vehicleRegister.getDescription());
                 vehicleRentalServiceDTO.setQuantity(vehicleRegister.getQuantity());
                 vehicleRentalServiceDTO.setStatus(vehicleRegister.getStatus());
@@ -128,6 +129,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             Optional<VehicleRegister> vehicleRegister = vehicleRegisterRepository.findById(carRentalService.get().getVehicleRegister().getId());
             if(vehicleRegister.isPresent()){
                 vehicleRegister.get().setVehicleType(vehicleType.get());
+                vehicleRegister.get().setVehicle_life(vehicleRentalServiceDTO.getVehicleLife());
                 vehicleRegister.get().setManufacturer(vehicleRentalServiceDTO.getManufacturer());
                 vehicleRegister.get().setDescription(vehicleRentalServiceDTO.getDescription());
                 vehicleRegister.get().setQuantity(vehicleRentalServiceDTO.getQuantity());
@@ -234,14 +236,14 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
         // Khởi tạo danh sách DTO để lưu kết quả trả về
         List<VehicleRentalServiceDTO> vehicleRentalServiceDTOList = new ArrayList<>();
         List<CarRentalService> carRentalServiceList = new ArrayList<>();
-        if(car_rental_partner_id != -1) { // List cho khach hang
+        if(car_rental_partner_id != -1 ) { // List cho khach hang
             // Lấy danh sách CarRentalService theo điều kiện status
-            carRentalServiceList = status.equals("all")
+            carRentalServiceList = (serviceType == 2)
                     ? vehicleRentalServiceRepo.findAllByVehicleRegister_CarRentalPartner_Id(car_rental_partner_id)
                     : vehicleRentalServiceRepo.findCarRentalServiceByTypeAndVehicleRegister_StatusAndVehicleRegister_CarRentalPartner_Id
                                                 (serviceType, status, car_rental_partner_id);
         }else{
-            carRentalServiceList = status.equals("all")
+            carRentalServiceList = (serviceType == 2)
                     ? vehicleRentalServiceRepo.findAll()
                     : vehicleRentalServiceRepo.findCarRentalServiceByTypeAndVehicleRegister_Status
                                                 (serviceType, status);

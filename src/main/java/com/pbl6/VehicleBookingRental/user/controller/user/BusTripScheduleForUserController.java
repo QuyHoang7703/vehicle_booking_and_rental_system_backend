@@ -58,9 +58,11 @@ public class BusTripScheduleForUserController {
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.getPickupAndDropOffLocationById(busTripScheduleId, arrivalProvince));
     }
 
-    @GetMapping("/{busTripScheduleId}")
-    public ResponseEntity<ResBusTripScheduleDTO> getBusTripScheduleById(@PathVariable("busTripScheduleId") int busTripScheduleId) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleByIdForUser(busTripScheduleId));
+    @GetMapping("/detail")
+    public ResponseEntity<ResBusTripScheduleDTO> getBusTripScheduleById(@RequestParam("busTripScheduleId") int busTripScheduleId,
+                                                                        @RequestParam("departureDate") LocalDate departureDate,
+                                                                        @RequestParam("arrivalProvince") String arrivalProvince) throws Exception {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleByIdForUser(busTripScheduleId, departureDate, arrivalProvince));
     }
 
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 
 import java.sql.Timestamp;
+import java.time.Instant;
 
 @Entity
 @Table(name = "rating")
@@ -18,20 +19,29 @@ public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
-    private Timestamp createAt;
-    private String ratableValue;
-    private String content;
-
-
+    private int ratingValue;
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String comment;
     private String orderType;
+    private Instant createAt;
+    private Instant updateAt;
 
-    @OneToOne
-    @JoinColumn(name = "ratable_id", unique = true)
+    @PrePersist
+    public void prePersist() {
+        this.createAt = Instant.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updateAt = Instant.now();
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
     private Orders order; // Giả sử bạn đã có lớp Order
 
     @ManyToOne
-    @JoinColumn(name = "account_id", insertable = false, updatable = false)
+    @JoinColumn(name = "account_id")
     private Account account;
 }
 

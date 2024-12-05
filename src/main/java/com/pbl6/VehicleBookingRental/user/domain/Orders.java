@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name="orders")
@@ -19,7 +20,6 @@ import java.util.Date;
 public class Orders {
     @Id
     private String id;
-//    private Date create_at;
     private String order_type;
     private Instant create_at;
     private String customerName;
@@ -41,9 +41,9 @@ public class Orders {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment;
 
-    // Mối quan hệ 1-1 với Rating
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
-    private Rating rating;
+    // Mối quan hệ 1-nhiều với Rating
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<Rating> ratings;
 
     @PrePersist
     public void prePersist(){

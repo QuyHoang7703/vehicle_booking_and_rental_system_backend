@@ -101,6 +101,7 @@ public class SecurityConfiguration {
 //                                .requestMatchers("/", "/api/v1/auth/**", "/identity/auth/outbound/authentication","/ws/**").permitAll()
                                 .requestMatchers(whiteList).permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/vn-pay-callback/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/ratings").permitAll()
                                 .requestMatchers("/api/v1/auth/logout").authenticated()
                                 .anyRequest().authenticated()
                                 )

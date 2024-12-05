@@ -99,7 +99,10 @@ public class BusServiceImpl implements BusService {
         if(busImages != null && !busImages.isEmpty()) {
             List<String> currentUrlImages = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), busDb.getId())
                     .stream().map(Images::getPathImage).toList();
+            // Delete images of bus in AWS S3
             this.s3Service.deleteFiles(currentUrlImages);
+            // Delete images of bus in Images (Database)
+            this.imageService.deleteImages(busDb.getId(), String.valueOf(ImageOfObjectEnum.BUS));
             this.imageService.uploadAndSaveImages(busImages, String.valueOf(ImageOfObjectEnum.BUS), busDb.getId(), String.valueOf(ImageOfObjectEnum.BUS));
         }
 

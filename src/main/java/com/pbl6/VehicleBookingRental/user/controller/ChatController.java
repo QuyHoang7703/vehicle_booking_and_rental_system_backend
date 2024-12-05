@@ -111,4 +111,12 @@ public class ChatController {
     ResponseEntity<?> getMessageByConversationId(@RequestParam("conversation_id") int conversation_id){
         return ResponseEntity.status(HttpStatus.OK).body(chatMessageService.getMessagesByConversationId(conversation_id));
     }
+    @PutMapping("/chat/update-message")
+    public ResponseEntity<?> updateMessageApi (@RequestBody MessageDTO messageDTO){
+        boolean result = chatMessageService.updateMessageIndependent(messageDTO);
+        if(result){
+            return ResponseEntity.status(HttpStatus.OK).body("Update message successfully");
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("Update message failed");
+    }
 }

@@ -132,6 +132,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                         //get last message and SendAt in conversation
                         MessageDTO lastMessage = lastMessageOfConversation(conversationAccount.getConversation().getId());
                         if (lastMessage != null) {
+                            sideBarDTO.setLastMessageId(lastMessage.getId());
                             // Cập nhật thông tin `sendAt`
                             sideBarDTO.setSendAt(lastMessage.getSendAt());
                             sideBarDTO.setSeen(lastMessage.isSeen());
@@ -228,6 +229,54 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
         return messageDTO;
     }
+    @Override
+    public boolean updateMessageIndependent(MessageDTO messageDTO) {
+        Optional<Message> message = messageRepo.findById(messageDTO.getId());
+        if(message.isPresent()){
+            try{
+                // Cập nhật chỉ khi giá trị mới có
+                if (messageDTO.getContent() != null) {
+                    message.get().setContent(messageDTO.getContent());
+                }
+
+                if (messageDTO.isSeen() != message.get().isSeen()) {
+                    message.get().setSeen(messageDTO.isSeen());
+                }
+
+                if (messageDTO.getSendAt() != null) {
+                    message.get().setSendAt(
+                            new Date(messageDTO.getSendAt().toEpochMilli()));
+                }
+
+                if (messageDTO.getSeen_at() != null) {
+                    message.get().setSeen_at(
+                            new Date(messageDTO.getSeen_at().toEpochMilli()));
+                }
+
+                // Cập nhật senderType và senderId chỉ khi có sự thay đổi
+                if (messageDTO.getSender_type() != null) {
+                    message.get().setSender_type(messageDTO.getSender_type());
+                }
+
+                if (messageDTO.getSenderId() != 0) {
+                    message.get().setSenderId(messageDTO.getSenderId());
+                }
+
+                // Cập nhật Conversation nếu có
+                Optional<Conversation> conversation = conversationRepo.findById(messageDTO.getConversation_id());
+                if(conversation.isPresent()){
+                    message.get().setConversation(conversation.get());
+                }
+
+                messageRepo.save(message.get());
+                return true;
+            } catch (Exception e) {
+                System.out.println(e.getLocalizedMessage());
+                return false;
+            }
+        }
+        return false;
+    }
 
     @Override
     @Transactional
@@ -290,5 +339,4 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     return messageDTO;
                 }).collect(Collectors.toList());
     }
-
 }

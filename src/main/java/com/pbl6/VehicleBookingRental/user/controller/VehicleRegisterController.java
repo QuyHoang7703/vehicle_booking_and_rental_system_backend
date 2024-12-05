@@ -25,7 +25,7 @@ public class VehicleRegisterController {
     @GetMapping("/all")
     public ResponseEntity<?> get_all_by_service_type(@RequestParam("service_type") int service_type,
                                                      @RequestParam("status")String status,
-                                                     @RequestParam("car_rental_partner_id") int car_rental_partner_id)
+                                                     @RequestParam(value="car_rental_partner_id",required = false) int car_rental_partner_id)
     {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.get_all_by_service_type(service_type,status,car_rental_partner_id));
     }

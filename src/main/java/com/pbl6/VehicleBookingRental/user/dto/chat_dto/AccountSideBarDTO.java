@@ -6,6 +6,7 @@ import java.time.Instant;
 
 @Data
 public class AccountSideBarDTO {
+    private int lastMessageId;
     private int accountId;
     private int conversationId;
     private String nameRepresentation;

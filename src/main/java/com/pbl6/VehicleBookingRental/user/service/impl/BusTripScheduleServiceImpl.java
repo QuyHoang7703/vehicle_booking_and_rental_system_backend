@@ -13,6 +13,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDet
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BreakDayRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.busPartner.DropOffLocationRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
@@ -54,6 +55,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BusinessPartnerService businessPartnerService;
     private final ImageRepository imageRepository;
     private final OrderBusTripRepository orderBusTripRepository;
+    private final DropOffLocationRepository dropOffLocationRepository;
 
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
@@ -300,11 +302,11 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
-    public ResBusTripScheduleDTO getBusTripScheduleByIdForUser(int busTripScheduleId) throws IdInvalidException {
+    public ResBusTripScheduleDTO getBusTripScheduleByIdForUser(int busTripScheduleId, LocalDate departureDate, String arrivalProvince) throws IdInvalidException, ApplicationException {
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(busTripScheduleId)
                 .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
 
-        return this.convertToResBusTripScheduleDTO(busTripSchedule, null);
+        return this.convertToResBusTripScheduleDTO2(busTripSchedule, departureDate, arrivalProvince).get(0);
     }
 
     // @Scheduled(cron = "0 0 0 * * ?")
@@ -349,63 +351,60 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
 
-    public List<ResBusTripScheduleDTO> convertToResBusTripScheduleDTO2(BusTripSchedule busTripSchedule, LocalDate departureDate, String arrivalProvince) throws IdInvalidException {
+    public List<ResBusTripScheduleDTO> convertToResBusTripScheduleDTO2(BusTripSchedule busTripSchedule, LocalDate departureDate, String arrivalProvince) throws IdInvalidException, ApplicationException {
         List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = new ArrayList<>();
 
         List<DropOffLocation> dropOffLocations = busTripSchedule.getBusTrip().getDropOffLocations();
 
-        for(DropOffLocation dropOffLocation : dropOffLocations) {
-            if(!dropOffLocation.getProvince().equals(arrivalProvince)) {
-                continue;
-            }
-            // Create bus info
-            Bus bus = busTripSchedule.getBus();
-            Images imageOfBus = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), bus.getId()).get(0);
-            ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo = ResBusTripScheduleDetailForAdminDTO.BusInfo.builder()
-                    .licensePlate(bus.getLicensePlate())
-                    .imageRepresentative(imageOfBus.getPathImage())
-                    .busType(bus.getBusType())
-                    .build();
+        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(arrivalProvince, busTripSchedule.getId())
+                .orElseThrow(() -> new ApplicationException("Drop off location not found"));
 
-            // Create busTrip info
-            ResBusTripDTO.BusTripInfo busTripInfo = ResBusTripDTO.BusTripInfo.builder()
-                    .id(busTripSchedule.getBusTrip().getId())
-                    .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
-                    .arrivalLocation(dropOffLocation.getProvince())
+        // Create bus info
+        Bus bus = busTripSchedule.getBus();
+        Images imageOfBus = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), bus.getId()).get(0);
+        ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo = ResBusTripScheduleDetailForAdminDTO.BusInfo.builder()
+                .licensePlate(bus.getLicensePlate())
+                .imageRepresentative(imageOfBus.getPathImage())
+                .busType(bus.getBusType())
+                .build();
+
+        // Create busTrip info
+        ResBusTripDTO.BusTripInfo busTripInfo = ResBusTripDTO.BusTripInfo.builder()
+                .id(busTripSchedule.getBusTrip().getId())
+                .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
+                .arrivalLocation(dropOffLocation.getProvince())
 //                    .durationJourney(busTripSchedule.getBusTrip().getDurationJourney())
-                    .build();
+                .build();
 
-            // Create busPartner info
-            ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = ResBusTripScheduleDTO.BusinessPartnerInfo.builder()
-                    .id(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getId())
-                    .name(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getBusinessName())
-                    .accountId(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getAccount().getId())
-                    .build();
+        // Create busPartner info
+        ResBusTripScheduleDTO.BusinessPartnerInfo businessPartnerInfo = ResBusTripScheduleDTO.BusinessPartnerInfo.builder()
+                .id(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getId())
+                .name(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getBusinessName())
+                .accountId(busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getAccount().getId())
+                .build();
 
-            int availableNumberOfSeats = this.getAvailableNumberOfSeatsByDepartureDate(busTripSchedule, departureDate);
+        int availableNumberOfSeats = this.getAvailableNumberOfSeatsByDepartureDate(busTripSchedule, departureDate);
 
-            ResBusTripScheduleDTO res = ResBusTripScheduleDTO.builder()
-                    .busTripScheduleId(busTripSchedule.getId())
-                    .businessPartnerInfo(businessPartnerInfo)
-                    .busInfo(busInfo)
-                    .busTripInfo(busTripInfo)
-                    .departureTime(busTripSchedule.getDepartureTime())
-                    .journeyDuration(dropOffLocation.getJourneyDuration())
-                    .discountPercentage(busTripSchedule.getDiscountPercentage())
-                    .priceTicket(CurrencyFormatterUtil.formatToVND(dropOffLocation.getPriceTicket()))
-                    .arrivalTime(busTripSchedule.getDepartureTime().plus(dropOffLocation.getJourneyDuration()))
-                    .availableSeats(availableNumberOfSeats)
-                    .isOperation(busTripSchedule.isOperation())
-                    .journey(String.format("Vé thuộc chặng chuyến %s %s %s - %s",
-                            busTripSchedule.getDepartureTime(),
-                            DateTimeFormatter.ofPattern("dd-MM-yyyy").format(departureDate),
-                            busTripInfo.getDepartureLocation(),
-                            busTripSchedule.getBusTrip().getArrivalLocation()))
-                    .build();
-            resBusTripScheduleDTOS.add(res);
-        }
-
-
+        ResBusTripScheduleDTO res = ResBusTripScheduleDTO.builder()
+                .busTripScheduleId(busTripSchedule.getId())
+                .businessPartnerInfo(businessPartnerInfo)
+                .busInfo(busInfo)
+                .busTripInfo(busTripInfo)
+                .departureTime(busTripSchedule.getDepartureTime())
+                .journeyDuration(dropOffLocation.getJourneyDuration())
+                .discountPercentage(busTripSchedule.getDiscountPercentage())
+                .priceTicket(CurrencyFormatterUtil.formatToVND(dropOffLocation.getPriceTicket()))
+                .arrivalTime(busTripSchedule.getDepartureTime().plus(dropOffLocation.getJourneyDuration()))
+                .availableSeats(availableNumberOfSeats)
+                .isOperation(busTripSchedule.isOperation())
+                .ratingTotal(busTripSchedule.getRatingTotal())
+                .journey(String.format("Vé thuộc chặng chuyến %s %s %s - %s",
+                        busTripSchedule.getDepartureTime(),
+                        DateTimeFormatter.ofPattern("dd-MM-yyyy").format(departureDate),
+                        busTripInfo.getDepartureLocation(),
+                        busTripSchedule.getBusTrip().getArrivalLocation()))
+                .build();
+        resBusTripScheduleDTOS.add(res);
 
         return resBusTripScheduleDTOS;
     }

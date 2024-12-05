@@ -32,6 +32,7 @@ public class ResBusTripScheduleDTO {
     private int availableSeats;
     private boolean isOperation;
     private String journey;
+    private double ratingTotal;
 
     @Data
     @Builder

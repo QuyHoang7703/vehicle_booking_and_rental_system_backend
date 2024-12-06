@@ -19,7 +19,7 @@ public class ResBusTripScheduleDTO {
     private BusinessPartnerInfo businessPartnerInfo;
 
     private ResBusTripDTO.BusTripInfo busTripInfo;
-    private ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo;
+    private ResBusTripScheduleForAdminDTO.BusInfo busInfo;
 //    private ResBusDTO busInfo;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")

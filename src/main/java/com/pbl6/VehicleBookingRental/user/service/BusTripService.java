@@ -13,10 +13,10 @@ import org.springframework.data.jpa.domain.Specification;
 public interface BusTripService {
     public BusTrip createBusTrip(ReqBusTripDTO reqBusTripDTO) throws ApplicationException;
     public BusTrip updateBusTrip(ReqBusTripDTO reqBusTripDTO) throws IdInvalidException, ApplicationException;
-    public ResBusTripDTO findBusTripById(int id) throws IdInvalidException;
-    ResBusTripDTO convertToResBusTripDTO(BusTrip busTrip);
+    public ResBusTripDTO findBusTripById(int id) throws IdInvalidException, ApplicationException;
+    ResBusTripDTO convertToResBusTripDTO(BusTrip busTrip) throws ApplicationException;
     ResultPaginationDTO getAllBusTrips(Specification<BusTrip> specification, Pageable pageable) throws ApplicationException;
-    ResBusTripDTO.BusTripInfo convertToBusTripInfo(BusTrip busTrip);
+    ResBusTripDTO.BusTripInfo convertToBusTripInfo(BusTrip busTrip) throws ApplicationException;
     void deleteBusTrip(int busTripId) throws IdInvalidException, ApplicationException;
     ResPickupAndDropOffLocation getPickupAndDropOffLocationById(int id, String arrivalProvince) throws IdInvalidException, ApplicationException;
 }

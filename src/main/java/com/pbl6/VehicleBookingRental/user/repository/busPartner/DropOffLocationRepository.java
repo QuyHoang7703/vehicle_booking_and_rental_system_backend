@@ -19,4 +19,6 @@ public interface DropOffLocationRepository extends JpaRepository<DropOffLocation
             "AND bts.id = :busTripScheduleId")
     Optional<DropOffLocation> findByProvinceAndBusTripScheduleId(@Param("province") String province,
                                                                  @Param("busTripScheduleId") int busTripScheduleId);
+
+    Optional<DropOffLocation> findByProvinceAndBusTripId(String province, int busTripId);
 }

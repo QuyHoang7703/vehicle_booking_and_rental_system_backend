@@ -89,7 +89,6 @@ public class SecurityConfiguration {
                 "/user/vehicle-register/get-exist-filter-properties",
                 "/api/v1/user/busTripSchedules/**",
                 "/user/vehicle-register/filters-rental-service",
-                "api/v1/vehicle-types-all",
                 "api/v1/bus-partner/businessName"
         };
         http
@@ -102,6 +101,7 @@ public class SecurityConfiguration {
                                 .requestMatchers(whiteList).permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/vn-pay-callback/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/ratings").permitAll()
+                                .requestMatchers(HttpMethod.GET, "api/v1/vehicle-types/**").permitAll()
                                 .requestMatchers("/api/v1/auth/logout").authenticated()
                                 .anyRequest().authenticated()
                                 )

@@ -33,17 +33,17 @@ public class BusTripController {
 
     @PutMapping("busTrips")
     @ApiMessage("Updated bus trip")
-    public ResponseEntity<ResBusTripDTO> updateBusTrip(@RequestBody ReqBusTripDTO reqBusTripDTO) throws IdInvalidException, ApplicationException {
+    public ResponseEntity<ResBusTripDTO> updateBusTrip(@RequestBody ReqBusTripDTO reqBusTripDTO) throws Exception {
         BusTrip busTrip = busTripService.updateBusTrip(reqBusTripDTO);
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.convertToResBusTripDTO(busTrip));
     }
 
-    @GetMapping("busTrips")
-    public ResponseEntity<ResBusTripDTO> getBusTripById(@RequestParam("idBusTrip") int idBusTrip) throws IdInvalidException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.findBusTripById(idBusTrip));
+    @GetMapping("busTrips/{busTripId}")
+    public ResponseEntity<ResBusTripDTO> getBusTripById(@PathVariable("busTripId") int busTripId) throws Exception {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.findBusTripById(busTripId));
     }
 
-    @GetMapping("busTrips-all")
+    @GetMapping("busTrips")
     public ResponseEntity<ResultPaginationDTO> getAllBusTrips(@Filter Specification<BusTrip> spec, Pageable pageable ) throws ApplicationException {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.getAllBusTrips(spec, pageable));

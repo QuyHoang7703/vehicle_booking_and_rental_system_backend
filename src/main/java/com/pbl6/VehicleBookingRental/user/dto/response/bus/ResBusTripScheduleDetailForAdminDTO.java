@@ -16,7 +16,7 @@ import java.util.List;
 public class ResBusTripScheduleDetailForAdminDTO {
     private int busTripScheduleId;
     private ResBusTripDTO.BusTripInfo busTripInfo;
-    private BusInfo busInfo;
+    private ResBusTripScheduleForAdminDTO.BusInfo busInfo;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime departureTime;
 //    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
@@ -29,13 +29,13 @@ public class ResBusTripScheduleDetailForAdminDTO {
     private List<BreakDay> breakDays;
     private boolean isOperation;
 
-    @Data
-    @Builder
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public static class BusInfo{
-        private String licensePlate;
-        private String imageRepresentative;
-        private BusType busType;
-    }
+//    @Data
+//    @Builder
+//    @JsonInclude(JsonInclude.Include.NON_NULL)
+//    public static class BusInfo{
+//        private String licensePlate;
+//        private String imageRepresentative;
+//        private BusType busType;
+//    }
 
 }

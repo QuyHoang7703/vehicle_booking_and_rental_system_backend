@@ -7,10 +7,12 @@ import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResDropOffLocationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResPickupAndDropOffLocation;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.*;
 import com.pbl6.VehicleBookingRental.user.service.BusTripService;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
+import com.pbl6.VehicleBookingRental.user.service.DropOffLocationService;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -33,14 +35,19 @@ public class BusTripServiceImpl implements BusTripService {
     private final BusinessPartnerService businessPartnerService;
     private final DropOffLocationRepository dropOffLocationRepository;
     private final BusTripScheduleRepository busTripScheduleRepository;
+    private final DropOffLocationService dropOffLocationService;
     @Override
     public BusTrip createBusTrip(ReqBusTripDTO reqBusTripDTO) throws ApplicationException {
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
 
-        List<BusTrip> busTrips = this.busTripRepository.findBusTripByDepartureLocationAndArrivalLocation(businessPartner.getBusPartner().getId(),
-                reqBusTripDTO.getDepartureLocation(), reqBusTripDTO.getArrivalLocation());
+        // Check new bus trip has already existed in the account bus partner
+        BusTrip busTrips = this.busTripRepository.findBusTripByDepartureLocationAndArrivalLocationAndBusPartner(
+                businessPartner.getBusPartner().getId(),
+                reqBusTripDTO.getDepartureLocation(),
+                reqBusTripDTO.getArrivalLocation())
+                .orElse(null);
 
-        if(busTrips!=null && !busTrips.isEmpty()) {
+        if(busTrips!=null) {
             throw new ApplicationException("This bus trip already exists");
         }
 
@@ -76,22 +83,27 @@ public class BusTripServiceImpl implements BusTripService {
     }
 
     @Override
-    public ResBusTripDTO findBusTripById(int id) throws IdInvalidException {
+    public ResBusTripDTO findBusTripById(int id) throws IdInvalidException, ApplicationException {
         BusTrip busTripDb = this.busTripRepository.findById(id)
                 .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
         return this.convertToResBusTripDTO(busTripDb);
     }
 
     @Override
-    public ResBusTripDTO convertToResBusTripDTO(BusTrip busTrip) {
+    public ResBusTripDTO convertToResBusTripDTO(BusTrip busTrip) throws ApplicationException {
         String pickupLocations = busTrip.getPickupLocations();
         List<String> pickupLocationsToList = Arrays.asList(pickupLocations.split("!"));
 
         ResBusTripDTO.BusTripInfo busTripInfo = this.convertToBusTripInfo(busTrip);
 
+        List<ResDropOffLocationDTO> dropOffLocationDTOS = busTrip.getDropOffLocations().stream()
+                .map(dropOffLocation -> this.dropOffLocationService.convertToResDropOffLocationDTO(dropOffLocation))
+                .toList();
+
         ResBusTripDTO resBusTripDTO = ResBusTripDTO.builder()
                 .busTripInfo(busTripInfo)
                 .pickupLocations(pickupLocationsToList)
+                .dropOffLocationInfos(dropOffLocationDTOS)
                 .build();
         return resBusTripDTO;
     }
@@ -117,7 +129,13 @@ public class BusTripServiceImpl implements BusTripService {
         res.setMeta(meta);
 
         List<ResBusTripDTO.BusTripInfo> resBusTripDTOList = busTripPage.getContent().stream()
-                .map(busTrip -> this.convertToBusTripInfo(busTrip))
+                .map(busTrip -> {
+                    try {
+                        return this.convertToBusTripInfo(busTrip);
+                    } catch (ApplicationException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .toList();
 
         res.setResult(resBusTripDTOList);
@@ -125,12 +143,15 @@ public class BusTripServiceImpl implements BusTripService {
     }
 
     @Override
-    public ResBusTripDTO.BusTripInfo convertToBusTripInfo(BusTrip busTrip) {
+    public ResBusTripDTO.BusTripInfo convertToBusTripInfo(BusTrip busTrip) throws ApplicationException {
+        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripId(busTrip.getArrivalLocation(), busTrip.getId())
+                .orElseThrow(()-> new ApplicationException("This bus trip doesn't have the drop off location"));
+
         ResBusTripDTO.BusTripInfo busTripInfo = ResBusTripDTO.BusTripInfo.builder()
                 .id(busTrip.getId())
                 .departureLocation(busTrip.getDepartureLocation())
                 .arrivalLocation(busTrip.getArrivalLocation())
-//                .durationJourney(busTrip.getDurationJourney())
+                .journeyDuration(dropOffLocation.getJourneyDuration())
                 .build();
         return busTripInfo;
     }

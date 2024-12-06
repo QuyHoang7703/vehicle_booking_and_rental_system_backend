@@ -40,10 +40,11 @@ public class BusTripScheduleController {
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleById(busTripScheduleId, departureDate));
     }
 
-    @GetMapping("busTripSchedules/get-all")
-    public ResponseEntity<ResultPaginationDTO> getAllBusTripSchedule(@Filter Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
+    @GetMapping("busTripSchedules/{busTripId}")
+    public ResponseEntity<ResultPaginationDTO> getAllBusTripSchedule(@Filter Specification<BusTripSchedule> spec, Pageable pageable,
+                                                                     @RequestParam("busTripId") int busTripId, @RequestParam("departureDate") LocalDate departureDate) throws ApplicationException, IdInvalidException {
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripSchedules(spec, pageable));
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripSchedules(spec, pageable, busTripId, departureDate));
 
     }
 

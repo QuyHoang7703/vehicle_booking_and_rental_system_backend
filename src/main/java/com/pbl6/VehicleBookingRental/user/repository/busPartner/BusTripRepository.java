@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BusTripRepository extends JpaRepository<BusTrip, Integer>, JpaSpecificationExecutor<BusTrip> {
@@ -19,9 +20,9 @@ public interface BusTripRepository extends JpaRepository<BusTrip, Integer>, JpaS
             "WHERE bp.id = :busPartnerId " +
             "AND bt.departureLocation = :departureLocation " +
             "AND bt.arrivalLocation = :arrivalLocation")
-    List<BusTrip> findBusTripByDepartureLocationAndArrivalLocation(@Param("busPartnerId") int busPartnerId,
-                                                                   @Param("departureLocation") String departureLocation,
-                                                                   @Param("arrivalLocation") String arrivalLocation);
+    Optional<BusTrip> findBusTripByDepartureLocationAndArrivalLocationAndBusPartner(@Param("busPartnerId") int busPartnerId,
+                                                                                    @Param("departureLocation") String departureLocation,
+                                                                                    @Param("arrivalLocation") String arrivalLocation);
 
 
 }

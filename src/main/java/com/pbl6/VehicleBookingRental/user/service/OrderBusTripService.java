@@ -13,6 +13,8 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDate;
+
 public interface OrderBusTripService {
     OrderBusTripRedisDTO createOrderBusTrip(ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException;
 //    ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTripRedisDTO orderBusTrip) throws ApplicationException;
@@ -21,5 +23,5 @@ public interface OrderBusTripService {
     ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTrip orderBusTrip) throws ApplicationException, IdInvalidException;
     ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, Boolean isGone) throws ApplicationException;
     void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException;
-    ResultPaginationDTO getCustomersByOrderBusTrip(int busTripScheduleId, Specification<OrderBusTrip> spec, Pageable pageable);
+    ResultPaginationDTO getCustomersByOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, int busTripScheduleId, LocalDate orderDate);
 }

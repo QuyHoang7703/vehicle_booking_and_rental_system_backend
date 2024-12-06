@@ -25,7 +25,7 @@ public class DropOffLocationController {
 
     @PostMapping("/dropOffLocations")
     @ApiMessage("Created new drop off location")
-    public ResponseEntity<Void> createDropOffLocation(@RequestBody ReqDropOffLocationDTO reqDropOffLocationDTO) throws IdInvalidException {
+    public ResponseEntity<Void> createDropOffLocation(@RequestBody ReqDropOffLocationDTO reqDropOffLocationDTO) throws Exception {
         this.dropOffLocationService.createDropOffLocation(reqDropOffLocationDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }

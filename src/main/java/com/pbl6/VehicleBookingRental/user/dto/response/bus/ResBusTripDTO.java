@@ -11,19 +11,22 @@ import java.time.Duration;
 import java.util.List;
 @Data
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResBusTripDTO {
 
     private BusTripInfo busTripInfo;
     private List<String> pickupLocations;
-    private List<String> dropOffLocations;
-    private List<BusTripSchedule> busTripSchedules;
+    private List<ResDropOffLocationDTO> dropOffLocationInfos;
 
     @Data
     @Builder
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class BusTripInfo{
         private int id;
         private String departureLocation;
+        private Duration journeyDuration;
         private String arrivalLocation;
     }
+
+
 }

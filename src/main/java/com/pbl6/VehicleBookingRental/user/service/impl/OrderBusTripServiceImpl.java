@@ -16,6 +16,7 @@ import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleForAdminDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResCustomerInfoForOrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDetailDTO;
@@ -28,11 +29,12 @@ import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepositor
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
-import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -144,7 +146,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         ResOrderBusTripDTO.TripInfo tripInfo = this.createTripInfo(orderBusTrip);
 
         // Create busInfo
-        ResBusTripScheduleDetailForAdminDTO.BusInfo busInfo = ResBusTripScheduleDetailForAdminDTO.BusInfo.builder()
+        ResBusTripScheduleForAdminDTO.BusInfo busInfo = ResBusTripScheduleForAdminDTO.BusInfo.builder()
                 .licensePlate(busTripSchedule.getBus().getLicensePlate())
                 .busType(busTripSchedule.getBus().getBusType())
                 .build();
@@ -286,10 +288,24 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     }
 
     @Override
-    public ResultPaginationDTO getCustomersByOrderBusTrip(int busTripScheduleId, Specification<OrderBusTrip> spec, Pageable pageable) {
+    public ResultPaginationDTO getCustomersByOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, int busTripScheduleId, LocalDate orderDate) {
+        if(orderDate ==  null) {
+            orderDate = LocalDate.now();
+        }
+        LocalDate finalOrderDate = orderDate;
         Specification<OrderBusTrip> getByOrderBusTripSpec = (root, query, criteriaBuilder) -> {
             Join<OrderBusTrip, BusTripSchedule> joinBusTripSchedule = root.join("busTripSchedule");
-            return criteriaBuilder.equal(joinBusTripSchedule.get("id"), busTripScheduleId);
+            Predicate busTripScheduleCondition = criteriaBuilder.equal(joinBusTripSchedule.get("id"), busTripScheduleId);
+            Predicate departureDateCondition = criteriaBuilder.equal(root.get("departureDate"),finalOrderDate);
+//            Join<OrderBusTrip, Orders> joinOrders = root.join("order");
+//            Path<Instant> createOrderInstantAt = joinOrders.get("create_at");
+//            Expression<LocalDate> createOrderLocalDateAt = criteriaBuilder.function(
+//                    "DATE", LocalDate.class, createOrderInstantAt
+//            );
+
+//            Predicate dateCondition = criteriaBuilder.equal(createOrderLocalDateAt, finalOrderDate);
+
+            return criteriaBuilder.and(busTripScheduleCondition, departureDateCondition);
         };
         Specification<OrderBusTrip> finalSpec = spec.and(getByOrderBusTripSpec);
         Page<OrderBusTrip> page = this.orderBusTripRepository.findAll(finalSpec, pageable);
@@ -342,8 +358,6 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 .orderDate(orderBusTrip.getOrder().getCreate_at())
                 .build();
 
-        BusTripSchedule busTripSchedule = orderBusTrip.getBusTripSchedule();
-
         double pricePerTicket = orderBusTrip.getPricePerTicket();
         double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
         double discountPercentage = orderBusTrip.getDiscountPercentage();
@@ -359,8 +373,6 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     }
 
     private ResOrderBusTripDTO.TripInfo createTripInfo(OrderBusTrip orderBusTrip) {
-        BusTripSchedule busTripSchedule = orderBusTrip.getBusTripSchedule();
-
         // Create trip info
         ResOrderBusTripDTO.TripInfo tripInfo = ResOrderBusTripDTO.TripInfo.builder()
                 .id(orderBusTrip.getBusTripSchedule().getBusTrip().getId())

@@ -19,6 +19,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
@@ -45,10 +47,12 @@ public class OrderBusTripController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
-    @GetMapping("orderBusTrips/{busTripScheduleId}")
+    @GetMapping("orderBusTrips/customer")
     @PreAuthorize("hasRole('BUS_PARTNER')")
-    public ResponseEntity<ResultPaginationDTO> getCustomersByOrderBusTrip(@PathVariable("busTripScheduleId") int busTripScheduleId, @Filter Specification<OrderBusTrip> spec, Pageable pageable) throws ApplicationException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getCustomersByOrderBusTrip(busTripScheduleId, spec, pageable));
+    public ResponseEntity<ResultPaginationDTO> getCustomersByOrderBusTrip(@Filter Specification<OrderBusTrip> spec, Pageable pageable,
+                                                                          @RequestParam("busTripScheduleId") int busTripScheduleId,
+                                                                          @RequestParam(value = "orderDate", required = false) LocalDate orderDate) throws ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getCustomersByOrderBusTrip(spec, pageable, busTripScheduleId, orderDate));
     }
 
 

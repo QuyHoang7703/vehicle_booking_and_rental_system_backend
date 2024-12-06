@@ -9,6 +9,7 @@ import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServic
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.List;
 
 public interface VehicleRegisterInterface {
@@ -25,6 +26,6 @@ public interface VehicleRegisterInterface {
     public boolean update_vehicle_rental_service(VehicleRentalServiceDTO vehicleRentalServiceDTO,List<MultipartFile> images);
 
     public boolean update_status(int vehicleRegisterId, String status);
-    public List<VehicleRentalServiceDTO> filter_by_vehicle_attribute(String location,String manufacture,String vehicle_type,int service_type);
+    public List<VehicleRentalServiceDTO> filter_by_vehicle_attribute(String location, String manufacture, String vehicle_type, int service_type, String startDate,String endDate);
     public List<String>getExistFilterValue(String properties);
 }

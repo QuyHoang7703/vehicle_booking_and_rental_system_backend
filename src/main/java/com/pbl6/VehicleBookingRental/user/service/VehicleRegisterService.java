@@ -2,27 +2,29 @@ package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
+import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServiceDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
-import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.CarRentalPartnerRepo;
-import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRegisterRepo;
-import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
-import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepository;
+import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.*;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class VehicleRegisterService implements VehicleRegisterInterface {
@@ -38,6 +40,8 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     private ImageService imageService;
     @Autowired
     private ImageRepository imageRepository;
+    @Autowired
+    private VehicleRentalOrderRepo vehicleRentalOrderRepo;
     @Autowired
     private  BusinessPartnerService businessPartnerService;
     @Override
@@ -180,8 +184,9 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     }
 
     @Override
-    public List<VehicleRentalServiceDTO> filter_by_vehicle_attribute(String location, String manufacturer, String vehicle_type,int service_type) {
+    public List<VehicleRentalServiceDTO> filter_by_vehicle_attribute(String location, String manufacturer, String vehicle_type, int service_type, String startDate,String endDate) {
         List<VehicleRentalServiceDTO> vehicleRentalServiceDTOList = new ArrayList<>();
+
         List<VehicleRegister> vehicleRegisterList =
                 vehicleRegisterRepository.findVehicleRegisterByLocationOrManufacturerOrVehicleType_Name
                         (location,manufacturer,vehicle_type);
@@ -192,6 +197,35 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             for(CarRentalService carRentalService : carRentalServiceList){
                 //Lấy ra các car_ rental_service bằng service_type, value = 2 thì lấy cả hai
                 if(service_type == 2 || carRentalService.getType() == service_type){
+                    //Tính toán số lượng xe cho mỗi dịch vụ dựa theo order trong ngày
+                    // Định dạng chuỗi ngày giờ
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy").withZone(ZoneId.systemDefault());
+
+                    // Khai báo giá trị mặc định hoặc xử lý null
+                    Instant startInstant = null;
+                    Instant endInstant = null;
+
+                    if (startDate != null && !startDate.isEmpty()) {
+                        try {
+                            startInstant = Instant.from(formatter.parse(startDate));
+                        } catch (DateTimeParseException e) {
+                            // Xử lý lỗi nếu chuỗi không hợp lệ
+                            System.out.println("Invalid start date format: " + startDate);
+                        }
+                    }
+
+                    if (endDate != null && !endDate.isEmpty()) {
+                        try {
+                            endInstant = Instant.from(formatter.parse(endDate));
+                        } catch (DateTimeParseException e) {
+                            // Xử lý lỗi nếu chuỗi không hợp lệ
+                            System.out.println("Invalid end date format: " + endDate);
+                        }
+                    }
+                    Instant now = Instant.now();  // Lấy thời gian hiện tại một lần duy nhất
+                    int amount = (startInstant == null || endInstant == null)
+                            ? calculateAmountByOrder(now, now, carRentalService.getId())  // Sử dụng giá trị `now` cho cả hai tham số
+                            : calculateAmountByOrder(startInstant, endInstant, carRentalService.getId());
                     VehicleRentalServiceDTO vehicleRentalServiceDTO = new VehicleRentalServiceDTO();
 
                     // Thiết lập các thuộc tính từ đối tượng VehicleRegister
@@ -206,7 +240,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                     vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
                     vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
                     vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
-                    vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
+                    vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount() - amount);
                     vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
                     vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                     vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
@@ -293,6 +327,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
         }
         return vehicleRentalServiceDTOList;
     }
+    @Override
     public List<String> getExistFilterValue(String properties){
         List<String> result = new ArrayList<>();
         if(properties.equalsIgnoreCase("location")){
@@ -303,5 +338,50 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
         }
         return result;
     }
+    private int calculateAmountByOrder(Instant startDate,Instant endDate,int car_rental_service_id){
+        // Lấy danh sách các ngày
+        List<LocalDate> days = getDaysBetweenDates(startDate, endDate);
+        // Lấy số lượng xe thuê theo từng ngày
+        Map<LocalDate, Integer> carQuantitiesByDay = getCarQuantitiesByDay(days, car_rental_service_id);
+
+        return  carQuantitiesByDay.values().stream()
+                .max(Integer::compareTo) // Tìm giá trị lớn nhất
+                .orElse(0); // Nếu Map trống, trả về giá trị mặc định là 0
+    }
+    private List<LocalDate> getDaysBetweenDates(Instant startDate, Instant endDate) {
+        // Chuyển đổi Instant sang LocalDate
+        LocalDate start = startDate.atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate end = endDate.atZone(ZoneId.systemDefault()).toLocalDate();
+
+        // Tạo stream các ngày từ start đến end
+        return Stream.iterate(start, date -> date.plusDays(1))
+                .limit(ChronoUnit.DAYS.between(start, end) + 1) // Thêm 1 để bao gồm cả end
+                .collect(Collectors.toList());
+    }
+    private Map<LocalDate, Integer> getCarQuantitiesByDay(List<LocalDate> days, int carRentalServiceId) {
+        // Giả sử bạn đã có danh sách các đơn đặt xe từ DB >= currentDate
+        List<CarRentalOrders> orders = vehicleRentalOrderRepo.findFutureOrdersByCarRentalServiceId(carRentalServiceId,Instant.now());
+
+        // Tạo một Map để lưu số lượng xe theo từng ngày
+        Map<LocalDate, Integer> carQuantitiesByDay = new HashMap<>();
+
+        for (LocalDate day : days) {
+            // Lọc các đơn đặt có thời gian thuê trùng với ngày hiện tại
+            int totalCarsForDay = orders.stream()
+                    .filter(order -> {
+                        LocalDate orderStart = order.getStart_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
+                        LocalDate orderEnd = order.getEnd_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
+                        return (day.isEqual(orderStart) || day.isEqual(orderEnd) ||
+                                (day.isAfter(orderStart) && day.isBefore(orderEnd)));
+                    })
+                    .mapToInt(CarRentalOrders::getAmount) // Lấy số lượng xe của từng đơn đặt
+                    .sum(); // Tính tổng số lượng xe
+
+            // Gán kết quả vào Map
+            carQuantitiesByDay.put(day, totalCarsForDay);
+        }
+        return carQuantitiesByDay;
+    }
+
 }
 

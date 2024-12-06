@@ -19,4 +19,7 @@ public interface MessageRepo extends JpaRepository<Message,Integer> {
     @Query("SELECT m FROM Message m WHERE m.conversation.id = :conversation_id ORDER BY m.sendAt DESC LIMIT 1 " )
     public Message findLastMessageOfSenderId (@Param("conversation_id") int conversation_id);
     public List<Message> getMessagesByConversationId(int conversation_id);
+    // Tìm tất cả message chưa seen bởi senderId và conversationId
+    @Query("SELECT m FROM Message m WHERE m.senderId = :senderId AND m.conversation.id = :conversationId AND m.isSeen = false AND m.sender_type = :senderType")
+    List<Message> findUnseenMessagesBySenderAndConversation(@Param("senderId") int senderId, @Param("conversationId") int conversationId,@Param("senderType") String senderType   );
 }

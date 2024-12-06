@@ -339,4 +339,28 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                     return messageDTO;
                 }).collect(Collectors.toList());
     }
+    @Override
+    public boolean updateUnseenMessages(int senderId,int conversationId,String senderType) {
+        try {
+            // Tìm các message chưa seen của người gửi
+            List<Message> unseenMessages = messageRepo.findUnseenMessagesBySenderAndConversation(senderId,conversationId,senderType);
+
+            if (!unseenMessages.isEmpty()) {
+                // Cập nhật trạng thái seen cho từng message
+                for (Message message : unseenMessages) {
+                    message.setSeen(true);
+                    message.setSeen_at(new Date()); // Ghi lại thời gian đã seen
+                }
+
+                // Lưu lại tất cả thay đổi
+                messageRepo.saveAll(unseenMessages);
+                return true;
+            }
+            return false; // Không có message nào cần cập nhật
+        } catch (Exception e) {
+            System.out.println(e.getLocalizedMessage());
+            return false;
+        }
+    }
+
 }

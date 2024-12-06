@@ -16,6 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -130,10 +133,12 @@ public class VehicleRegisterController {
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String manufacturer,
             @RequestParam(required = false) String vehicle_type,
-            @RequestParam(required = false, value = "service_type") int service_type
-    )
+            @RequestParam(required = false, value = "service_type") int service_type,
+            @RequestParam(required = false,value = "start_date")String startDate,
+            @RequestParam(required = false,value = "end_date") String endDate
+            )
     {
-        return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.filter_by_vehicle_attribute(location,manufacturer,vehicle_type,service_type));
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.filter_by_vehicle_attribute(location,manufacturer,vehicle_type,service_type,startDate,endDate));
     }
     @GetMapping("/get-exist-filter-properties")
     public ResponseEntity<?> getExistFilterValue(@RequestParam("properties") String properties){

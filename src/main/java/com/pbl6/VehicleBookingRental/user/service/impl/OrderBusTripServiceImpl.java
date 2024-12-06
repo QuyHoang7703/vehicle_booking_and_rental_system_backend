@@ -376,6 +376,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         // Create trip info
         ResOrderBusTripDTO.TripInfo tripInfo = ResOrderBusTripDTO.TripInfo.builder()
                 .id(orderBusTrip.getBusTripSchedule().getBusTrip().getId())
+                .busTripScheduleId(orderBusTrip.getBusTripSchedule().getId())
                 .departureLocation(orderBusTrip.getDepartureLocation())
                 .arrivalLocation(orderBusTrip.getArrivalLocation())
                 .build();

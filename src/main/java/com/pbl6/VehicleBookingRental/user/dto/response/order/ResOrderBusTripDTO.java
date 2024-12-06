@@ -42,6 +42,7 @@ public class ResOrderBusTripDTO {
     @NoArgsConstructor
     public static class TripInfo {
         private int id;
+        private int busTripScheduleId;
         private String departureLocation;
         private String arrivalLocation;
         private Instant departureDateTime;

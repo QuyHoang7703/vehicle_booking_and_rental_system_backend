@@ -1,10 +1,12 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Bus;
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetailDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResScheduleOfBusDTO;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import org.springframework.data.domain.Pageable;
@@ -24,4 +26,6 @@ public interface BusService {
     ResBusDTO convertToResBus(Bus bus) throws IdInvalidException;
     Map<Integer, String> getBusesByBusTypeId(String busTypeName) throws IdInvalidException, ApplicationException;
     List<String> getImages(int busId) throws IdInvalidException;
+    ResultPaginationDTO getScheduleOfBuses(int busId, Pageable pageable) throws ApplicationException;
+    ResScheduleOfBusDTO convertToResScheduleOfBus(BusTripSchedule busTripSchedule) throws ApplicationException;
 }

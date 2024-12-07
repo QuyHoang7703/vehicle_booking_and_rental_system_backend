@@ -1,12 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO;
 
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
-
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
 
 @Data
 public class VehicleRentalOrdersDTO {

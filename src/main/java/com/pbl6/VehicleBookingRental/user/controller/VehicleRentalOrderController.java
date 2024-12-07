@@ -4,6 +4,7 @@ import com.pbl6.VehicleBookingRental.user.domain.RestResponse;
 import com.pbl6.VehicleBookingRental.user.dto.LocationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.OpenRouteServiceDTO;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalOrdersDTO;
+import com.pbl6.VehicleBookingRental.user.dto.redis.OrderVehicleRentalRedisDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRentalOrdersInterface;
 import com.pbl6.VehicleBookingRental.user.service.impl.OSRImplement;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
@@ -26,7 +27,9 @@ public class VehicleRentalOrderController {
 
     @PostMapping("/ordering")
     public ResponseEntity<?> orderingVehicleService(@RequestBody VehicleRentalOrdersDTO vehicleRentalOrdersDTO) throws ApplicationException {
-        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.create_order_Rental(vehicleRentalOrdersDTO));
+        OrderVehicleRentalRedisDTO orderVehicleRentalRedis = vehicleRentalOrdersInterface.create_order_Rental(vehicleRentalOrdersDTO);
+        return ResponseEntity.status(HttpStatus.OK).body(this.vehicleRentalOrdersInterface.getKeyOfOrderVehicleRentalRedisDTO(orderVehicleRentalRedis));
+
     }
     @GetMapping("/getDistance")
     public ResponseEntity<?> getDistance(@RequestBody List<LocationDTO> locationDTOS){

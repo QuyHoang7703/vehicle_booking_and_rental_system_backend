@@ -6,6 +6,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDeta
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResVnPayDTO;
 import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
 import com.pbl6.VehicleBookingRental.user.service.OrderService;
+import com.pbl6.VehicleBookingRental.user.service.VehicleRentalOrderService;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
     private final OrderService orderService;
     private final OrderBusTripService orderBusTripService;
+    private final VehicleRentalOrderService vehicleRentalOrderService;
 
     @GetMapping("orders/create-payment")
     public ResponseEntity<ResVnPayDTO> createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException {
@@ -55,11 +57,16 @@ public class OrderController {
     }
 
     @GetMapping("/orders/detail")
-    public ResponseEntity<ResOrderBusTripDetailDTO> getDetailOrderBusTripSchedule(@RequestParam("transactionCode") String transactionCode,
+    public ResponseEntity<?> getDetailOrderBusTripSchedule(@RequestParam("transactionCode") String transactionCode,
                                                                                   @RequestParam("orderType") OrderTypeEnum orderType) throws ApplicationException{
         if(orderType==OrderTypeEnum.BUS_TRIP_ORDER) {
             Orders order = this.orderService.findByTransactionCode(transactionCode);
             return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.convertToResOrderBusTripDetailDTO(order));
+        }
+        if(orderType==OrderTypeEnum.VEHICLE_RENTAL_ORDER) {
+            Orders order = this.orderService.findByTransactionCode(transactionCode);
+
+            return ResponseEntity.status(HttpStatus.OK).body(this.vehicleRentalOrderService.convertToResVehicleRentalOrderDetailDTO(order));
         }
         // if different types
 

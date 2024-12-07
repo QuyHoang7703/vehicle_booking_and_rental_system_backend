@@ -15,4 +15,5 @@ public interface BusRepository extends JpaRepository<Bus, Integer>, JpaSpecifica
     boolean existsByLicensePlate(String licensePlate);
     List<Bus> findByBusType_Name(String busTypeName);
 //    Page<Bus> findAll(Specification<Bus> spec, Pageable pageable);
+
 }

@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.controller.busPartner;
 
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
@@ -17,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,14 +50,9 @@ public class BusTripScheduleController {
 
     }
 
-//    @GetMapping("busTripSchedules/available")
-//    public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleAvailableForUser(@Filter Specification<BusTripSchedule> spec,
-//                                                                                     Pageable pageable,
-//                                                                                     @RequestParam("departureDate")LocalDate departureDate) throws ApplicationException {
-//        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleAvailableForUser(spec, pageable, departureDate));
-//    }
-
-
-
+    @GetMapping("busTripSchedules/get-break-days/{busTripScheduleId}")
+    public ResponseEntity<List<BreakDay>> getBreakDaysForBusTripSchedule(@PathVariable("busTripScheduleId") int busTripScheduleId) throws Exception {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBreakDaysForBusTripSchedule(busTripScheduleId));
+    }
 
 }

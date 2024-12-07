@@ -11,8 +11,8 @@ import java.time.format.DateTimeFormatter;
 
 public class CustomInstantSerializer extends JsonSerializer<Instant> {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy")
-//            .withZone(ZoneId.systemDefault());
-            .withZone(ZoneId.of("GMT+7"));
+            .withZone(ZoneId.systemDefault());
+//            .withZone(ZoneId.of("GMT+7"));
 
 
     @Override

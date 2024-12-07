@@ -62,6 +62,11 @@ public class BusController {
         return ResponseEntity.status(HttpStatus.OK).body(this.busService.getBusesByBusTypeId(nameBusType));
     }
 
+    @GetMapping("/buses/schedule-of-bus/{busId}")
+    public ResponseEntity<ResultPaginationDTO> getScheduleOfBus(@PathVariable("busId") int busId, Pageable pageable) throws Exception {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busService.getScheduleOfBuses(busId, pageable));
+    }
+
 
 
 }

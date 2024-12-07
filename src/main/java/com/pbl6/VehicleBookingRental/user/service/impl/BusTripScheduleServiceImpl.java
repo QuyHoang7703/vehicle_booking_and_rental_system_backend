@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Images;
+import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
@@ -15,6 +16,7 @@ import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
@@ -53,6 +55,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final ImageRepository imageRepository;
     private final OrderBusTripRepository orderBusTripRepository;
     private final DropOffLocationRepository dropOffLocationRepository;
+    private final AccountService accountService;
 
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
@@ -259,6 +262,19 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
 
         return this.convertToResBusTripScheduleDTO2(busTripSchedule, departureDate, arrivalProvince).get(0);
+    }
+
+    @Override
+    public List<BreakDay> getBreakDaysForBusTripSchedule(int busTripScheduleId) throws IdInvalidException, ApplicationException {
+        String email = SecurityUtil.getCurrentLogin().isPresent()?SecurityUtil.getCurrentLogin().get():null;
+        Account account = this.accountService.handleGetAccountByUsername(email);
+        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(busTripScheduleId)
+                .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
+
+        if(!busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getAccount().equals(account)){
+            throw new ApplicationException("You don't have permission to see the break days of this bus trip shedule");
+        }
+        return busTripSchedule.getBreakDays();
     }
 
     // @Scheduled(cron = "0 0 0 * * ?")

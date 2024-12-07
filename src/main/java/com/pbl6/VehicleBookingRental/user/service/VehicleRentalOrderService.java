@@ -14,6 +14,8 @@ import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalOrders
 import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.redis.OrderBusTripRedisDTO;
 import com.pbl6.VehicleBookingRental.user.dto.redis.OrderVehicleRentalRedisDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
+import com.pbl6.VehicleBookingRental.user.dto.response.order.ResVehicleRentalOrderDetailDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRentalOrdersInterface;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
@@ -99,5 +101,65 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         carRentalService.getVehicleRegister().setAmount(carRentalService.getVehicleRegister().getAmount() - vehicleRentalOrdersDTO.getAmount());
         vehicleRentalServiceRepo.save(carRentalService);
         return orderVehicleRentalRedisDTO;
+    }
+
+    @Override
+    public ResOrderKey getKeyOfOrderVehicleRentalRedisDTO(OrderVehicleRentalRedisDTO orderVehicleRentalRedisDTO) throws ApplicationException {
+        return ResOrderKey.builder()
+                .keyOrder(orderVehicleRentalRedisDTO.getKey())
+                .build();
+    }
+
+
+
+    @Override
+    public ResVehicleRentalOrderDetailDTO convertToResVehicleRentalOrderDetailDTO(Orders orders) throws ApplicationException {
+        Account account = orders.getCarRentalOrders().getAccount();
+        CarRentalOrders carRentalOrder = orders.getCarRentalOrders();
+
+        ResVehicleRentalOrderDetailDTO.CustomerInfo customerInfo = ResVehicleRentalOrderDetailDTO.CustomerInfo.builder()
+                .email(account.getEmail())
+                .name(orders.getCustomerName())
+                .phoneNumber(orders.getCustomerPhoneNumber())
+                .build();
+
+        ResVehicleRentalOrderDetailDTO.RentalInfo rentalInfo = this.createRentalInfo(carRentalOrder);
+
+        ResVehicleRentalOrderDetailDTO.PricingInfo pricingInfo = this.createPricingInfo(carRentalOrder);
+
+        ResVehicleRentalOrderDetailDTO res = ResVehicleRentalOrderDetailDTO.builder()
+                .orderId(orders.getId())
+                .transactionCode(orders.getTransactionCode())
+                .customerInfo(customerInfo)
+                .rentalInfo(rentalInfo)
+                .pricingInfo(pricingInfo)
+                .createAt(orders.getCreate_at())
+                .build();
+
+        return res;
+    }
+
+    private ResVehicleRentalOrderDetailDTO.RentalInfo createRentalInfo(CarRentalOrders carRentalOrder) throws ApplicationException {
+        ResVehicleRentalOrderDetailDTO.RentalInfo rentalInfo = ResVehicleRentalOrderDetailDTO.RentalInfo.builder()
+                .carRentalServiceId(carRentalOrder.getCarRentalService().getId())
+                .numberOfVehicles(carRentalOrder.getAmount())
+                .startRentalTime(carRentalOrder.getStart_rental_time())
+                .endRentalTime(carRentalOrder.getEnd_rental_time())
+                .pickupLocation(carRentalOrder.getPickup_location())
+                .build();
+
+        return rentalInfo;
+    }
+
+    private ResVehicleRentalOrderDetailDTO.PricingInfo createPricingInfo(CarRentalOrders carRentalOrder) throws ApplicationException {
+        ResVehicleRentalOrderDetailDTO.PricingInfo pricingInfo = ResVehicleRentalOrderDetailDTO.PricingInfo.builder()
+                .price(carRentalOrder.getPrice())
+                .voucherValue(carRentalOrder.getVoucher_value())
+                .voucherPercentage(carRentalOrder.getVoucher_percentage())
+                .carDeposit(carRentalOrder.getCar_deposit())
+                .reservationFee(carRentalOrder.getReservation_fee())
+                .priceTotal(carRentalOrder.getTotal())
+                .build();
+        return pricingInfo;
     }
 }

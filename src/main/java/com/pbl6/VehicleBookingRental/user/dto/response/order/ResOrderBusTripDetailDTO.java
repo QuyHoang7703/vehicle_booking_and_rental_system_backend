@@ -32,27 +32,4 @@ public class ResOrderBusTripDetailDTO {
         private String phoneNumber;
     }
 
-//    @Data
-//    @Builder
-//    @AllArgsConstructor
-//    @NoArgsConstructor
-//    public static class OrderInfo {
-//        private String orderId;
-//        private int numberOfTicket;
-//        private String pricePerTicket;
-//        private double discountPercentage;
-//        private String priceTotal;
-//        private Instant orderDate;
-//    }
-//
-//    @Data
-//    @Builder
-//    @AllArgsConstructor
-//    @NoArgsConstructor
-//    public static class TripInfo {
-//        private String departureLocation;
-//        private String arrivalLocation;
-//        private Instant departureDateTime;
-//        private Instant arrivalDateTime;
-//    }
 }

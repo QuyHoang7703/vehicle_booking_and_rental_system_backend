@@ -2,18 +2,18 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Images;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.Bus;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusType;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.Utility;
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDetailDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResScheduleOfBusDTO;
 import com.pbl6.VehicleBookingRental.user.repository.UtilityRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusRepository;
+import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTypeRepository;
+import com.pbl6.VehicleBookingRental.user.repository.busPartner.DropOffLocationRepository;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
@@ -28,9 +28,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +40,8 @@ public class BusServiceImpl implements BusService {
     private final ImageRepository imageRepository;
     private final ImageService imageService;
     private final S3Service s3Service;
-
+    private final DropOffLocationRepository dropOffLocationRepository;
+    private final BusTripScheduleRepository busTripScheduleRepository;
     @Override
     public Bus createBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException {
         if(this.busRepository.existsByLicensePlate(reqBus.getLicensePlate())) {
@@ -224,6 +223,49 @@ public class BusServiceImpl implements BusService {
                 .map(Images::getPathImage)
                 .toList();
         return imageUrls;
+    }
+
+    @Override
+    public ResultPaginationDTO getScheduleOfBuses(int busId, Pageable pageable) throws ApplicationException {
+//        Bus bus = this.busRepository.findById(busId).orElseThrow(() -> new IdInvalidException("Bus not found"));
+        Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findByBus_Id(busId, pageable);
+        ResultPaginationDTO res = new ResultPaginationDTO();
+
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(busTripSchedulePage.getTotalPages());
+        meta.setTotal(busTripSchedulePage.getTotalElements());
+        res.setMeta(meta);
+
+        List<ResScheduleOfBusDTO> resScheduleOfBusDTOS = busTripSchedulePage.stream()
+                .map(busTripSchedule -> {
+                    try {
+                        return this.convertToResScheduleOfBus(busTripSchedule);
+                    } catch (ApplicationException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList();
+        res.setResult(resScheduleOfBusDTOS);
+
+        return res;
+    }
+
+    @Override
+    public ResScheduleOfBusDTO convertToResScheduleOfBus(BusTripSchedule busTripSchedule) throws ApplicationException {
+        BusTrip busTrip = busTripSchedule.getBusTrip();
+        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(busTrip.getArrivalLocation(), busTripSchedule.getId())
+                .orElseThrow(() -> new ApplicationException("Not found the drop off location"));
+
+        ResScheduleOfBusDTO res = ResScheduleOfBusDTO.builder()
+                .busTripScheduleId(busTripSchedule.getId())
+                .departureTime(busTripSchedule.getDepartureTime())
+                .arrivalTime(busTripSchedule.getDepartureTime().plus(dropOffLocation.getJourneyDuration()))
+                .startOperationDay(busTripSchedule.getStartOperationDay())
+                .departureLocation(busTrip.getDepartureLocation())
+                .arrivalLocation(busTrip.getArrivalLocation())
+                .build();
+        return res;
     }
 
 

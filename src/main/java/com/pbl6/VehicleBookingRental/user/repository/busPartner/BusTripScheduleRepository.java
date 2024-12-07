@@ -30,6 +30,8 @@ public interface BusTripScheduleRepository extends JpaRepository<BusTripSchedule
 
     boolean existsByBusTrip_IdAndBus_Id(int busTripId, int busId);
 
+    Page<BusTripSchedule> findByBus_Id(int busId, Pageable pageable);
+
 //    @Query("SELECT bts from BusTripSchedule bts " +
 //            "JOIN bts.busTrip bt " +
 //            "JOIN bt.dropOffLocations dol " +

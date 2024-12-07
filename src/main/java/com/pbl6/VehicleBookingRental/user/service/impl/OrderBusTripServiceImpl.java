@@ -55,8 +55,6 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     private final AccountService accountService;
     private final RedisService<String, String, OrderBusTripRedisDTO> redisService;
     private final BusTripScheduleRepository busTripScheduleRepository;
-    private final ObjectMapper objectMapper;
-    private final ImageRepository imageRepository;
     private final BusService busService;
     private final DropOffLocationRepository dropOffLocationRepository;
 

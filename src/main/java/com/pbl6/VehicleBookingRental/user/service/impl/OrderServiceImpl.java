@@ -107,7 +107,7 @@ public class OrderServiceImpl implements OrderService {
             handleBusTripScheduleOrder(keyOrder, transactionCode);
         }
         if(keyOrder.contains("VEHICLE_RENTAL")) {
-            handleVehicleRentalOrder(keyOrder);
+            handleVehicleRentalOrder(keyOrder, transactionCode);
         }
         // Delete orderBusTrip, transactionCode in Redis
         redisService.deleteHashFile(transactionCode, "transactionCode");
@@ -123,9 +123,10 @@ public class OrderServiceImpl implements OrderService {
         Account account = this.accountService.handleGetAccountByUsername(email);
         Orders orders = this.ordersRepo.findByTransactionCode(transactionCode)
                 .orElseThrow(() -> new ApplicationException("Order not found"));
-        if(!orders.getOrderBusTrip().getAccount().equals(account)) {
-            throw new ApplicationException("You don't have permission to see this order");
-        }
+
+//        if(!orders.getOrderBusTrip().getAccount().equals(account)) {
+//            throw new ApplicationException("You don't have permission to see this order");
+//        }
         return orders;
     }
 
@@ -247,7 +248,7 @@ public class OrderServiceImpl implements OrderService {
                                 .build());
 
     }
-    private void handleVehicleRentalOrder(String key) throws IdInvalidException{
+    private void handleVehicleRentalOrder(String key, String transactionCode) throws IdInvalidException{
         // Get data from redis
         Object rawJson = redisService.getHashValue(key, "order-detail");
         // Convert json to orderBusTrip object
@@ -259,6 +260,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrder_type("VEHICLE_RENTAL_ORDER");
         order.setCustomerName(orderVehicleRentalRedisDTO.getCustomerName());
         order.setCustomerPhoneNumber(orderVehicleRentalRedisDTO.getCustomerPhoneNumber());
+        order.setTransactionCode(transactionCode);
 
         Account currentAccount = accountService.fetchAccountById(orderVehicleRentalRedisDTO.getAccount_Id());
 

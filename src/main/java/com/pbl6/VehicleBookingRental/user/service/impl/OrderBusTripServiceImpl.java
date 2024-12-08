@@ -15,7 +15,6 @@ import com.pbl6.VehicleBookingRental.user.dto.redis.OrderBusTripRedisDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
-import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleForAdminDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResCustomerInfoForOrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDTO;
@@ -24,7 +23,6 @@ import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.DropOffLocationRepository;
-import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
@@ -92,6 +90,9 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
         orderBusTripRedis.setOrderDate(Instant.now());
 
+        Instant arrivalTime = this.changeInstant(reqOrderBusTripDTO.getDepartureDate(),(busTripSchedule.getDepartureTime()));
+        orderBusTripRedis.setArrivalTime(arrivalTime);
+
         String redisKeyOrderBusTrip = "order:" + currentAccount.getEmail()
                 + "-" + "BUS_TRIP"
                 + "-" + orderId
@@ -156,8 +157,8 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 .tripInfo(tripInfo)
                 .busInfo(busInfo)
                 .cancelTime(order.getCancelTime())
+                .cancelUserId(order.getCancelUserId())
                 .build();
-
 
         return res;
     }
@@ -184,6 +185,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 .orderInfo(orderInfo)
                 .tripInfo(tripInfo)
                 .cancelTime(orderBusTrip.getOrder().getCancelTime())
+                .cancelUserId(orderBusTrip.getOrder().getCancelUserId())
                 .build();
         return res;
     }
@@ -203,8 +205,9 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
             if(isGone==null) {
                 return criteriaBuilder.and(orderOfAccount);
             }
-            Predicate statusOfOrder = isGone ? criteriaBuilder.lessThan(root.get("departureDate"), LocalDate.now())
-                    : criteriaBuilder.greaterThanOrEqualTo(root.get("departureDate"), LocalDate.now());
+
+            Predicate statusOfOrder = isGone ? criteriaBuilder.lessThan(root.get("arrivalTime"), Instant.now())
+                    : criteriaBuilder.greaterThanOrEqualTo(root.get("arrivalTime"), Instant.now());
 
             return criteriaBuilder.and(orderOfAccount, statusOfOrder);
         };
@@ -223,6 +226,35 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         meta.setTotal(page.getTotalElements());
 
         List<ResOrderBusTripDTO> resOrderBusTripDTOS = page.getContent().stream()
+                .map(orderBusTrip -> {
+                    try {
+                        return this.convertToResOrderBusTripDTO(orderBusTrip);
+                    } catch (ApplicationException | IdInvalidException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+
+        res.setMeta(meta);
+        res.setResult(resOrderBusTripDTOS);
+
+        return res;
+    }
+
+    @Override
+    public ResultPaginationDTO getAllOrderBusTrip2(Pageable pageable, OrderStatusEnum status, Boolean isGone) throws ApplicationException {
+        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
+        Page<OrderBusTrip> orderBusTripPage = this.orderBusTripRepository.findOrderByStatus(email, status, isGone, LocalDateTime.now(), pageable);
+        log.info("SIZE: " + orderBusTripPage.getTotalElements());
+        ResultPaginationDTO res = new ResultPaginationDTO();
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(pageable.getPageSize());
+
+        meta.setTotal(orderBusTripPage.getTotalElements());
+
+        List<ResOrderBusTripDTO> resOrderBusTripDTOS = orderBusTripPage.getContent().stream()
                 .map(orderBusTrip -> {
                     try {
                         return this.convertToResOrderBusTripDTO(orderBusTrip);
@@ -281,6 +313,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
         Orders order = orderBusTrip.getOrder();
         order.setCancelTime(Instant.now());
+        order.setCancelUserId(currentAccount.getId());
         this.ordersRepo.save(order);
 
     }

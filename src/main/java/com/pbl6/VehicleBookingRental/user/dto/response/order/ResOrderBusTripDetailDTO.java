@@ -20,6 +20,7 @@ public class ResOrderBusTripDetailDTO {
     private ResOrderBusTripDTO.OrderInfo orderInfo;
     private ResOrderBusTripDTO.TripInfo tripInfo;
     private Instant cancelTime;
+    private Integer cancelUserId;
 //    private String key;
 
     @Data

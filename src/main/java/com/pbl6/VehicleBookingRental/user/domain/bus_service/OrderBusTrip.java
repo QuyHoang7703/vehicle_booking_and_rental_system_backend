@@ -6,9 +6,7 @@ import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -20,7 +18,8 @@ import java.util.Date;
 @Table(name = "OrderBusTrip")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class OrderBusTrip {
     @Id
     @Column(name = "order_id")
@@ -46,7 +45,7 @@ public class OrderBusTrip {
     private Duration journeyDuration;
 
 //    private Instant departureDateTime;
-//    private Instant arrivalDateTime;
+    private Instant arrivalTime;
 
     @ManyToOne
     @JoinColumn(name = "account_id")

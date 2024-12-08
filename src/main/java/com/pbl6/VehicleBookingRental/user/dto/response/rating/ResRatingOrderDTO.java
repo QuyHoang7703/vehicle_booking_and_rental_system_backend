@@ -13,9 +13,12 @@ import java.time.LocalDate;
 @Builder
 @Data
 public class ResRatingOrderDTO {
+    private int id;
     private int accountId;
     private String customerName;
+    private String avatar;
     private int ratingValue;
     private String comment;
     private Instant commentDate;
+//    private Integer cancelUserId;
 }

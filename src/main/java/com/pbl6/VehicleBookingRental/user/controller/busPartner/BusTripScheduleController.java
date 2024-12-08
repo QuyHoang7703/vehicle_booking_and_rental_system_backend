@@ -2,6 +2,7 @@ package com.pbl6.VehicleBookingRental.user.controller.busPartner;
 
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
+import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
@@ -54,5 +55,25 @@ public class BusTripScheduleController {
     public ResponseEntity<List<BreakDay>> getBreakDaysForBusTripSchedule(@PathVariable("busTripScheduleId") int busTripScheduleId) throws Exception {
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBreakDaysForBusTripSchedule(busTripScheduleId));
     }
+
+    @PatchMapping("busTripSchedules/{busTripScheduleId}")
+    @PreAuthorize("hasRole('BUS_PARTNER')")
+    public ResponseEntity<Void> cancelBusTripSchedule(@PathVariable("busTripScheduleId") int busTripScheduleId,
+                                                      @RequestParam("cancelDate") LocalDate cancelDate) throws Exception {
+        this.busTripScheduleService.cancelBusTripSchedule(busTripScheduleId, cancelDate);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping("busTripSchedules/{busTripScheduleId}/hasOrders")
+    @PreAuthorize("hasRole('BUS_PARTNER')")
+    public ResponseEntity<ResponseInfo<String>> checkBusTripScheduleHasOrders(@PathVariable("busTripScheduleId") int busTripScheduleId) throws Exception {
+        boolean check = this.busTripScheduleService.checkBusTripScheduleHasOrder(busTripScheduleId);
+        if(check) {
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("This Bus Trip Schedule has orders !"));
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("This Bus Trip Schedule hasn't orders !"));
+    }
+
+
 
 }

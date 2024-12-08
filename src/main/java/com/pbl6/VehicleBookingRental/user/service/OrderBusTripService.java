@@ -8,6 +8,7 @@ import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDetailDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
+import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ public interface OrderBusTripService {
     ResOrderBusTripDetailDTO convertToResOrderBusTripDetailDTO(Orders orders) throws ApplicationException;
     ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTrip orderBusTrip) throws ApplicationException, IdInvalidException;
     ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, Boolean isGone) throws ApplicationException;
+    ResultPaginationDTO getAllOrderBusTrip2(Pageable pageable, OrderStatusEnum status, Boolean isGone) throws ApplicationException;
     void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException;
     ResultPaginationDTO getCustomersByOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, int busTripScheduleId, LocalDate orderDate);
 }

@@ -45,6 +45,10 @@ public class RatingServiceImpl implements RatingService {
                 .orElseThrow(() -> new IdInvalidException("Order not found"));
 
         Account currentAccount = this.accountService.handleGetAccountByUsername(email);
+
+        if(order.getCancelUserId()!=null && order.getCancelUserId().equals(currentAccount.getId())) {
+            throw new ApplicationException("You cannot rate this order because you are the canceler");
+        }
         Rating rating = new Rating();
         rating.setRatingValue(reqCreateRatingDTO.getRatingValue());
         rating.setComment(reqCreateRatingDTO.getComment());
@@ -109,7 +113,9 @@ public class RatingServiceImpl implements RatingService {
     public ResRatingInfoDTO getAllRatingOfOrder(Specification<Rating> specification, Pageable pageable) throws ApplicationException {
         ResultPaginationDTO res = new ResultPaginationDTO();
         Page<Rating> ratingPage = this.ratingRepository.findAll(specification, pageable);
-
+        if(ratingPage.getContent().isEmpty()) {
+            return null;
+        }
         Meta meta = new Meta();
         meta.setCurrentPage(pageable.getPageNumber()+1);
         meta.setPageSize(pageable.getPageSize());
@@ -143,11 +149,14 @@ public class RatingServiceImpl implements RatingService {
     @Override
     public ResRatingOrderDTO convertToResRatingOrderDTO(Rating rating) throws ApplicationException {
         ResRatingOrderDTO res = ResRatingOrderDTO.builder()
+                .id(rating.getId())
                 .accountId(rating.getAccount().getId())
+                .avatar(rating.getAccount().getAvatar())
                 .customerName(rating.getAccount().getName())
                 .ratingValue(rating.getRatingValue())
                 .comment(rating.getComment())
                 .commentDate(rating.getUpdateAt()!=null?rating.getUpdateAt():rating.getCreateAt())
+//                .cancelUserId(rating.getOrder().getCancelUserId())
                 .build();
 
         return res;

@@ -5,10 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 
 @Data
 @AllArgsConstructor
@@ -27,6 +24,7 @@ public class OrderBusTripRedisDTO {
     private LocalTime departureTime;
     private LocalDate departureDate;
     private Duration journeyDuration;
+    private Instant arrivalTime;
     private double discountPercentage;
     private int busTripScheduleId;
     private Instant orderDate;

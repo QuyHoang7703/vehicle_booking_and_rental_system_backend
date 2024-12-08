@@ -9,4 +9,5 @@ import java.util.List;
 public interface NotificationService {
     public void sendNotification(int recipientId, String recipientType, NotificationDTO notificationDTO);
     public List<NotificationDTO> getNotificationByAccountIdAndRoleAccount(int account_id, AccountEnum role_account);
+    public boolean updateUnseenNotification(int account_id, AccountEnum role_account,int notification_id);
 }

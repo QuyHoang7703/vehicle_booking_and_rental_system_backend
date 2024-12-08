@@ -39,6 +39,7 @@ public class RatingController {
     }
 
     @DeleteMapping("ratings/{ratingId}")
+    @ApiMessage("Deleted the rating")
     public ResponseEntity<Void> deleteRating(@PathVariable int ratingId) throws ApplicationException {
         this.ratingService.deleteRatingForOrder(ratingId);
         return ResponseEntity.status(HttpStatus.OK).build();

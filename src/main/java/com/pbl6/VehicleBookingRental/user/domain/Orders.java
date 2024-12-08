@@ -26,6 +26,7 @@ public class Orders {
     private String customerPhoneNumber;
     private String transactionCode;
     private Instant cancelTime;
+    private Integer cancelUserId;
 
     @OneToOne(mappedBy = "order",cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn

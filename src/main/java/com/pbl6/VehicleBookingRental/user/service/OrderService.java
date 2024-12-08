@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface OrderService {
     ResVnPayDTO createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException;
-    void handlePaymentSuccess(String transactionCode) throws ApplicationException, IdInvalidException;
+    String handlePaymentSuccess(String transactionCode) throws ApplicationException, IdInvalidException;
     Orders findByTransactionCode(String transactionCode) throws ApplicationException;
 
 }

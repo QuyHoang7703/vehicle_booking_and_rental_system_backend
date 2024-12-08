@@ -101,17 +101,22 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void handlePaymentSuccess(String transactionCode) throws IdInvalidException {
+    public String handlePaymentSuccess(String transactionCode) throws IdInvalidException {
         String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
+        String orderType = "";
         if(keyOrder.contains("BUS_TRIP")) {
             handleBusTripScheduleOrder(keyOrder, transactionCode);
+            orderType = "BUS_TRIP_ORDER";
         }
         if(keyOrder.contains("VEHICLE_RENTAL")) {
             handleVehicleRentalOrder(keyOrder, transactionCode);
+            orderType = "VEHICLE_RENTAL_ORDER";
         }
         // Delete orderBusTrip, transactionCode in Redis
         redisService.deleteHashFile(transactionCode, "transactionCode");
         redisService.deleteHashFile(keyOrder, "order-detail");
+
+        return orderType;
     }
 
     @Override
@@ -190,6 +195,7 @@ public class OrderServiceImpl implements OrderService {
         orderBusTrip.setDiscountPercentage(orderBusTripRedisDTO.getDiscountPercentage());
         orderBusTrip.setDepartureTime(orderBusTripRedisDTO.getDepartureTime());
         orderBusTrip.setDepartureDate(orderBusTripRedisDTO.getDepartureDate());
+        orderBusTrip.setArrivalTime(orderBusTripRedisDTO.getArrivalTime());
 
         orderBusTrip.setAccount(currentAccount);
 
@@ -213,6 +219,7 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
         createNotificationToPartner(accountIdOfBusPartner,  AccountEnum.BUS_PARTNER,notificationDTO);
+
     }
 
     private void createNotificationToPartner(int accountIdOfPartner,  AccountEnum partnerTypeEnum,NotificationDTO notificationDTO) {

@@ -2,7 +2,6 @@ package com.pbl6.VehicleBookingRental.user.controller.user;
 
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
-import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderBusTripDetailDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResVnPayDTO;
 import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
 import com.pbl6.VehicleBookingRental.user.service.OrderService;
@@ -41,24 +40,24 @@ public class OrderController {
         log.info("Mã giao dịch: " + transactionCode);
 
         if (status.equals("00")) {
-            this.orderService.handlePaymentSuccess(transactionCode);
+            String orderType = this.orderService.handlePaymentSuccess(transactionCode);
             log.info("PAYMENT SUCCESSFULLY");
 
             return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-success?transactionId=" + transactionCode)
+                    .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-success?transactionCode=" + transactionCode + "&orderType=" + orderType)
                     .build();
 
         } else {
             log.info("PAYMENT UNSUCCESSFULLY");
             return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-failure?transactionId=" + transactionCode)
+                    .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-failure?transactionCode=" + transactionCode)
                     .build();
         }
     }
 
     @GetMapping("/orders/detail")
     public ResponseEntity<?> getDetailOrderBusTripSchedule(@RequestParam("transactionCode") String transactionCode,
-                                                                                  @RequestParam("orderType") OrderTypeEnum orderType) throws ApplicationException{
+                                                           @RequestParam("orderType") OrderTypeEnum orderType) throws ApplicationException{
         if(orderType==OrderTypeEnum.BUS_TRIP_ORDER) {
             Orders order = this.orderService.findByTransactionCode(transactionCode);
             return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.convertToResOrderBusTripDetailDTO(order));

@@ -2,12 +2,14 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Images;
+import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.*;
+import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BreakDayRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
@@ -35,10 +37,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +55,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final OrderBusTripRepository orderBusTripRepository;
     private final DropOffLocationRepository dropOffLocationRepository;
     private final AccountService accountService;
+    private final OrdersRepo ordersRepo;
 
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
@@ -275,6 +275,59 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
             throw new ApplicationException("You don't have permission to see the break days of this bus trip shedule");
         }
         return busTripSchedule.getBreakDays();
+    }
+
+    @Override
+    public void cancelBusTripSchedule(int busTripScheduleId, LocalDate cancelDate) throws IdInvalidException, ApplicationException {
+        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(busTripScheduleId)
+                .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
+
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+
+        if(!busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().equals(businessPartner)){
+            throw new ApplicationException("You don't have permission to delete the bus trip schedule");
+        }
+
+        LocalDateTime cancelDepartureTime = cancelDate.atTime(busTripSchedule.getDepartureTime());
+        LocalDateTime cutoffTime = cancelDepartureTime.minusMinutes(3);
+        if(LocalDateTime.now().isAfter(cutoffTime)){
+            throw new ApplicationException("The schedule can only be cancelled at least 3 minutes before the departure time.");
+        }
+
+        List<OrderBusTrip> orderBusTrips = busTripSchedule.getOrderBusTrips();
+        if (orderBusTrips.isEmpty()) {
+            throw new ApplicationException("No orders associated with this bus trip schedule");
+        }
+
+        for(OrderBusTrip orderBusTrip : orderBusTrips){
+            orderBusTrip.setStatus(OrderStatusEnum.CANCELLED);
+
+            Orders order = orderBusTrip.getOrder();
+
+            //Update order
+            order.setCancelTime(Instant.now());
+            order.setCancelUserId(businessPartner.getId());
+
+            this.ordersRepo.save(order);
+        }
+
+    }
+
+    @Override
+    public boolean checkBusTripScheduleHasOrder(int busTripScheduleId) throws IdInvalidException, ApplicationException {
+        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(busTripScheduleId)
+                .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
+
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+
+        if(!busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().equals(businessPartner)){
+            throw new ApplicationException("You don't have permission to delete the bus trip schedule");
+        }
+
+        if(busTripSchedule.getOrderBusTrips()!=null && !busTripSchedule.getOrderBusTrips().isEmpty()){
+            return true;
+        }
+        return false;
     }
 
     // @Scheduled(cron = "0 0 0 * * ?")

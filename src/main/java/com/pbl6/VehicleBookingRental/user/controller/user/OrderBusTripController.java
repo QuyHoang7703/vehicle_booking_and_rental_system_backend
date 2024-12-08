@@ -7,6 +7,7 @@ import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
 import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
+import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -37,7 +38,10 @@ public class OrderBusTripController {
     public ResponseEntity<ResultPaginationDTO> getAllOrderBusTrips(@Filter Specification<OrderBusTrip> spec,
                                                                    Pageable pageable,
                                                                    @RequestParam(value = "isGone", required = false) Boolean isGone) throws ApplicationException {
+
         return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getAllOrderBusTrip(spec, pageable, isGone));
+//        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripService.getAllOrderBusTrip2(pageable, status, isGone));
+
     }
 
     @PatchMapping("/orderBusTrips/cancel-order/{orderId}")

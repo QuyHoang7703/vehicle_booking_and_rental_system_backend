@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface NotificationAccountRepo extends JpaRepository<NotificationAccount,Integer> {
     public List<NotificationAccount> getNotificationAccountByAccount_IdAndPartnerType(int account_id, AccountEnum partnerTypeEnum);
-    public NotificationAccount findNotificationAccountByAccountIdAndAccountRoleAndNotificationId(int account_id,AccountEnum accountEnum,int notification_id);
+    public NotificationAccount findNotificationAccountByAccountIdAndPartnerTypeAndNotificationId(int account_id,AccountEnum accountEnum,int notification_id);
 }

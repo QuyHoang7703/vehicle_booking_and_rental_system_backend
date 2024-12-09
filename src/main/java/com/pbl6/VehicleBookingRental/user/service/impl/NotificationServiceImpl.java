@@ -59,7 +59,7 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     public boolean updateUnseenNotification(int account_id, AccountEnum role_account, int notification_id) {
         try{
-            NotificationAccount notificationAccount = notificationAccountRepo.findNotificationAccountByAccountIdAndAccountRoleAndNotificationId(account_id,role_account,notification_id);
+            NotificationAccount notificationAccount = notificationAccountRepo.findNotificationAccountByAccountIdAndPartnerTypeAndNotificationId(account_id,role_account,notification_id);
             if(notificationAccount != null){
                 Notification notification = notificationAccount.getNotification();
                 notification.setSeen(true);

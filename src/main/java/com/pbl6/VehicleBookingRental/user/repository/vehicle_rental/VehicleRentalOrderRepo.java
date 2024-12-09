@@ -13,5 +13,7 @@ import java.util.List;
 public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,String> {
     @Query("SELECT o FROM CarRentalOrders o WHERE o.carRentalService.id = :carRentalServiceId AND o.start_rental_time >= :currentDate")
     List<CarRentalOrders> findFutureOrdersByCarRentalServiceId(@Param("carRentalServiceId") int carRentalServiceId, @Param("currentDate") Instant currentDate);
-
+    @Query("select o from CarRentalOrders o where (:location is null or o.carRentalService.vehicleRegister.location = :location)" +
+                                            "and (:vehicle_type is null or o.carRentalService.vehicleRegister.vehicleType.name = :vehicle_type)   ")
+    List<CarRentalOrders> findCarRentalOrdersByVehicleRegisterProperties(@Param("location") String location,@Param("vehicle_type")String vehicle_type);
 }

@@ -95,6 +95,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setManufacturer(vehicleRegister.getManufacturer());
                 vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
                 vehicleRentalServiceDTO.setDescription(vehicleRegister.getDescription());
+                vehicleRentalServiceDTO.setVehicle_type(vehicleRegister.getVehicleType().getName());
                 vehicleRentalServiceDTO.setQuantity(vehicleRegister.getQuantity());
                 vehicleRentalServiceDTO.setStatus(vehicleRegister.getStatus());
                 vehicleRentalServiceDTO.setDate_of_status(vehicleRegister.getDate_of_status());
@@ -232,6 +233,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                     vehicleRentalServiceDTO.setManufacturer(vehicleRegister.getManufacturer());
                     vehicleRentalServiceDTO.setDescription(vehicleRegister.getDescription());
                     vehicleRentalServiceDTO.setQuantity(vehicleRegister.getQuantity());
+                    vehicleRentalServiceDTO.setVehicle_type(vehicleRegister.getVehicleType().getName());
                     vehicleRentalServiceDTO.setStatus(vehicleRegister.getStatus());
                     vehicleRentalServiceDTO.setDate_of_status(vehicleRegister.getDate_of_status());
                     vehicleRentalServiceDTO.setDiscount_percentage(vehicleRegister.getDiscount_percentage());
@@ -298,6 +300,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 // Thiết lập các thuộc tính từ đối tượng VehicleRegister
                 vehicleRentalServiceDTO.setManufacturer(vehicleRegister.getManufacturer());
                 vehicleRentalServiceDTO.setDescription(vehicleRegister.getDescription());
+                vehicleRentalServiceDTO.setVehicle_type(vehicleRegister.getVehicleType().getName());
                 vehicleRentalServiceDTO.setQuantity(vehicleRegister.getQuantity());
                 vehicleRentalServiceDTO.setStatus(vehicleRegister.getStatus());
                 vehicleRentalServiceDTO.setDate_of_status(vehicleRegister.getDate_of_status());

@@ -78,15 +78,23 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setCustomerName(reqOrderBusTripDTO.getCustomerName());
         orderBusTripRedis.setCustomerPhoneNumber(reqOrderBusTripDTO.getCustomerPhoneNumber());
         orderBusTripRedis.setAccount_Id(currentAccount.getId());
+
         orderBusTripRedis.setNumberOfTicket(reqOrderBusTripDTO.getNumberOfTicket());
         orderBusTripRedis.setPricePerTicket(dropOffLocation.getPriceTicket());
-        orderBusTripRedis.setPriceTotal(reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket());
+        orderBusTripRedis.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
+        double priceTotal = reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket();
+        if(orderBusTripRedis.getDiscountPercentage() != 0.0) {
+            priceTotal = priceTotal * (1 - orderBusTripRedis.getDiscountPercentage()/100);
+        }
+        orderBusTripRedis.setPriceTotal(priceTotal);
+
         orderBusTripRedis.setDepartureLocation(busTripSchedule.getBusTrip().getDepartureLocation());
         orderBusTripRedis.setArrivalLocation(dropOffLocation.getProvince());
         orderBusTripRedis.setDepartureTime(busTripSchedule.getDepartureTime());
         orderBusTripRedis.setDepartureDate(reqOrderBusTripDTO.getDepartureDate());
         orderBusTripRedis.setJourneyDuration(dropOffLocation.getJourneyDuration());
-        orderBusTripRedis.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
+
+
         orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
         orderBusTripRedis.setOrderDate(Instant.now());
 
@@ -390,14 +398,14 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 .build();
 
         double pricePerTicket = orderBusTrip.getPricePerTicket();
-        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
+//        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
         double discountPercentage = orderBusTrip.getDiscountPercentage();
-        if(discountPercentage != 0.0){
-            priceTotal = priceTotal * (1 - discountPercentage/100);
-        }
+//        if(discountPercentage != 0.0){
+//            priceTotal = priceTotal * (1 - discountPercentage/100);
+//        }
 
         orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
-        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(priceTotal));
+        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(orderBusTrip.getPriceTotal()));
         orderInfo.setDiscountPercentage(discountPercentage);
 
         return orderInfo;

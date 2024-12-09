@@ -70,6 +70,9 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         // Get the bus
         Bus bus = this.busService.findBusById(reqBusTripScheduleDTO.getBusId());
+        // Có kiểm tra bus trip schedule thêm có hợp lệ ?
+//        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(busTrip.getArrivalLocation(), busTripSchedule.getId())
+//                .orElseThrow(() -> new ApplicationException("Not found the drop off location"));
 
         busTripSchedule.setBus(bus);
         busTripSchedule.setAvailableSeats(bus.getBusType().getNumberOfSeat());

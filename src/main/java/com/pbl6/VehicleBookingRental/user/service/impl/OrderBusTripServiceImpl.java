@@ -98,8 +98,12 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
         orderBusTripRedis.setOrderDate(Instant.now());
 
-        Instant arrivalTime = this.changeInstant(reqOrderBusTripDTO.getDepartureDate(),(busTripSchedule.getDepartureTime()));
-        orderBusTripRedis.setArrivalTime(arrivalTime);
+        // Calculate arrival instant
+        LocalDate departureDate = reqOrderBusTripDTO.getDepartureDate();
+        LocalDateTime departureDateTime = departureDate.atTime(busTripSchedule.getDepartureTime());
+        LocalDateTime arrivalTime = departureDateTime.plus(dropOffLocation.getJourneyDuration());
+        Instant arrivalTimeInstant = arrivalTime.atZone(ZoneId.systemDefault()).toInstant();
+        orderBusTripRedis.setArrivalTime(arrivalTimeInstant);
 
         String redisKeyOrderBusTrip = "order:" + currentAccount.getEmail()
                 + "-" + "BUS_TRIP"

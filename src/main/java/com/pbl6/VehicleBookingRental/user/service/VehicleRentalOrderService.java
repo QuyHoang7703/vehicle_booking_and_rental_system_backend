@@ -98,8 +98,8 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         redisService.setHashSet(redisKeyOrderVehicleRental, "order-detail", orderVehicleRentalRedisDTO);
         redisService.setTimeToLive(redisKeyOrderVehicleRental, 10);
         //update service amount
-        carRentalService.getVehicleRegister().setAmount(carRentalService.getVehicleRegister().getAmount() - vehicleRentalOrdersDTO.getAmount());
-        vehicleRentalServiceRepo.save(carRentalService);
+//        carRentalService.getVehicleRegister().setAmount(carRentalService.getVehicleRegister().getAmount() - vehicleRentalOrdersDTO.getAmount());
+//        vehicleRentalServiceRepo.save(carRentalService);
         return orderVehicleRentalRedisDTO;
     }
 

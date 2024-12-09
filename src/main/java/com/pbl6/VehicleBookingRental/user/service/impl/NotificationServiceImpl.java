@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 public class NotificationServiceImpl implements NotificationService {
     private final SimpMessagingTemplate messagingTemplate ;
     private final NotificationAccountRepo notificationAccountRepo;
+    private final NotificationRepo notificationRepo;
 
     @Override
     public void sendNotification(int recipientId, String recipientType, NotificationDTO notificationDTO) {
@@ -53,5 +54,22 @@ public class NotificationServiceImpl implements NotificationService {
                     notificationDTO.setCreate_at(notification.getCreate_at() !=null ? notification.getCreate_at().toInstant():null);
                     return notificationDTO;
                 }).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean updateUnseenNotification(int account_id, AccountEnum role_account, int notification_id) {
+        try{
+            NotificationAccount notificationAccount = notificationAccountRepo.findNotificationAccountByAccountIdAndPartnerTypeAndNotificationId(account_id,role_account,notification_id);
+            if(notificationAccount != null){
+                Notification notification = notificationAccount.getNotification();
+                notification.setSeen(true);
+                notificationAccountRepo.save(notificationAccount);
+                return true;
+            }
+            return false;
+        }catch (Exception exception){
+            System.out.println(exception.getMessage());
+            return false;
+        }
     }
 }

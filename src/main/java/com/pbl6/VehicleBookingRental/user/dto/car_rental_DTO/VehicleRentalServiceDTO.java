@@ -13,6 +13,7 @@ public class VehicleRentalServiceDTO {
     private String location;
     private String manufacturer;
     private String vehicleLife;
+    private String vehicle_type;
     private String description;
     private int quantity;
     private String status;

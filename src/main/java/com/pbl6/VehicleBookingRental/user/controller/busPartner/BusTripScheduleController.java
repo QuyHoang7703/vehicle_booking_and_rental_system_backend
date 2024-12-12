@@ -38,7 +38,7 @@ public class BusTripScheduleController {
     @PreAuthorize("hasRole('BUS_PARTNER')")
     @GetMapping("busTripSchedules")
     public ResponseEntity<ResBusTripScheduleDetailForAdminDTO> getBusTripScheduleDetail(@RequestParam("busTripScheduleId") int busTripScheduleId,
-                                                                                        @RequestParam("departureDate")LocalDate departureDate) throws IdInvalidException {
+                                                                                        @RequestParam("departureDate") LocalDate departureDate) throws IdInvalidException {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleById(busTripScheduleId, departureDate));
     }

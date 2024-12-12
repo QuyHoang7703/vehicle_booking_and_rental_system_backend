@@ -3,12 +3,16 @@ package com.pbl6.VehicleBookingRental.user.domain.Voucher;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "voucher")
+@Getter
+@Setter
 public class Voucher {
 
     @Id
@@ -17,18 +21,16 @@ public class Voucher {
 
     private String name;
     private String description;
-    private Date start_date;
-
-    private Date end_date;
-
-    @Column(name = "voucher_percentage")
+    private LocalDate startDate;
+    private LocalDate endDate;
     private double voucherPercentage;
+    private double maxDiscountValue;
+    private double minOrderValue;
+    private int remainingQuantity;
 
-    @Column(name = "voucher_amount")
-    private double voucherAmount;
-    private String status;
-    private int number;
-    @OneToMany(mappedBy = "voucher",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "voucher")
     @JsonIgnore
-    private List<VoucherAccount> voucherAccounts;
+    private List<AccountVoucher> accountVouchers;
+
+
 }

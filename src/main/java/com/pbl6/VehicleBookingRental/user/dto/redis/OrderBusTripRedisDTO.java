@@ -28,6 +28,7 @@ public class OrderBusTripRedisDTO {
     private double discountPercentage;
     private int busTripScheduleId;
     private Instant orderDate;
+    private Integer voucherId;
     private String key;
 
 }

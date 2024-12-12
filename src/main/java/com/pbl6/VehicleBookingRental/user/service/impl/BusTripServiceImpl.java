@@ -96,15 +96,22 @@ public class BusTripServiceImpl implements BusTripService {
 
         ResBusTripDTO.BusTripInfo busTripInfo = this.convertToBusTripInfo(busTrip);
 
-        List<ResDropOffLocationDTO> dropOffLocationDTOS = busTrip.getDropOffLocations().stream()
-                .map(dropOffLocation -> this.dropOffLocationService.convertToResDropOffLocationDTO(dropOffLocation))
-                .toList();
+        ResBusTripDTO resBusTripDTO = new ResBusTripDTO();
+        resBusTripDTO.setBusTripInfo(busTripInfo);
+        resBusTripDTO.setPickupLocations(pickupLocationsToList);
 
-        ResBusTripDTO resBusTripDTO = ResBusTripDTO.builder()
-                .busTripInfo(busTripInfo)
-                .pickupLocations(pickupLocationsToList)
-                .dropOffLocationInfos(dropOffLocationDTOS)
-                .build();
+        if(busTrip.getDropOffLocations()!=null && !busTrip.getDropOffLocations().isEmpty()) {
+            List<ResDropOffLocationDTO> dropOffLocationDTOS = busTrip.getDropOffLocations().stream()
+                    .map(dropOffLocation -> this.dropOffLocationService.convertToResDropOffLocationDTO(dropOffLocation))
+                    .toList();
+            resBusTripDTO.setDropOffLocationInfos(dropOffLocationDTOS);
+        }
+//
+//        ResBusTripDTO resBusTripDTO = ResBusTripDTO.builder()
+//                .busTripInfo(busTripInfo)
+//                .pickupLocations(pickupLocationsToList)
+//                .dropOffLocationInfos(dropOffLocationDTOS)
+//                .build();
         return resBusTripDTO;
     }
 
@@ -144,14 +151,14 @@ public class BusTripServiceImpl implements BusTripService {
 
     @Override
     public ResBusTripDTO.BusTripInfo convertToBusTripInfo(BusTrip busTrip) throws ApplicationException {
-        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripId(busTrip.getArrivalLocation(), busTrip.getId())
-                .orElseThrow(()-> new ApplicationException("This bus trip doesn't have the drop off location"));
+            DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripId(busTrip.getArrivalLocation(), busTrip.getId())
+                .orElse(null);
 
         ResBusTripDTO.BusTripInfo busTripInfo = ResBusTripDTO.BusTripInfo.builder()
                 .id(busTrip.getId())
                 .departureLocation(busTrip.getDepartureLocation())
                 .arrivalLocation(busTrip.getArrivalLocation())
-                .journeyDuration(dropOffLocation.getJourneyDuration())
+                .journeyDuration(dropOffLocation!=null ? dropOffLocation.getJourneyDuration() : null)
                 .build();
         return busTripInfo;
     }

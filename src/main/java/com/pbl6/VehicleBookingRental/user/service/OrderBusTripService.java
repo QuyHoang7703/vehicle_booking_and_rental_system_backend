@@ -23,7 +23,7 @@ public interface OrderBusTripService {
     ResOrderBusTripDetailDTO convertToResOrderBusTripDetailDTO(Orders orders) throws ApplicationException;
     ResOrderBusTripDTO convertToResOrderBusTripDTO(OrderBusTrip orderBusTrip) throws ApplicationException, IdInvalidException;
     ResultPaginationDTO getAllOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, Boolean isGone) throws ApplicationException;
-    ResultPaginationDTO getAllOrderBusTrip2(Pageable pageable, OrderStatusEnum status, Boolean isGone) throws ApplicationException;
+//    ResultPaginationDTO getAllOrderBusTrip2(Pageable pageable, OrderStatusEnum status, Boolean isGone) throws ApplicationException;
     void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException;
     ResultPaginationDTO getCustomersByOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, int busTripScheduleId, LocalDate orderDate);
 }

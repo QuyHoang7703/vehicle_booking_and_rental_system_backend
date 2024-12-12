@@ -8,7 +8,6 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
-import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
 import com.pbl6.VehicleBookingRental.user.domain.notification.Notification;
 import com.pbl6.VehicleBookingRental.user.domain.notification.NotificationAccount;
 import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
@@ -20,10 +19,9 @@ import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationAccountRepo;
 import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationRepo;
-import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
-import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRegisterRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
 import com.pbl6.VehicleBookingRental.user.service.*;
+import com.pbl6.VehicleBookingRental.user.service.voucher.AccountVoucherService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.VnPayUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.*;
@@ -33,6 +31,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Date;
@@ -62,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
     private final NotificationAccountRepo notificationAccountRepo;
     private final NotificationServiceImpl notificationServiceImpl;
     private final NotificationService notificationService;
-
+    private final AccountVoucherService accountVoucherService;
 
     @Override
     public ResVnPayDTO createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException {
@@ -101,7 +100,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public String handlePaymentSuccess(String transactionCode) throws IdInvalidException {
+    @Transactional
+    public String handlePaymentSuccess(String transactionCode) throws IdInvalidException, ApplicationException {
         String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
         String orderType = "";
         if(keyOrder.contains("BUS_TRIP")) {
@@ -166,7 +166,8 @@ public class OrderServiceImpl implements OrderService {
         return res;
     }
 
-    private void handleBusTripScheduleOrder(String keyOrderBusTrip, String transactionCode) throws IdInvalidException {
+
+    private void handleBusTripScheduleOrder(String keyOrderBusTrip, String transactionCode) throws IdInvalidException, ApplicationException {
         // Get data from redis
         Object rawJson = redisService.getHashValue(keyOrderBusTrip, "order-detail");
         // Convert json to orderBusTrip object
@@ -212,6 +213,10 @@ public class OrderServiceImpl implements OrderService {
         // Save all order and orderBusTrip, cascade = CascadeType.ALL => orderBusTrip is also saved
         this.ordersRepo.save(order);
 
+        // Update account voucher if order has applied voucher
+        if(orderBusTripRedisDTO.getVoucherId() != null) {
+            this.accountVoucherService.updateVoucherStatus(orderBusTripRedisDTO.getAccount_Id(), orderBusTripRedisDTO.getVoucherId());
+        }
 
         int accountIdOfBusPartner = busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getAccount().getId();
         //create new notification
@@ -314,4 +319,6 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setSeen(false);
         createNotificationToPartner(accountIdOfVehicleRentalPartner,  AccountEnum.CAR_RENTAL_PARTNER,notificationDTO);
     }
+
+
 }

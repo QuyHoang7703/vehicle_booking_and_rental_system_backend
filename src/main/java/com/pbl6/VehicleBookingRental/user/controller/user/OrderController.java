@@ -37,7 +37,8 @@ public class OrderController {
     public ResponseEntity<ResponseInfo<String>> payCallbackHandler(HttpServletRequest request) throws ApplicationException, IdInvalidException {
         String status = request.getParameter("vnp_ResponseCode");
         String transactionCode = request.getParameter("vnp_TxnRef");
-        log.info("Mã giao dịch: " + transactionCode);
+        log.info("Transaction code: " + transactionCode);
+        log.info("Status of transaction: " + status);
 
         if (status.equals("00")) {
             String orderType = this.orderService.handlePaymentSuccess(transactionCode);

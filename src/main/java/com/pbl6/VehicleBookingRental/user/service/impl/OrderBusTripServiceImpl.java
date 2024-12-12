@@ -1,9 +1,8 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
-import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
+import com.pbl6.VehicleBookingRental.user.domain.Voucher.Voucher;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.Bus;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
@@ -24,15 +23,14 @@ import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.DropOffLocationRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
+import com.pbl6.VehicleBookingRental.user.repository.voucher.VoucherRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
-import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +53,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     private final BusTripScheduleRepository busTripScheduleRepository;
     private final BusService busService;
     private final DropOffLocationRepository dropOffLocationRepository;
+    private final VoucherRepository voucherRepository;
 
     @Override
     public OrderBusTripRedisDTO createOrderBusTrip(ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException{
@@ -82,10 +81,26 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setNumberOfTicket(reqOrderBusTripDTO.getNumberOfTicket());
         orderBusTripRedis.setPricePerTicket(dropOffLocation.getPriceTicket());
         orderBusTripRedis.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
-        double priceTotal = reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket();
+        double originTotal = reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket();
+
+        double priceTotal = originTotal;
         if(orderBusTripRedis.getDiscountPercentage() != 0.0) {
-            priceTotal = priceTotal * (1 - orderBusTripRedis.getDiscountPercentage()/100);
+            double busPartnerDiscount = originTotal * orderBusTripRedis.getDiscountPercentage()/100;
+            priceTotal = priceTotal  - busPartnerDiscount;
         }
+        // Check order has voucher ?
+        if(reqOrderBusTripDTO.getVoucherId() != null) {
+            orderBusTripRedis.setVoucherId(reqOrderBusTripDTO.getVoucherId());
+            Voucher voucher = this.voucherRepository.findById(reqOrderBusTripDTO.getVoucherId())
+                    .orElseThrow(() -> new ApplicationException("Voucher not found"));
+
+            double voucherDiscount = originTotal * voucher.getVoucherPercentage()/100;
+            if(voucherDiscount > voucher.getMaxDiscountValue()) {
+                voucherDiscount = voucher.getMaxDiscountValue();
+            }
+            priceTotal = priceTotal - voucherDiscount;
+        }
+
         orderBusTripRedis.setPriceTotal(priceTotal);
 
         orderBusTripRedis.setDepartureLocation(busTripSchedule.getBusTrip().getDepartureLocation());
@@ -93,7 +108,6 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setDepartureTime(busTripSchedule.getDepartureTime());
         orderBusTripRedis.setDepartureDate(reqOrderBusTripDTO.getDepartureDate());
         orderBusTripRedis.setJourneyDuration(dropOffLocation.getJourneyDuration());
-
 
         orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
         orderBusTripRedis.setOrderDate(Instant.now());
@@ -253,34 +267,34 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         return res;
     }
 
-    @Override
-    public ResultPaginationDTO getAllOrderBusTrip2(Pageable pageable, OrderStatusEnum status, Boolean isGone) throws ApplicationException {
-        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
-        Page<OrderBusTrip> orderBusTripPage = this.orderBusTripRepository.findOrderByStatus(email, status, isGone, LocalDateTime.now(), pageable);
-        log.info("SIZE: " + orderBusTripPage.getTotalElements());
-        ResultPaginationDTO res = new ResultPaginationDTO();
-        Meta meta = new Meta();
-        meta.setCurrentPage(pageable.getPageNumber()+1);
-        meta.setPageSize(pageable.getPageSize());
-        meta.setPages(pageable.getPageSize());
-
-        meta.setTotal(orderBusTripPage.getTotalElements());
-
-        List<ResOrderBusTripDTO> resOrderBusTripDTOS = orderBusTripPage.getContent().stream()
-                .map(orderBusTrip -> {
-                    try {
-                        return this.convertToResOrderBusTripDTO(orderBusTrip);
-                    } catch (ApplicationException | IdInvalidException e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .toList();
-
-        res.setMeta(meta);
-        res.setResult(resOrderBusTripDTOS);
-
-        return res;
-    }
+//    @Override
+//    public ResultPaginationDTO getAllOrderBusTrip2(Pageable pageable, OrderStatusEnum status, Boolean isGone) throws ApplicationException {
+//        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
+//        Page<OrderBusTrip> orderBusTripPage = this.orderBusTripRepository.findOrderByStatus(email, status, isGone, LocalDateTime.now(), pageable);
+//        log.info("SIZE: " + orderBusTripPage.getTotalElements());
+//        ResultPaginationDTO res = new ResultPaginationDTO();
+//        Meta meta = new Meta();
+//        meta.setCurrentPage(pageable.getPageNumber()+1);
+//        meta.setPageSize(pageable.getPageSize());
+//        meta.setPages(pageable.getPageSize());
+//
+//        meta.setTotal(orderBusTripPage.getTotalElements());
+//
+//        List<ResOrderBusTripDTO> resOrderBusTripDTOS = orderBusTripPage.getContent().stream()
+//                .map(orderBusTrip -> {
+//                    try {
+//                        return this.convertToResOrderBusTripDTO(orderBusTrip);
+//                    } catch (ApplicationException | IdInvalidException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                })
+//                .toList();
+//
+//        res.setMeta(meta);
+//        res.setResult(resOrderBusTripDTOS);
+//
+//        return res;
+//    }
 
     @Override
     public void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException {

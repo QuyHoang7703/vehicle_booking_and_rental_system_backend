@@ -47,9 +47,6 @@ import java.util.List;
 @Slf4j
 public class AccountController {
     private final AccountService accountService;
-    private final RoleService roleService;
-    private final FilterSpecificationConverter filterSpecificationConverter;
-    private final FilterBuilder filterBuilder;
 
     @GetMapping("/account")
     @ApiMessage("fetch account info")

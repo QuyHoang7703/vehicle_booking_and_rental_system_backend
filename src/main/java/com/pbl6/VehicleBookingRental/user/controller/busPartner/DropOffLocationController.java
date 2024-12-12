@@ -30,7 +30,7 @@ public class DropOffLocationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @GetMapping("/get-duration-distance-for-journey")
+    @PostMapping("/get-duration-distance-for-journey")
     public ResponseEntity<?> getDistance(@RequestBody List<LocationDTO> locationDTOS){
         if (locationDTOS == null || locationDTOS.size() < 2) {
             return ResponseEntity.badRequest().body("Cần ít nhất hai địa điểm.");

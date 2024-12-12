@@ -17,6 +17,7 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer>, JpaS
             "JOIN v.accountVouchers av " +
             "WHERE av.account.id= :accountId " +
             "AND v.expired = false " +
+            "AND v.remainingQuantity > 0" +
             "AND v.minOrderValue <= :totalOrder " +
             "AND av.status = 0")
     List<Voucher> getSuitableVoucherOfAccountForOrder(@Param("accountId") int accountId, @Param("totalOrder") double totalOrder);

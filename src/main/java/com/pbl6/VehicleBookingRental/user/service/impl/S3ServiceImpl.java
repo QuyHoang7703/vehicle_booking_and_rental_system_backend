@@ -49,8 +49,9 @@ public class S3ServiceImpl implements S3Service{
                 metadata.setContentType(contentType);
             } else {
                 // Nếu không phải là hình ảnh, có thể đặt giá trị mặc định hoặc xử lý lỗi
-                throw new IllegalArgumentException("Uploaded file is not an image.");
+//                throw new IllegalArgumentException("Uploaded file is not an image.");
             }
+            metadata.setContentType(contentType != null ? contentType : "multipart/form-data");
             // Push file to S3
             PutObjectResult putObjectResult = amazonS3.putObject(bucketName, filePath, file.getInputStream(), metadata);
             return getImageUrl(filePath);

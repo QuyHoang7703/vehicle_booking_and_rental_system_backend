@@ -12,4 +12,5 @@ public interface AccountVoucherService {
     List<ResVoucherDTO> getSuitableVouchersOfAccountForOrder(double totalOrder) throws ApplicationException;
     List<ResVoucherDTO> getAvailableVouchersForUser() throws ApplicationException;
     void updateVoucherStatus(int accountId, int voucherId) throws IdInvalidException, ApplicationException;
+    List<ResVoucherDTO> getAllVouchers() throws ApplicationException;
 }

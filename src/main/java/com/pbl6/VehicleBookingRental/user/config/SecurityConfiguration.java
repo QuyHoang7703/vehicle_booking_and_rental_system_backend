@@ -89,7 +89,8 @@ public class SecurityConfiguration {
                 "/user/vehicle-register/get-exist-filter-properties",
                 "/api/v1/user/busTripSchedules/**",
                 "/user/vehicle-register/filters-rental-service",
-                "api/v1/bus-partner/businessName"
+                "api/v1/bus-partner/businessName",
+                "/api/v1/vouchers/for-users"
         };
         http
                 .csrf(c->c.disable())

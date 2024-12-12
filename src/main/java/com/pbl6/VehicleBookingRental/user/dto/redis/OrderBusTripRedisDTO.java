@@ -18,6 +18,8 @@ public class OrderBusTripRedisDTO {
     private int account_Id;
     private int numberOfTicket;
     private double pricePerTicket;
+    private double discountPercentage;
+    private double voucherDiscount;
     private double priceTotal;
     private String departureLocation;
     private String arrivalLocation;
@@ -25,7 +27,6 @@ public class OrderBusTripRedisDTO {
     private LocalDate departureDate;
     private Duration journeyDuration;
     private Instant arrivalTime;
-    private double discountPercentage;
     private int busTripScheduleId;
     private Instant orderDate;
     private Integer voucherId;

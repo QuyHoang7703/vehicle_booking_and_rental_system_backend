@@ -5,6 +5,7 @@ import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.voucher.ReqVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.voucher.ResVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.service.voucher.VoucherService;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class VoucherController {
     private final VoucherService voucherService;
 
     @PostMapping("/vouchers")
-    public ResponseEntity<ResVoucherDTO> createVoucher(@RequestBody ReqVoucherDTO reqVoucherDTO) {
+    public ResponseEntity<ResVoucherDTO> createVoucher(@RequestBody ReqVoucherDTO reqVoucherDTO) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.voucherService.createVoucher(reqVoucherDTO));
     }
 

@@ -33,6 +33,8 @@ public class ResOrderBusTripDTO {
         private int numberOfTicket;
         private String pricePerTicket;
         private double discountPercentage;
+//        private double discountValue;
+        private String voucherValue;
         private String priceTotal;
         private Instant orderDate;
     }

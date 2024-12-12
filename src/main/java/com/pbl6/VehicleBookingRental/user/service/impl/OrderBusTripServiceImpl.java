@@ -99,6 +99,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 voucherDiscount = voucher.getMaxDiscountValue();
             }
             priceTotal = priceTotal - voucherDiscount;
+            orderBusTripRedis.setVoucherDiscount(voucherDiscount);
         }
 
         orderBusTripRedis.setPriceTotal(priceTotal);
@@ -418,13 +419,15 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         double pricePerTicket = orderBusTrip.getPricePerTicket();
 //        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
         double discountPercentage = orderBusTrip.getDiscountPercentage();
+//        double voucherValue = orderBusTrip.getVoucherValue();
 //        if(discountPercentage != 0.0){
 //            priceTotal = priceTotal * (1 - discountPercentage/100);
 //        }
 
         orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
-        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(orderBusTrip.getPriceTotal()));
         orderInfo.setDiscountPercentage(discountPercentage);
+        orderInfo.setVoucherValue(orderBusTrip.getVoucherDiscount()!=0.0 ? CurrencyFormatterUtil.formatToVND(orderBusTrip.getVoucherDiscount()) : null);
+        orderInfo.setPriceTotal(CurrencyFormatterUtil.formatToVND(orderBusTrip.getPriceTotal()));
 
         return orderInfo;
     }

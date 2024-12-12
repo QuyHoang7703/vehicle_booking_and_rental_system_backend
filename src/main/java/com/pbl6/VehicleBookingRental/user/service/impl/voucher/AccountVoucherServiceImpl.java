@@ -16,8 +16,6 @@ import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,10 +37,17 @@ public class AccountVoucherServiceImpl implements AccountVoucherService {
                 .orElseThrow(() -> new IdInvalidException("Voucher not found"));
 
         String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
-        if(email == null) {
+        if(email == null || email.equals("anonymousUser")) {
             throw new ApplicationException("Access token is expired or invalid");
         }
+        // Check account has this voucher ?
         Account currentAccount = this.accountService.handleGetAccountByUsername(email);
+        List<AccountVoucher> accountVouchers = this.accountVoucherRepository.findByAccount_Id(currentAccount.getId());
+
+        List<Integer> claimedVoucherIds = accountVouchers.stream().map(accountVoucher -> accountVoucher.getVoucher().getId()).toList();
+        if(claimedVoucherIds.contains(voucherId)) {
+            throw new ApplicationException("Voucher already claimed");
+        }
 
         AccountVoucher accountVoucher = new AccountVoucher();
         accountVoucher.setAccount(currentAccount);
@@ -99,6 +104,52 @@ public class AccountVoucherServiceImpl implements AccountVoucherService {
         accountVoucher.setStatus(VoucherStatusEnum.USED);
         this.accountVoucherRepository.save(accountVoucher);
     }
+
+    @Override
+    public List<ResVoucherDTO> getAllVouchers() throws ApplicationException {
+        String email = SecurityUtil.getCurrentLogin().orElse("");
+        if(email.equals("anonymousUser")) {
+            return this.getAllVouchersWithoutLogin();
+        }
+        Account currentAccount = this.accountService.handleGetAccountByUsername(email);
+            return this.getAllVouchersWithLogin(currentAccount.getId());
+    }
+
+
+    public List<ResVoucherDTO> getAllVouchersWithoutLogin(){
+        List<Voucher> vouchers = this.voucherRepository.findAvailableVouchers();
+        List<ResVoucherDTO> res = vouchers.stream()
+                .map(voucher -> {
+                    ResVoucherDTO resVoucherDTO = voucherService.convertToResVoucherDTO(voucher);
+                    resVoucherDTO.setClaimStatus("AVAILABLE");
+                    return resVoucherDTO;
+                })
+                .toList();
+        return res;
+    }
+
+    public List<ResVoucherDTO> getAllVouchersWithLogin(int accountId) {
+        List<AccountVoucher> accountVouchers = this.accountVoucherRepository.findByAccount_Id(accountId);
+        List<Integer> claimedVoucherIds = accountVouchers.stream()
+                .map(accountVoucher -> accountVoucher.getVoucher().getId())
+                .toList();
+
+        List<Voucher> vouchers = this.voucherRepository.findAvailableVouchers();
+
+        List<ResVoucherDTO> res = vouchers.stream()
+                .map(voucher -> {
+                    String claimStatus = claimedVoucherIds.contains(voucher.getId()) ? "CLAIMED" : "AVAILABLE";
+                    ResVoucherDTO resVoucher = voucherService.convertToResVoucherDTO(voucher);
+                    resVoucher.setClaimStatus(claimStatus);
+                    return resVoucher;
+                })
+                .toList();
+
+
+        return res;
+    }
+
+
 
 
 }

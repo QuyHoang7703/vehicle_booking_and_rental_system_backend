@@ -41,6 +41,7 @@ public class VoucherServiceImpl implements VoucherService {
         voucher.setEndDate(reqVoucherDTO.getEndDate());
         voucher.setVoucherPercentage(reqVoucherDTO.getVoucherPercentage());
         voucher.setMaxDiscountValue(reqVoucherDTO.getMaxDiscountValue());
+        voucher.setMinOrderValue(reqVoucherDTO.getMinOrderValue());
         voucher.setRemainingQuantity(reqVoucherDTO.getRemainingQuantity());
         voucher.setExpired(false);
 

@@ -27,6 +27,7 @@ public class Voucher {
     private double maxDiscountValue;
     private double minOrderValue;
     private int remainingQuantity;
+    private boolean expired;
 
     @OneToMany(mappedBy = "voucher")
     @JsonIgnore

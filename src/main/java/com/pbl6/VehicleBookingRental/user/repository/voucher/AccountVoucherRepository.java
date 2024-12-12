@@ -11,4 +11,5 @@ import java.util.Optional;
 @Repository
 public interface AccountVoucherRepository extends JpaRepository<AccountVoucher, Integer>, JpaSpecificationExecutor<AccountVoucher> {
     Optional<AccountVoucher> findByAccount_IdAndVoucher_Id(int accountId, int voucherId);
+    List<AccountVoucher> findByAccount_Id(int accountId);
 }

@@ -190,6 +190,7 @@ public class OrderServiceImpl implements OrderService {
         orderBusTrip.setNumberOfTicket(orderBusTripRedisDTO.getNumberOfTicket());
         orderBusTrip.setPricePerTicket(orderBusTripRedisDTO.getPricePerTicket());
         orderBusTrip.setDiscountPercentage(orderBusTripRedisDTO.getDiscountPercentage());
+        orderBusTrip.setVoucherDiscount(orderBusTripRedisDTO.getVoucherDiscount());
         orderBusTrip.setPriceTotal(orderBusTripRedisDTO.getPriceTotal());
         orderBusTrip.setStatus(OrderStatusEnum.COMPLETED);
 

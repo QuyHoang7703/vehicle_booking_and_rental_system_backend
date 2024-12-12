@@ -7,14 +7,20 @@ import com.pbl6.VehicleBookingRental.user.dto.request.voucher.ReqVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.voucher.ResVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.repository.voucher.VoucherRepository;
 import com.pbl6.VehicleBookingRental.user.service.voucher.VoucherService;
+import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,7 +30,10 @@ public class VoucherServiceImpl implements VoucherService {
     private final VoucherRepository voucherRepository;
 
     @Override
-    public ResVoucherDTO createVoucher(ReqVoucherDTO reqVoucherDTO) {
+    public ResVoucherDTO createVoucher(ReqVoucherDTO reqVoucherDTO) throws ApplicationException {
+        if(reqVoucherDTO.getEndDate().isBefore(reqVoucherDTO.getStartDate())){
+            throw new ApplicationException("End day of voucher must be after start day");
+        }
         Voucher voucher = new Voucher();
         voucher.setName(reqVoucherDTO.getName());
         voucher.setDescription(reqVoucherDTO.getDescription());
@@ -33,6 +42,7 @@ public class VoucherServiceImpl implements VoucherService {
         voucher.setVoucherPercentage(reqVoucherDTO.getVoucherPercentage());
         voucher.setMaxDiscountValue(reqVoucherDTO.getMaxDiscountValue());
         voucher.setRemainingQuantity(reqVoucherDTO.getRemainingQuantity());
+        voucher.setExpired(false);
 
         return this.convertToResVoucherDTO(this.voucherRepository.save(voucher));
     }
@@ -74,11 +84,30 @@ public class VoucherServiceImpl implements VoucherService {
                 .startDate(voucher.getStartDate())
                 .endDate(voucher.getEndDate())
                 .voucherPercentage(voucher.getVoucherPercentage())
-                .maxDiscountValue(voucher.getMaxDiscountValue())
-                .minOrderValue(voucher.getMinOrderValue())
+                .maxDiscountValue(CurrencyFormatterUtil.formatToVND(voucher.getMaxDiscountValue()))
+                .minOrderValue(CurrencyFormatterUtil.formatToVND(voucher.getMinOrderValue()))
                 .remainingQuantity(voucher.getRemainingQuantity())
+                .expired(voucher.isExpired())
                 .build();
         return res;
+    }
+
+    @Scheduled(cron = "0 */2 * * * *")
+    @Transactional
+    public void updateStatusOfVoucher() {
+        LocalDate today = LocalDate.now();
+
+        List<Voucher> vouchersToUpdate = voucherRepository.findByEndDateBefore(today);
+
+        if (!vouchersToUpdate.isEmpty()) {
+            vouchersToUpdate.forEach(voucher -> {
+                voucher.setExpired(true);
+                log.info("Voucher with ID: {} marked as expired.", voucher.getId());
+            });
+            voucherRepository.saveAll(vouchersToUpdate);
+        } else {
+            log.debug("No vouchers found to be expired.");
+        }
     }
 
 

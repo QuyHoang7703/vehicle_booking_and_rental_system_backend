@@ -31,11 +31,16 @@ public class AccountVoucherController {
         return ResponseEntity.status(HttpStatus.OK).body(this.accountVoucherService.getSuitableVouchersOfAccountForOrder(totalOrder));
     }
 
-    @GetMapping("vouchers/available-voucher")
-    public ResponseEntity<List<ResVoucherDTO>> getAvailableVoucherForUser() throws ApplicationException {
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountVoucherService.getAvailableVouchersForUser());
-    }
+//    @GetMapping("vouchers/available-voucher")
+//    public ResponseEntity<List<ResVoucherDTO>> getAvailableVoucherForUser() throws ApplicationException {
+//        return ResponseEntity.status(HttpStatus.OK).body(this.accountVoucherService.getAvailableVouchersForUser());
+//    }
 
+    @GetMapping("vouchers/for-users")
+    public ResponseEntity<List<ResVoucherDTO>> getAllVoucherForUser() throws ApplicationException {
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountVoucherService.getAllVouchers());
+    }
 
 
 }

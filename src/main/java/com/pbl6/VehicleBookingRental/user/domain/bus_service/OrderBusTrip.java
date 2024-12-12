@@ -47,6 +47,8 @@ public class OrderBusTrip {
 //    private Instant departureDateTime;
     private Instant arrivalTime;
 
+    private double voucherDiscount;
+
     @ManyToOne
     @JoinColumn(name = "account_id")
     @JsonIgnore

@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.voucher;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResVoucherDTO {
     private int id;
     private String name;
@@ -18,7 +20,10 @@ public class ResVoucherDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate endDate;
     private double voucherPercentage;
-    private double maxDiscountValue;
-    private double minOrderValue;
+    private String maxDiscountValue;
+    private String minOrderValue;
     private int remainingQuantity;
+    private boolean expired;
+    private String claimStatus;
+
 }

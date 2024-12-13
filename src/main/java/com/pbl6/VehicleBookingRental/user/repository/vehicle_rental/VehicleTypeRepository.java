@@ -14,4 +14,5 @@ public interface VehicleTypeRepository extends JpaRepository<VehicleType,Integer
     Optional<VehicleType> findVehicleTypeByName(String name);
     @Query("SELECT DISTINCT v.name FROM VehicleType v")
     List<String> findDistinctNames();
+
 }

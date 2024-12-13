@@ -16,4 +16,5 @@ public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,St
     @Query("select o from CarRentalOrders o where (:location is null or o.carRentalService.vehicleRegister.location = :location)" +
                                             "and (:vehicle_type is null or o.carRentalService.vehicleRegister.vehicleType.name = :vehicle_type)   ")
     List<CarRentalOrders> findCarRentalOrdersByVehicleRegisterProperties(@Param("location") String location,@Param("vehicle_type")String vehicle_type);
+    List<CarRentalOrders> findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(int carRentalPartnerId);
 }

@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 public interface VehicleRegisterInterface {
     public VehicleType findVehicleTypeById(int id);
@@ -28,4 +30,5 @@ public interface VehicleRegisterInterface {
     public boolean update_status(int vehicleRegisterId, String status);
     public List<VehicleRentalServiceDTO> filter_by_vehicle_attribute(String location, String manufacture, String vehicle_type, int service_type, String startDate,String endDate);
     public List<String>getExistFilterValue(String properties);
+
 }

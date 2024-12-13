@@ -35,9 +35,25 @@ public class ChatController {
     @MessageMapping("/chat/send-message")
     public void processMessage(@Payload MessageDTO messageReq){
         MessageDTO storedMessage = chatMessageService.saveMessage(messageReq);
+        // send to Receiver
         messagingTemplate.convertAndSendToUser(
                 String.valueOf(messageReq.getRecipientId()),
                 String.format("/%s/queue/messages",messageReq.getRecipient_type()),
+                MessageDTO.builder()
+                        .id(storedMessage.getId())
+                        .senderId(storedMessage.getSenderId())
+                        .sender_type(storedMessage.getSender_type())
+                        .seen_at(storedMessage.getSeen_at())
+                        .sendAt(storedMessage.getSendAt())
+                        .content(storedMessage.getContent())
+                        .conversation_id(storedMessage.getConversation_id())
+                        .isSeen(storedMessage.isSeen())
+                        .build()
+        );
+        //send to Sender
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(messageReq.getSenderId()),
+                String.format("/%s/queue/messages",messageReq.getSender_type()),
                 MessageDTO.builder()
                         .id(storedMessage.getId())
                         .senderId(storedMessage.getSenderId())
@@ -53,6 +69,7 @@ public class ChatController {
     @MessageMapping("/chat/update-message")
     public void updateMessage(@Payload MessageDTO messageReq){
         MessageDTO storedMessage = chatMessageService.updateMessage(messageReq);
+        // send to receiver
         messagingTemplate.convertAndSendToUser(
                 String.format("%s",messageReq.getRecipientId()),
                 String.format("/%s/queue/messages",messageReq.getRecipient_type()),
@@ -60,6 +77,21 @@ public class ChatController {
                         .id(storedMessage.getId())
                         .recipient_type(storedMessage.getRecipient_type())
                         .recipientId(storedMessage.getRecipientId())
+                        .senderId(storedMessage.getSenderId())
+                        .sender_type(storedMessage.getSender_type())
+                        .seen_at(storedMessage.getSeen_at())
+                        .sendAt(storedMessage.getSendAt())
+                        .content(storedMessage.getContent())
+                        .conversation_id(storedMessage.getConversation_id())
+                        .isSeen(storedMessage.isSeen())
+                        .build()
+        );
+        //send to Sender
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(messageReq.getSenderId()),
+                String.format("/%s/queue/messages",messageReq.getSender_type()),
+                MessageDTO.builder()
+                        .id(storedMessage.getId())
                         .senderId(storedMessage.getSenderId())
                         .sender_type(storedMessage.getSender_type())
                         .seen_at(storedMessage.getSeen_at())

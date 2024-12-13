@@ -194,7 +194,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
 
         try{
-            messageRepo.save(message);
+            Message savedMessage = messageRepo.save(message);
+            messageDTO.setId(savedMessage.getId());
         }catch (Exception e){
             System.out.println(e.getLocalizedMessage());
         }
@@ -222,7 +223,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 if(conversation.isPresent()){
                     message.get().setConversation(conversation.get());
                 }
-                messageRepo.save(message.get());
+                Message savedMessage = messageRepo.save(message.get());
+                messageDTO.setId(savedMessage.getId());
             }catch (Exception e){
                 System.out.println(e.getLocalizedMessage());
             }

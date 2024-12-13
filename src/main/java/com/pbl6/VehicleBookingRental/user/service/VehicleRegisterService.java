@@ -10,6 +10,7 @@ import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServic
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.*;
+import com.pbl6.VehicleBookingRental.user.util.DateUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     @Autowired
     private VehicleRentalOrderRepo vehicleRentalOrderRepo;
     @Autowired
-    private  BusinessPartnerService businessPartnerService;
+    private DateUtil dateUtil;
     @Override
     public VehicleType findVehicleTypeById(int id) {
         return vehicleTypeRepo.findById(id).orElse(null);
@@ -343,7 +344,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     }
     private int calculateAmountByOrder(Instant startDate,Instant endDate,int car_rental_service_id){
         // Lấy danh sách các ngày
-        List<LocalDate> days = getDaysBetweenDates(startDate, endDate);
+        List<LocalDate> days = dateUtil.getDaysBetweenDates(startDate, endDate);
         // Lấy số lượng xe thuê theo từng ngày
         Map<LocalDate, Integer> carQuantitiesByDay = getCarQuantitiesByDay(days, car_rental_service_id);
 
@@ -351,16 +352,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 .max(Integer::compareTo) // Tìm giá trị lớn nhất
                 .orElse(0); // Nếu Map trống, trả về giá trị mặc định là 0
     }
-    private List<LocalDate> getDaysBetweenDates(Instant startDate, Instant endDate) {
-        // Chuyển đổi Instant sang LocalDate
-        LocalDate start = startDate.atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate end = endDate.atZone(ZoneId.systemDefault()).toLocalDate();
 
-        // Tạo stream các ngày từ start đến end
-        return Stream.iterate(start, date -> date.plusDays(1))
-                .limit(ChronoUnit.DAYS.between(start, end) + 1) // Thêm 1 để bao gồm cả end
-                .collect(Collectors.toList());
-    }
     private Map<LocalDate, Integer> getCarQuantitiesByDay(List<LocalDate> days, int carRentalServiceId) {
         // Giả sử bạn đã có danh sách các đơn đặt xe từ DB >= currentDate
         List<CarRentalOrders> orders = vehicleRentalOrderRepo.findFutureOrdersByCarRentalServiceId(carRentalServiceId,Instant.now());

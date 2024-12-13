@@ -19,4 +19,10 @@ public class VehicleRentalStatisticsController {
                                                               @RequestParam(required = false,value = "vehicle_type")String vehicleType){
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalStatisticService.statisticFromLocationOrVehicleType(location,vehicleType));
     }
+    @GetMapping("/statistic-by-date")
+    public ResponseEntity<?> statisticByDate(@RequestParam("start_date") String startDate,@RequestParam("end_date")String endDate)
+    {
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalStatisticService.statisticByDate(startDate,endDate));
+    }
+    
 }

@@ -174,7 +174,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         }else{
             //Thuê nhiều ngày
             //Tiền startTime
-            total += calculatePriceInDay(start,LocalDateTime.of(end.toLocalDate(), LocalTime.of(22, 0)),priceOneDay);
+            total += calculatePriceInDay(start,LocalDateTime.of(start.toLocalDate(), LocalTime.of(22, 0)),priceOneDay);
             total += calculatePriceInDay(LocalDateTime.of(end.toLocalDate(), LocalTime.of(6, 0)),end,priceOneDay);
 
             // Tính giá cho các ngày đầy đủ ở giữa
@@ -192,26 +192,26 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         if (start.getHour() < 12) {
             // Nếu bắt đầu trước 12 giờ
             if (end.getHour() <= 12) {
-                total += (Duration.between(start, end).toHours() * priceOneDay) / 8;; // Thue theo tieng
+                total += (Duration.between(start, end).toHours() * priceOneDay) / 24; // Thue theo tieng
             } else if(end.getHour() < 18){
-                total += priceOneDay / 2 + (Duration.between(LocalDateTime.of(end.toLocalDate(), java.time.LocalTime.NOON), end).toHours() * priceOneDay) / 8; // Thuê nửa ngày + số tiếng từ 12 giờ -> endDate
+                total += priceOneDay / 2 + (Duration.between(LocalDateTime.of(end.toLocalDate(), java.time.LocalTime.NOON), end).toHours() * priceOneDay) / 24; // Thuê nửa ngày + số tiếng từ 12 giờ -> endDate
             }else{
                 total += priceOneDay;
             }
         } else if (start.getHour() < 18) {
             // Từ 12 giờ đến 18 giờ
             if (end.getHour() <= 18) {
-                total += (Duration.between(start, end).toHours() * priceOneDay) / 8;; // Thue theo tieng
+                total += (Duration.between(start, end).toHours() * priceOneDay) / 24; // Thue theo tieng
             } else if(end.getHour() < 22){
                 total += priceOneDay / 2 + (Duration.between(LocalDateTime.of(end.toLocalDate(), LocalTime.of(18, 0)), end).toHours()
-                        * priceOneDay) / 8; // Thuê nửa ngày + số tiếng từ 12 giờ -> endDate
+                        * priceOneDay) / 24; // Thuê nửa ngày + số tiếng từ 12 giờ -> endDate
             } else{
                 //Sau 18 giờ
                 total += priceOneDay;
             }
         } else {
             // Sau 18 giờ
-            total += (Duration.between(start, end).toHours() * priceOneDay) / 8; // Tính theo giờ còn lại sau 18 giờ
+            total += (Duration.between(start, end).toHours() * priceOneDay) / 24; // Tính theo giờ còn lại sau 18 giờ
         }
         return total;
     }

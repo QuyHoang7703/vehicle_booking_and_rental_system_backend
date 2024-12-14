@@ -18,9 +18,9 @@ public interface VehicleRegisterRepo extends JpaRepository<VehicleRegister,Integ
     public int updateStatus(int vehicle_register_id,String status);
 
     @Query("SELECT u FROM VehicleRegister u INNER JOIN VehicleType v ON u.vehicleType.id = v.id " +
-            "WHERE (:location IS NULL OR u.location LIKE CONCAT('%', :location, '%')) " +
-            "AND (:manufacturer IS NULL OR u.manufacturer LIKE CONCAT('%', :manufacturer, '%')) " +
-            "AND (:vehicle_type_name IS NULL OR v.name LIKE CONCAT('%', :vehicle_type_name, '%'))")
+            "WHERE (:location IS NULL OR u.location = :location )" +
+            "AND (:manufacturer IS NULL OR u.manufacturer = :manufacturer )" +
+            "AND (:vehicle_type_name IS NULL OR v.name = :vehicle_type_name)")
     public List<VehicleRegister> findVehicleRegisterByLocationOrManufacturerOrVehicleType_Name(
             @Param("location") String location,
             @Param("manufacturer") String manufacturer,

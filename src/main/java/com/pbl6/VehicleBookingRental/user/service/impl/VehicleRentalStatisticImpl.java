@@ -150,106 +150,36 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         }
         return vehicleRentalStatisticDTOS;
     }
-//    public Map<Integer, Double> calculateMonthlyRevenue(List<CarRentalOrders> orders, int year){
-//        Map<Integer, Double> monthlyRevenue = new HashMap<>();
-//        // Initialize revenue for each month
-//        for (int month = 1; month <= 12; month++) {
-//            monthlyRevenue.put(month, 0.0);
-//        }
-//
-//        for (CarRentalOrders order : orders) {
-//            LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
-//            LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
-//            LocalDate oldStartDate , oldEndDate ; // stored to calculate venue
-//            if (startDate.getYear() != year && endDate.getYear() != year) {
-//                continue; // Skip orders that don't overlap the target year
-//            }
-//            // both startDate and endDate belong to year
-//            if (startDate.getYear() >= year && endDate.getYear() <= year) {
-//
-//            }
-//            // Ensure the start and end dates are within the same year
-//            if(startDate.getYear() < year){
-//                startDate = LocalDate.of(year, 1, 1);
-//                oldStartDate = startDate;
-//            }
-//            if(endDate.getYear() > year){
-//                endDate = LocalDate.of(year, 12, 31);
-//                oldEndDate = endDate;
-//            }
-//            // Distribute revenue across the months
-//            while (!startDate.isAfter(endDate)) {
-//                int currentMonth = startDate.getMonthValue();
-//                LocalDate monthEnd = startDate.withDayOfMonth(startDate.lengthOfMonth());
-//
-//                if (monthEnd.isAfter(endDate)) {
-//                    monthEnd = endDate;
-//                }
-//
-//                long totalDays = ChronoUnit.DAYS.between(
-//                        startDate,monthEnd.plusDays(1)
-//                );
-//
-//                double priceOrders = (order.getAmount() * daysInMonth) / totalDays;
-//                monthlyRevenue.put(currentMonth, monthlyRevenue.get(currentMonth) + monthlyAmount);
-//
-//                startDate = monthEnd.plusDays(1); // Move to the next month
-//            }
-//
-//        }
-//        return monthlyRevenue;
-//    }
-    public double calculatePriceOrderByStartAndEndDate(Instant startRentalTime,Instant endRentalTime,double priceOneDay){
-        double total = 0.0;
-        // Chuyển đổi Instant thành LocalDateTime để làm việc với giờ cụ thể
-        LocalDateTime start = LocalDateTime.ofInstant(startRentalTime, ZoneId.systemDefault());
-        LocalDateTime end = LocalDateTime.ofInstant(endRentalTime, ZoneId.systemDefault());
-
-        //Thue trong cung 1 ngay
-        if(start.toLocalDate().equals(end.toLocalDate())){
-            total = calculatePriceInDay(start,end,priceOneDay);
-        }else{
-            //Thuê nhiều ngày
-            //Tiền startTime
-            total += calculatePriceInDay(start,LocalDateTime.of(end.toLocalDate(), LocalTime.of(22, 0)),priceOneDay);
-            total += calculatePriceInDay(LocalDateTime.of(end.toLocalDate(), LocalTime.of(6, 0)),end,priceOneDay);
-
-            // Tính giá cho các ngày đầy đủ ở giữa
-            LocalDateTime currentDay = start.toLocalDate().atStartOfDay().plusDays(1); // 12-12-2024 (toLocalDate)-> 00:00:00 12-12-2024 -> 00:00:00 13-12-2024
-            while (currentDay.isBefore(end.toLocalDate().atStartOfDay())) {
-                total += priceOneDay;
-                currentDay = currentDay.plusDays(1);
-            }
+    @Override
+    public Map<Integer, Double> calculateMonthlyRevenue( int year){
+        Map<Integer, Double> monthlyRevenue = new HashMap<>();
+        // Initialize revenue for each month
+        for (int month = 1; month <= 12; month++) {
+            monthlyRevenue.put(month, 0.0);
         }
-        return total;
-    }
-    //tính giá tiền khi startTime và endTime trong cùng 1 ngày
-    public double calculatePriceInDay(LocalDateTime start,LocalDateTime end,double priceOneDay){
-        double total = 0.0;
-        if (start.getHour() < 12) {
-            // Nếu bắt đầu trước 12 giờ
-            if (end.getHour() <= 12) {
-                total += (Duration.between(start, end).toHours() * priceOneDay) / 8;; // Thue theo tieng
-            } else if(end.getHour() < 18){
-                total += priceOneDay / 2 + (Duration.between(LocalDateTime.of(end.toLocalDate(), java.time.LocalTime.NOON), end).toHours() * priceOneDay) / 8; // Thuê nửa ngày + số tiếng từ 12 giờ -> endDate
-            }else{
-                total += priceOneDay;
+
+        for (CarRentalOrders order : vehicleRentalOrderRepo.findAll()) {
+            LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
+            LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
+
+            //Số tiền dư ra của các tháng hoặc năm khác nhau
+
+            if (startDate.getYear() != year && endDate.getYear() != year) {
+                continue; // Skip orders that don't overlap the target year
             }
-        } else if (start.getHour() < 18) {
-            // Từ 12 giờ đến 18 giờ
-            if (end.getHour() <= 18) {
-                total += (Duration.between(start, end).toHours() * priceOneDay) / 8;; // Thue theo tieng
-            } else if(end.getHour() < 22){
-                total += priceOneDay / 2 + (Duration.between(LocalDateTime.of(end.toLocalDate(), LocalTime.of(18, 0)), end).toHours()
-                        * priceOneDay) / 8; // Thuê nửa ngày + số tiếng từ 12 giờ -> endDate
-            } else{
-                //Sau 18 giờ
-                total += priceOneDay;
+            // Ensure the start and end dates are within the same year
+            if(startDate.getYear() < year){
+                startDate = LocalDate.of(year, 1, 1);
             }
-        } else {
-            // Sau 18 giờ
-            total += (Duration.between(start, end).toHours() * priceOneDay) / 8; // Tính theo giờ còn lại sau 18 giờ
+            if(endDate.getYear() > year){
+                endDate = LocalDate.of(year, 12, 31);
+            }
+
+            int currentMonth = startDate.getMonthValue();
+            monthlyRevenue.put(currentMonth, monthlyRevenue.get(currentMonth) + order.getTotal() );
+
         }
-        return total;
+        return monthlyRevenue;
     }
+
 }

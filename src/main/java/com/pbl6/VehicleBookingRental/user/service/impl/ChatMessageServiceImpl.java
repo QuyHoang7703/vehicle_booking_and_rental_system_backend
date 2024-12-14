@@ -222,6 +222,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
                 Optional<Conversation> conversation = conversationRepo.findById(messageDTO.getConversation_id());
                 if(conversation.isPresent()){
                     message.get().setConversation(conversation.get());
+                    //Get recipient
+                    List<ConversationAccount> recipient = conversationAccountRepo.getConnectedAccountWithConversation
+                            (conversation.get().getId(), messageDTO.getSenderId(), messageDTO.getSender_type());
+                    messageDTO.setRecipientId(recipient.get(0).getAccount().getId());
+                    messageDTO.setRecipient_type(recipient.get(0).getRoleAccount());
                 }
                 Message savedMessage = messageRepo.save(message.get());
                 messageDTO.setId(savedMessage.getId());

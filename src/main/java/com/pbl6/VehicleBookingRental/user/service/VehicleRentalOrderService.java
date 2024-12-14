@@ -31,8 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
-import java.time.Instant;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Optional;
@@ -161,5 +160,59 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
                 .priceTotal(carRentalOrder.getTotal())
                 .build();
         return pricingInfo;
+    }
+    @Override
+    public double calculatePriceOrderByStartAndEndDate(Instant startRentalTime,Instant endRentalTime,double priceOneDay){
+        double total = 0.0;
+        // Chuyển đổi Instant thành LocalDateTime để làm việc với giờ cụ thể
+        LocalDateTime start = LocalDateTime.ofInstant(startRentalTime, ZoneId.systemDefault());
+        LocalDateTime end = LocalDateTime.ofInstant(endRentalTime, ZoneId.systemDefault());
+
+        //Thue trong cung 1 ngay
+        if(start.toLocalDate().equals(end.toLocalDate())){
+            total = calculatePriceInDay(start,end,priceOneDay);
+        }else{
+            //Thuê nhiều ngày
+            //Tiền startTime
+            total += calculatePriceInDay(start,LocalDateTime.of(end.toLocalDate(), LocalTime.of(22, 0)),priceOneDay);
+            total += calculatePriceInDay(LocalDateTime.of(end.toLocalDate(), LocalTime.of(6, 0)),end,priceOneDay);
+
+            // Tính giá cho các ngày đầy đủ ở giữa
+            LocalDateTime currentDay = start.toLocalDate().atStartOfDay().plusDays(1); // 12-12-2024 (toLocalDate)-> 00:00:00 12-12-2024 -> 00:00:00 13-12-2024
+            while (currentDay.isBefore(end.toLocalDate().atStartOfDay())) {
+                total += priceOneDay;
+                currentDay = currentDay.plusDays(1);
+            }
+        }
+        return total;
+    }
+    //tính giá tiền khi startTime và endTime trong cùng 1 ngày
+    public double calculatePriceInDay(LocalDateTime start,LocalDateTime end,double priceOneDay){
+        double total = 0.0;
+        if (start.getHour() < 12) {
+            // Nếu bắt đầu trước 12 giờ
+            if (end.getHour() <= 12) {
+                total += (Duration.between(start, end).toHours() * priceOneDay) / 8;; // Thue theo tieng
+            } else if(end.getHour() < 18){
+                total += priceOneDay / 2 + (Duration.between(LocalDateTime.of(end.toLocalDate(), java.time.LocalTime.NOON), end).toHours() * priceOneDay) / 8; // Thuê nửa ngày + số tiếng từ 12 giờ -> endDate
+            }else{
+                total += priceOneDay;
+            }
+        } else if (start.getHour() < 18) {
+            // Từ 12 giờ đến 18 giờ
+            if (end.getHour() <= 18) {
+                total += (Duration.between(start, end).toHours() * priceOneDay) / 8;; // Thue theo tieng
+            } else if(end.getHour() < 22){
+                total += priceOneDay / 2 + (Duration.between(LocalDateTime.of(end.toLocalDate(), LocalTime.of(18, 0)), end).toHours()
+                        * priceOneDay) / 8; // Thuê nửa ngày + số tiếng từ 12 giờ -> endDate
+            } else{
+                //Sau 18 giờ
+                total += priceOneDay;
+            }
+        } else {
+            // Sau 18 giờ
+            total += (Duration.between(start, end).toHours() * priceOneDay) / 8; // Tính theo giờ còn lại sau 18 giờ
+        }
+        return total;
     }
 }

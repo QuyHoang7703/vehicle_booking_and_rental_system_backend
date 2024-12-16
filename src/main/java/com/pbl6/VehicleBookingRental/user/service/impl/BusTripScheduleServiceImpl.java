@@ -148,14 +148,20 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         BusTrip busTrip = this.busTripRepository.findById(busTripId)
                 .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
 
+        if(busTrip.getBusTripSchedules() == null || busTrip.getBusTripSchedules().isEmpty()) {
+            return null;
+        }
         if(!busTrip.getBusPartner().getBusinessPartner().equals(businessPartner)) {
             throw new ApplicationException("You aren't allowed to see bus trip schedule of this bus trip");
         }
 
         Specification<BusTripSchedule> newSpec = (root, query, criteriaBuilder) -> {
-            Join<BusTripSchedule, BusTrip> joinBus = root.join("busTrip");
-            Join<BusTrip, BusPartner> joinBusPartner = joinBus.join("busPartner");
-            return criteriaBuilder.equal(joinBusPartner.get("id"), businessPartner.getBusPartner().getId());
+            Join<BusTripSchedule, BusTrip> joinBusTrip = root.join("busTrip");
+            Predicate predicateByBusTripId = criteriaBuilder.equal(joinBusTrip.get("id"), busTripId);
+
+            Join<BusTrip, BusPartner> joinBusPartner = joinBusTrip.join("busPartner");
+            Predicate predicateByBusPartnerId = criteriaBuilder.equal(joinBusPartner.get("id"), businessPartner.getId());
+            return criteriaBuilder.and(predicateByBusTripId, predicateByBusPartnerId);
         };
 
         Specification<BusTripSchedule> finalSpec = spec.and(newSpec);

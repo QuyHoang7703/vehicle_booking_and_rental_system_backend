@@ -26,4 +26,5 @@ public interface OrderBusTripService {
 //    ResultPaginationDTO getAllOrderBusTrip2(Pageable pageable, OrderStatusEnum status, Boolean isGone) throws ApplicationException;
     void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException;
     ResultPaginationDTO getCustomersByOrderBusTrip(Specification<OrderBusTrip> spec, Pageable pageable, int busTripScheduleId, LocalDate orderDate);
+
 }

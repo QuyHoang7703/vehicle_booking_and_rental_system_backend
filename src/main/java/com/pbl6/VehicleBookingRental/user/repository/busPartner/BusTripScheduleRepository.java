@@ -32,13 +32,5 @@ public interface BusTripScheduleRepository extends JpaRepository<BusTripSchedule
 
     Page<BusTripSchedule> findByBus_Id(int busId, Pageable pageable);
 
-//    @Query("SELECT bts from BusTripSchedule bts " +
-//            "JOIN bts.busTrip bt " +
-//            "JOIN bt.dropOffLocations dol " +
-//            "WHERE bt.departureLocation = :departureLocation " +
-//            "AND dol.province = :arrivalProvince")
-//    Page<BusTripSchedule> findForUser(Specification<BusTripSchedule> spec,
-//                                      Pageable pageable,
-//                                      @Param("departureLocation") String departureLocation,
-//                                      @Param("arrivalProvince") String arrivalProvince);
+    List<BusTripSchedule> findByBusTrip_IdIn(List<Integer> busTripIds);
 }

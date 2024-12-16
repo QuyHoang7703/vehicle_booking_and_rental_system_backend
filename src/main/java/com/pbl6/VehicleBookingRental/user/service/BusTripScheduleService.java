@@ -24,4 +24,7 @@ public interface BusTripScheduleService {
     List<BreakDay> getBreakDaysForBusTripSchedule(int busTripScheduleId) throws IdInvalidException, ApplicationException;
     void cancelBusTripSchedule(int busTripScheduleId, LocalDate cancelDate) throws IdInvalidException, ApplicationException;
     boolean checkBusTripScheduleHasOrder(int busTripScheduleId) throws IdInvalidException, ApplicationException;
+
+    // Statistic
+//    List<Integer> getList
 }

@@ -10,6 +10,8 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
+
 public interface BusTripService {
     public BusTrip createBusTrip(ReqBusTripDTO reqBusTripDTO) throws ApplicationException;
     public BusTrip updateBusTrip(ReqBusTripDTO reqBusTripDTO) throws IdInvalidException, ApplicationException;
@@ -19,4 +21,7 @@ public interface BusTripService {
     ResBusTripDTO.BusTripInfo convertToBusTripInfo(BusTrip busTrip) throws ApplicationException;
     void deleteBusTrip(int busTripId) throws IdInvalidException, ApplicationException;
     ResPickupAndDropOffLocation getPickupAndDropOffLocationById(int id, String arrivalProvince) throws IdInvalidException, ApplicationException;
+
+    // Statistic
+//    List<Integer> getBusTripIdsOfBusPartner();
 }

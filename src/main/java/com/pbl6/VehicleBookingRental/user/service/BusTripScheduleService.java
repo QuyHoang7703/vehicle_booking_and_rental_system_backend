@@ -18,13 +18,13 @@ public interface BusTripScheduleService {
     BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException;
     ResBusTripScheduleDetailForAdminDTO convertToResBusTripScheduleDetailDTO(BusTripSchedule busTripSchedule, LocalDate departureDate);
     ResBusTripScheduleDetailForAdminDTO getBusTripScheduleById(int id, LocalDate departureDate) throws IdInvalidException;
-    ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable, int busTripId, LocalDate departureDate) throws ApplicationException, IdInvalidException;
+    ResultPaginationDTO getAllBusTripScheduleByBusTripId(Specification<BusTripSchedule> spec, Pageable pageable, int busTripId, LocalDate departureDate) throws ApplicationException, IdInvalidException;
     ResultPaginationDTO getAllBusTripScheduleAvailableForUser(Specification<BusTripSchedule> spec, Pageable pageable,String departureLocation, String arrivalProvince, LocalDate departureDate) throws ApplicationException;
     ResBusTripScheduleDTO getBusTripScheduleByIdForUser(int busTripScheduleId, LocalDate departureDate, String arrivalProvince) throws IdInvalidException, ApplicationException;
     List<BreakDay> getBreakDaysForBusTripSchedule(int busTripScheduleId) throws IdInvalidException, ApplicationException;
     void cancelBusTripSchedule(int busTripScheduleId, LocalDate cancelDate) throws IdInvalidException, ApplicationException;
     boolean checkBusTripScheduleHasOrder(int busTripScheduleId) throws IdInvalidException, ApplicationException;
 
-    // Statistic
-//    List<Integer> getList
+    public ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException;
+
 }

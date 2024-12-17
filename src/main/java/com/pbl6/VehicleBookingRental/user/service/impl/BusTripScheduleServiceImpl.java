@@ -142,7 +142,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
-    public ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable, int busTripId, LocalDate departureDate) throws ApplicationException, IdInvalidException {
+    public ResultPaginationDTO getAllBusTripScheduleByBusTripId(Specification<BusTripSchedule> spec, Pageable pageable, int busTripId, LocalDate departureDate) throws ApplicationException, IdInvalidException {
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
 
         BusTrip busTrip = this.busTripRepository.findById(busTripId)
@@ -384,7 +384,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     public List<ResBusTripScheduleDTO> convertToResBusTripScheduleDTO2(BusTripSchedule busTripSchedule, LocalDate departureDate, String arrivalProvince) throws IdInvalidException, ApplicationException {
         List<ResBusTripScheduleDTO> resBusTripScheduleDTOS = new ArrayList<>();
 
-        List<DropOffLocation> dropOffLocations = busTripSchedule.getBusTrip().getDropOffLocations();
+//        List<DropOffLocation> dropOffLocations = busTripSchedule.getBusTrip().getDropOffLocations();
 
         DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(arrivalProvince, busTripSchedule.getId())
                 .orElseThrow(() -> new ApplicationException("Drop off location not found"));
@@ -465,6 +465,75 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         return res;
     }
 
+    public ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException {
+        ResultPaginationDTO res = new ResultPaginationDTO();
+
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+
+        Specification<BusTripSchedule> findByBusPartnerSpec = (root, query, criteriaBuilder) ->{
+            Join<BusTripSchedule, BusTrip> joinBusTrip = root.join("busTrip");
+            Join<BusTrip, BusPartner> joinBusPartner = joinBusTrip.join("busPartner");
+            return criteriaBuilder.equal(joinBusPartner.get("id"), businessPartner.getBusPartner().getId());
+        };
+
+        Specification<BusTripSchedule> newSpec = spec.and(findByBusPartnerSpec);
+        Page<BusTripSchedule> busTripSchedulePage = this.busTripScheduleRepository.findAll(newSpec, pageable);
+
+        Meta meta = new Meta();
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setPages(busTripSchedulePage.getTotalPages());
+        meta.setTotal(busTripSchedulePage.getTotalElements());
+        res.setMeta(meta);
+
+        List<ResBusTripScheduleForAdminDTO2> resBusTripScheduleForAdminDTO2s = busTripSchedulePage.getContent().stream()
+                .map(busTripSchedule -> {
+                    try {
+                        return this.convertToResBusTripScheduleForAdminDTO2(busTripSchedule);
+                    } catch (ApplicationException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .toList();
+
+        res.setResult(resBusTripScheduleForAdminDTO2s);
+        return res;
+    }
+
+    public ResBusTripScheduleForAdminDTO2 convertToResBusTripScheduleForAdminDTO2(BusTripSchedule busTripSchedule) throws ApplicationException {
+
+        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(busTripSchedule.getBusTrip().getArrivalLocation(), busTripSchedule.getId())
+                .orElseThrow(() -> new ApplicationException("Drop off location not found"));
+
+        // Create bus info
+        Bus bus = busTripSchedule.getBus();
+        Images imageOfBus = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), bus.getId()).get(0);
+        ResBusTripScheduleForAdminDTO.BusInfo busInfo = ResBusTripScheduleForAdminDTO.BusInfo.builder()
+                .licensePlate(bus.getLicensePlate())
+                .imageRepresentative(imageOfBus.getPathImage())
+                .busType(bus.getBusType())
+                .build();
+
+        // Create busTrip info
+        ResBusTripDTO.BusTripInfo busTripInfo = ResBusTripDTO.BusTripInfo.builder()
+                .id(busTripSchedule.getBusTrip().getId())
+                .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
+                .arrivalLocation(dropOffLocation.getProvince())
+                .build();
+
+        ResBusTripScheduleForAdminDTO2 res = ResBusTripScheduleForAdminDTO2.builder()
+                .busTripScheduleId(busTripSchedule.getId())
+                .busInfo(busInfo)
+                .busTripInfo(busTripInfo)
+                .departureTime(busTripSchedule.getDepartureTime())
+                .journeyDuration(dropOffLocation.getJourneyDuration())
+                .priceTicket(CurrencyFormatterUtil.formatToVND(dropOffLocation.getPriceTicket()))
+                .arrivalTime(busTripSchedule.getDepartureTime().plus(dropOffLocation.getJourneyDuration()))
+                .isOperation(busTripSchedule.isOperation())
+                .ratingTotal(busTripSchedule.getRatingTotal())
+                .build();
+        return res;
+    }
 
 
 }

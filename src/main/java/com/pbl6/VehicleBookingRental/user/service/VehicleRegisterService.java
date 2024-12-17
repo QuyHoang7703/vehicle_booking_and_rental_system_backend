@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
+import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
@@ -45,6 +46,8 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     private VehicleRentalOrderRepo vehicleRentalOrderRepo;
     @Autowired
     private DateUtil dateUtil;
+    @Autowired
+    private BusinessPartnerService businessPartnerService;
     @Override
     public VehicleType findVehicleTypeById(int id) {
         return vehicleTypeRepo.findById(id).orElse(null);
@@ -270,22 +273,25 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     }
 
     @Override
-    public List<VehicleRentalServiceDTO> get_all_by_service_type(int serviceType, String status,int car_rental_partner_id) {
+    public List<VehicleRentalServiceDTO> get_all_by_service_type(int serviceType, String status) {
+        int car_rental_partner_id = 0;
+        try{
+            BusinessPartner businessPartner = businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
+            car_rental_partner_id = businessPartner.getCarRentalPartner().getId();
+        }catch (Exception e){
+            System.out.println(e.getLocalizedMessage());
+        }
         // Khởi tạo danh sách DTO để lưu kết quả trả về
         List<VehicleRentalServiceDTO> vehicleRentalServiceDTOList = new ArrayList<>();
         List<CarRentalService> carRentalServiceList = new ArrayList<>();
-        if(car_rental_partner_id != -1 ) { // List cho khach hang
-            // Lấy danh sách CarRentalService theo điều kiện status
-            carRentalServiceList = (serviceType == 2)
-                    ? vehicleRentalServiceRepo.findAllByVehicleRegister_CarRentalPartner_Id(car_rental_partner_id)
-                    : vehicleRentalServiceRepo.findCarRentalServiceByTypeAndVehicleRegister_StatusAndVehicleRegister_CarRentalPartner_Id
-                                                (serviceType, status, car_rental_partner_id);
-        }else{
-            carRentalServiceList = (serviceType == 2)
-                    ? vehicleRentalServiceRepo.findAll()
-                    : vehicleRentalServiceRepo.findCarRentalServiceByTypeAndVehicleRegister_Status
-                                                (serviceType, status);
-        }
+
+
+        // Lấy danh sách CarRentalService theo điều kiện status
+        carRentalServiceList = (serviceType == 2)
+                ? vehicleRentalServiceRepo.findAllByVehicleRegister_CarRentalPartner_Id(car_rental_partner_id)
+                : vehicleRentalServiceRepo.findCarRentalServiceByTypeAndVehicleRegister_StatusAndVehicleRegister_CarRentalPartner_Id
+                (serviceType, status, car_rental_partner_id);
+
         // Duyệt qua danh sách carRentalServiceList và chuyển đổi từng đối tượng sang DTO
         for (CarRentalService carRentalService : carRentalServiceList) {
             // Kiểm tra vehicleRegister không null trước khi sử dụng

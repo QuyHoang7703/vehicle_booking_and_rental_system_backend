@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.controller;
 
 import com.pbl6.VehicleBookingRental.user.domain.RestResponse;
+import com.pbl6.VehicleBookingRental.user.dto.chat_dto.AccountSideBarDTO;
 import com.pbl6.VehicleBookingRental.user.dto.chat_dto.MessageDTO;
 import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
 import com.pbl6.VehicleBookingRental.user.service.ChatMessageService;
@@ -106,7 +107,15 @@ public class ChatController {
                         .build()
         );
     }
-
+    //Payload accountId and roleAccount
+    @MessageMapping("/chat/update-unseen-message")
+    public void updateUnseenMessage(@Payload AccountSideBarDTO accountSideBarDTO){
+        boolean status = chatMessageService.updateUnseenMessages(accountSideBarDTO.getAccountId(),accountSideBarDTO.getConversationId(),accountSideBarDTO.getRoleAccount());
+        messagingTemplate.convertAndSendToUser(
+                String.valueOf(accountSideBarDTO.getAccountId()),
+                String.format("/%s/queue/messages",accountSideBarDTO.getRoleAccount()),
+                 status);
+    }
     @GetMapping("/chat/get-connected-account")
     public ResponseEntity<?> getConnectedUser
             (@RequestParam("account_id") int account_id,

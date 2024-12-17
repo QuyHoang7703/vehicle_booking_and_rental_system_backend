@@ -21,6 +21,7 @@ import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationAccountRepo;
 import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationRepo;
+import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalOrderRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
 
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
@@ -33,9 +34,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum.NEW_BOOKING;
 import static com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum.CAR_RENTAL_PARTNER;
@@ -49,6 +49,8 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
     private AccountRepository accountRepository;
     @Autowired
     private VehicleRentalServiceRepo vehicleRentalServiceRepo;
+    @Autowired
+    private VehicleRentalOrderRepo vehicleRentalOrderRepo;
     @Autowired
     private final NotificationService notificationService;
     @Autowired
@@ -186,6 +188,23 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         }
         return total;
     }
+
+    @Override
+    public List<ResVehicleRentalOrderDetailDTO> getOrderByServiceId(int id) {
+        List<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalServiceId(id);
+
+        return Optional.ofNullable(carRentalOrders)
+                .orElse(Collections.emptyList())
+                .stream().map(carRentalOrder ->{
+                    Orders orders = carRentalOrder.getOrder();
+                    try {
+                        return convertToResVehicleRentalOrderDetailDTO(orders);
+                    } catch (ApplicationException e) {
+                        return null;
+                    }
+                }).collect(Collectors.toList());
+    }
+
     //tính giá tiền khi startTime và endTime trong cùng 1 ngày
     public double calculatePriceInDay(LocalDateTime start,LocalDateTime end,double priceOneDay){
         double total = 0.0;

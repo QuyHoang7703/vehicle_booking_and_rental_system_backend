@@ -8,10 +8,12 @@ import com.pbl6.VehicleBookingRental.user.dto.response.order.ResVehicleRentalOrd
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 
 import java.time.Instant;
+import java.util.List;
 
 public interface VehicleRentalOrdersInterface {
     OrderVehicleRentalRedisDTO create_order_Rental(VehicleRentalOrdersDTO vehicleRentalOrdersDTO) throws ApplicationException;
     ResOrderKey getKeyOfOrderVehicleRentalRedisDTO(OrderVehicleRentalRedisDTO orderVehicleRentalRedisDTO) throws ApplicationException;
     ResVehicleRentalOrderDetailDTO convertToResVehicleRentalOrderDetailDTO(Orders orders) throws ApplicationException;
     public double calculatePriceOrderByStartAndEndDate(Instant startRentalTime, Instant endRentalTime, double priceOneDay);
+    public List<ResVehicleRentalOrderDetailDTO> getOrderByServiceId(int id);
 }

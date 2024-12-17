@@ -19,7 +19,7 @@ public interface VehicleRegisterInterface {
     public CarRentalPartner findCarRentalPartnerById(int id);
     public boolean register_vehicle(VehicleRegister vehicleRegister, List<MultipartFile> images);
 
-    public List<VehicleRentalServiceDTO> get_all_by_service_type(int serviceType,String status,int car_rental_partner_id);
+    public List<VehicleRentalServiceDTO> get_all_by_service_type(int serviceType,String status);
 
     public boolean register_service_rental(CarRentalService carRentalService);
 

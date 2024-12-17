@@ -60,4 +60,8 @@ public class VehicleRentalOrderController {
         Instant endDateInstant = Instant.from(dateTimeFormatter.parse(endTime));
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.calculatePriceOrderByStartAndEndDate(startDateInstant,endDateInstant,priceADay));
     }
+    @GetMapping("/get-orders-by-service-id")
+    public ResponseEntity<?> getOrderByServiceId(@RequestParam("service_id") int service_id){
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getOrderByServiceId(service_id));
+    }
 }

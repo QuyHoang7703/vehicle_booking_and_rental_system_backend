@@ -158,7 +158,7 @@ public class OrderServiceImpl implements OrderService {
         res.setPaymentUrl(paymentUrl);
 
         String transactionCode = vnpParamsMap.get("vnp_TxnRef");
-//        booking.setTransactionCode(transactionCode);
+//        booking.setTransactionCode(transactionC   ode);
 
         redisService.setHashSet(transactionCode, "transactionCode", keyOrder);
         redisService.setTimeToLive(transactionCode, 4);

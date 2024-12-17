@@ -12,8 +12,6 @@ services:
         condition: service_started
     environment:
       - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
-      - GG_Client_ID=633378178838-f03bbm50mpmuvpnntrafa06ge68fe28s.apps.googleusercontent.com
-      - GG_Client_Secret=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
       - REDIS_HOST=redis
       - REDIS_PORT=6379
 

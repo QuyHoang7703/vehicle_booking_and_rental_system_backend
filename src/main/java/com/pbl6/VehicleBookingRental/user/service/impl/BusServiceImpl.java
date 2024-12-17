@@ -60,9 +60,13 @@ public class BusServiceImpl implements BusService {
         // Add bus type for bus
         BusType busType = this.busTypeRepository.findById(reqBus.getBusType().getId())
                 .orElseThrow(() -> new IdInvalidException("Bus type not found"));
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+        if(!busType.getBusPartner().getBusinessPartner().equals(businessPartner)) {
+            throw new ApplicationException("You don't have permission add bus with bus type of other bus partner");
+        }
         bus.setBusType(busType);
 
-        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+
         bus.setBusPartner(businessPartner.getBusPartner());
 
         Bus savedBus = this.busRepository.save(bus);
@@ -197,6 +201,9 @@ public class BusServiceImpl implements BusService {
     @Override
     public Map<Integer, String> getBusesByBusTypeId(String busTypeName) throws IdInvalidException, ApplicationException {
         List<Bus> buses = this.busRepository.findByBusType_Name(busTypeName);
+        if(buses == null || buses.isEmpty()) {
+            return null;
+        }
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
         boolean authorized = false;
         for (Bus bus : buses) {

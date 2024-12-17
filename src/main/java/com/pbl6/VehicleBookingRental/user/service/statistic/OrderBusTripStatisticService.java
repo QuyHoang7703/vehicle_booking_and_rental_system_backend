@@ -7,5 +7,6 @@ import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import java.util.List;
 
 public interface OrderBusTripStatisticService {
-    ResultStatisticDTO getOrderBusTripRevenueByPeriod(Integer year) throws ApplicationException;
+    ResultStatisticDTO getOrderBusTripRevenueByMonthOfYear(Integer year) throws ApplicationException;
+    ResultStatisticDTO getOrderBusTripRevenueByYear() throws ApplicationException;
 }

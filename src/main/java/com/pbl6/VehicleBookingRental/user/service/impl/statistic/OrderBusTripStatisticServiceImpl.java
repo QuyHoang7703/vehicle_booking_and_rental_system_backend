@@ -5,7 +5,6 @@ import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.RevenueStatisticDTO;
-import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
 import com.pbl6.VehicleBookingRental.user.service.statistic.OrderBusTripStatisticService;
@@ -25,12 +24,11 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
     private final BusinessPartnerService businessPartnerService;
 
     @Override
-    public ResultStatisticDTO getOrderBusTripRevenueByPeriod(Integer year) throws ApplicationException {
+    public ResultStatisticDTO getOrderBusTripRevenueByMonthOfYear(Integer year) throws ApplicationException {
         Map<String, Double> statistics = new LinkedHashMap<>();
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
         // Get order bus trip of bus partner has
         List<OrderBusTrip> orderBusTrips = this.orderBusTripRepository.findOrderBusTripsOfBusPartner(businessPartner.getBusPartner().getId());
-
         // Create key in hash map
         for(int i = 1; i<=12; i++) {
             String key = i + "-" + year;
@@ -49,6 +47,34 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
             }
         }
 
+
+        return this.createResultStatisticDTO(statistics);
+    }
+
+    @Override
+    public ResultStatisticDTO getOrderBusTripRevenueByYear() throws ApplicationException {
+        Map<String, Double> statistics = new LinkedHashMap<>();
+
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+
+        // Get order bus trip of bus partner has
+        List<OrderBusTrip> orderBusTrips = this.orderBusTripRepository.findOrderBusTripsOfBusPartner(businessPartner.getBusPartner().getId());
+        // Calculate revenue for keys
+        for(OrderBusTrip orderBusTrip : orderBusTrips) {
+            Orders order = orderBusTrip.getOrder();
+            LocalDateTime createdOrderAt = order.getCreate_at().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                String key = String.valueOf(createdOrderAt.getYear());
+                double revenue = orderBusTrip.getPriceTotal();
+                double currentRevenue = statistics.getOrDefault(key, 0.0);
+                statistics.put(key, revenue+currentRevenue);
+
+        }
+
+
+        return this.createResultStatisticDTO(statistics);
+    }
+
+    private ResultStatisticDTO createResultStatisticDTO(Map<String, Double> statistics) {
         List<RevenueStatisticDTO> revenueStatisticDTOS = statistics.entrySet().stream()
                 .map(entry -> new RevenueStatisticDTO(entry.getKey(), CurrencyFormatterUtil.formatToVND(entry.getValue())))
                 .toList();
@@ -58,12 +84,11 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
             totalRevenue += entry.getValue();
         }
 
-        ResultStatisticDTO resultStatisticDTO = ResultStatisticDTO.builder()
+        return ResultStatisticDTO.builder()
                 .totalRevenue(CurrencyFormatterUtil.formatToVND(totalRevenue))
                 .revenueStatistic(revenueStatisticDTOS)
                 .build();
-
-
-        return resultStatisticDTO;
     }
+
+
 }

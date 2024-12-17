@@ -36,7 +36,7 @@ public class BusTripScheduleController {
     }
 
     @PreAuthorize("hasRole('BUS_PARTNER')")
-    @GetMapping("busTripSchedules")
+    @GetMapping("busTripSchedules/detail")
     public ResponseEntity<ResBusTripScheduleDetailForAdminDTO> getBusTripScheduleDetail(@RequestParam("busTripScheduleId") int busTripScheduleId,
                                                                                         @RequestParam("departureDate") LocalDate departureDate) throws IdInvalidException {
 
@@ -44,10 +44,10 @@ public class BusTripScheduleController {
     }
 
     @GetMapping("busTripSchedules/{busTripId}")
-    public ResponseEntity<ResultPaginationDTO> getAllBusTripSchedule(@Filter Specification<BusTripSchedule> spec, Pageable pageable,
+    public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleByBusTripId(@Filter Specification<BusTripSchedule> spec, Pageable pageable,
                                                                      @RequestParam("busTripId") int busTripId, @RequestParam("departureDate") LocalDate departureDate) throws ApplicationException, IdInvalidException {
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripSchedules(spec, pageable, busTripId, departureDate));
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripScheduleByBusTripId(spec, pageable, busTripId, departureDate));
 
     }
 
@@ -72,6 +72,14 @@ public class BusTripScheduleController {
             return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("This Bus Trip Schedule has orders !"));
         }
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("This Bus Trip Schedule hasn't orders !"));
+    }
+
+    @PreAuthorize("hasRole('BUS_PARTNER')")
+    @GetMapping("busTripSchedules")
+    public ResponseEntity<ResultPaginationDTO> getAllBusTripSchedule(@Filter Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException, IdInvalidException {
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripSchedules(spec, pageable));
+
     }
 
 

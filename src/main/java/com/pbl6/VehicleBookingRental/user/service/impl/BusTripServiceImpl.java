@@ -195,5 +195,17 @@ public class BusTripServiceImpl implements BusTripService {
         return res;
     }
 
+    @Override
+    public List<String> getRouteOfBusTrips() throws ApplicationException {
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+        List<BusTrip> busTrips = businessPartner.getBusPartner().getBusTrips();
+
+        List<String> routes = busTrips.stream()
+                .map(busTrip -> busTrip.getDepartureLocation() + "-" + busTrip.getArrivalLocation())
+                .toList();
+
+        return routes;
+    }
+
 
 }

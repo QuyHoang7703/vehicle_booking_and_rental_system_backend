@@ -21,7 +21,5 @@ public interface BusTripService {
     ResBusTripDTO.BusTripInfo convertToBusTripInfo(BusTrip busTrip) throws ApplicationException;
     void deleteBusTrip(int busTripId) throws IdInvalidException, ApplicationException;
     ResPickupAndDropOffLocation getPickupAndDropOffLocationById(int id, String arrivalProvince) throws IdInvalidException, ApplicationException;
-
-    // Statistic
-//    List<Integer> getBusTripIdsOfBusPartner();
+    List<String> getRouteOfBusTrips() throws ApplicationException;
 }

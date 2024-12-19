@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
@@ -54,6 +56,11 @@ public class BusTripController {
     public ResponseEntity<Void> deleteBusTripById(@RequestParam("idBusTrip") int idBusTrip) throws IdInvalidException, ApplicationException {
         this.busTripService.deleteBusTrip(idBusTrip);
         return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @GetMapping("busTrips/routes")
+    public ResponseEntity<List<String>> getRouteOfBusTrips() throws ApplicationException {
+        return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.getRouteOfBusTrips());
     }
 
 }

@@ -43,7 +43,7 @@ public class BusTripScheduleController {
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getBusTripScheduleById(busTripScheduleId, departureDate));
     }
 
-    @GetMapping("busTripSchedules/{busTripId}")
+    @GetMapping("busTripSchedules/get-all")
     public ResponseEntity<ResultPaginationDTO> getAllBusTripScheduleByBusTripId(@Filter Specification<BusTripSchedule> spec, Pageable pageable,
                                                                      @RequestParam("busTripId") int busTripId, @RequestParam("departureDate") LocalDate departureDate) throws ApplicationException, IdInvalidException {
 

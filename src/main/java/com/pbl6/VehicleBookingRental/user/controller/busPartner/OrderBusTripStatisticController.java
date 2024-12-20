@@ -24,7 +24,7 @@ import java.time.LocalDate;
 public class OrderBusTripStatisticController {
     private final OrderBusTripStatisticService orderBusTripStatisticService;
 
-    @GetMapping("/bus_trip_order/statistics/revenue/by-month/{year}")
+    @GetMapping("/bus-trip-order/statistics/revenue/by-month/{year}")
     public ResponseEntity<ResultStatisticDTO> getRevenueByMonthOfYear(@PathVariable("year") Integer year) throws ApplicationException {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripStatisticService.getOrderBusTripRevenueByMonthOfYear(year));

@@ -444,7 +444,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         List<BreakDay> breakDays = busTripSchedule.getBreakDays();
         for(BreakDay breakDay : breakDays) {
             if(!departureDate.isBefore(breakDay.getStartDay()) && !departureDate.isAfter(breakDay.getEndDay())) {
-                status = "Nghỉ đến ngày " + DateTimeFormatter.ofPattern("dd-MM-yyyy").format(breakDay.getStartDay());
+                status = "Nghỉ đến ngày " + DateTimeFormatter.ofPattern("dd-MM-yyyy").format(breakDay.getEndDay());
                 break;
             }
         }

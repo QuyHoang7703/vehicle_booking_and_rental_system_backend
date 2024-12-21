@@ -1,15 +1,21 @@
 package com.pbl6.VehicleBookingRental.user.service.impl.statistic;
 
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
+import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
+import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.RevenueStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
+import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
+import com.pbl6.VehicleBookingRental.user.service.VehicleRentalStatisticService;
 import com.pbl6.VehicleBookingRental.user.service.statistic.OrderBusTripStatisticService;
 import com.pbl6.VehicleBookingRental.user.service.statistic.StatisticService;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -18,14 +24,13 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 public class StatisticServiceImpl implements StatisticService {
+    private final OrderBusTripStatisticService orderBusTripStatisticService;
+    private final VehicleRentalStatisticService vehicleRentalStatisticService;
 
-    @Override
-    public Map<OrderTypeEnum, List<RevenueStatisticDTO>> getRevenueStatisticFromBusinessPartner(Integer year) {
-//        Map<OrderTypeEnum, List<RevenueStatisticDTO>> revenueStatistic = new HashMap<>();
-//        revenueStatistic.put("BUS_TRIP_ORDER")
-        return Map.of();
+    public StatisticServiceImpl(@Lazy OrderBusTripStatisticService orderBusTripStatisticService, @Lazy VehicleRentalStatisticService vehicleRentalStatisticService) {
+        this.orderBusTripStatisticService = orderBusTripStatisticService;
+        this.vehicleRentalStatisticService = vehicleRentalStatisticService;
     }
 
     @Override
@@ -43,6 +48,33 @@ public class StatisticServiceImpl implements StatisticService {
                 .totalRevenue(CurrencyFormatterUtil.formatToVND(totalRevenue))
                 .revenueStatistic(revenueStatisticDTOS)
                 .build();
+    }
+
+    @Override
+    public ResultStatisticDTO getRevenueStatisticFromBusinessPartner(Integer year) throws ApplicationException {
+        ResultStatisticDTO statisticFromBusPartner = this.orderBusTripStatisticService.getOrderBusTripRevenueByPeriod(year);
+        ResultStatisticDTO statisticFromCarRentalPartner = this.vehicleRentalStatisticService.calculateMonthlyRevenue(year);
+
+        Map<String, Double> combinedStatistics = new LinkedHashMap<>();
+
+
+        for(RevenueStatisticDTO statistic : statisticFromBusPartner.getRevenueStatistic()) {
+            String key = statistic.getPeriod();
+            String revenueString = statistic.getRevenue().split("VND")[0];
+            revenueString = revenueString.replace(".", "");
+            double revenue = Double.parseDouble(revenueString);
+            combinedStatistics.put(key, combinedStatistics.getOrDefault(key, 0.0) + revenue);
+        }
+
+        for (RevenueStatisticDTO statistic : statisticFromCarRentalPartner.getRevenueStatistic()) {
+            String key = statistic.getPeriod();
+            String revenueString = statistic.getRevenue().split("VND")[0];
+            revenueString = revenueString.replace(".", "");
+            double revenue = Double.parseDouble(revenueString);
+            combinedStatistics.put(key, combinedStatistics.getOrDefault(key, 0.0) + revenue);
+        }
+
+        return this.createResultStatisticDTO(combinedStatistics);
     }
 
 }

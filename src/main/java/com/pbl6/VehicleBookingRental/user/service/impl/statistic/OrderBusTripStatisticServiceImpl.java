@@ -8,6 +8,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
+import com.pbl6.VehicleBookingRental.user.dto.RevenueStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResultStatisticBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
@@ -135,21 +136,8 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
         return res;
     }
 
-//    private ResultStatisticDTO createResultStatisticDTO(Map<String, Double> statistics) {
-//        List<RevenueStatisticDTO> revenueStatisticDTOS = statistics.entrySet().stream()
-//                .map(entry -> new RevenueStatisticDTO(entry.getKey(), CurrencyFormatterUtil.formatToVND(entry.getValue())))
-//                .toList();
-//
-//        Double totalRevenue = 0.0;
-//        for(Map.Entry<String, Double> entry : statistics.entrySet()) {
-//            totalRevenue += entry.getValue();
-//        }
-//
-//        return ResultStatisticDTO.builder()
-//                .totalRevenue(CurrencyFormatterUtil.formatToVND(totalRevenue))
-//                .revenueStatistic(revenueStatisticDTOS)
-//                .build();
-//    }
+
+
 
     private ResultStatisticBusTripDTO getStatisticFromBusTrip(BusTrip busTrip, LocalDate startDate, LocalDate endDate, Integer month, Integer year) {
         ResultStatisticBusTripDTO res = new ResultStatisticBusTripDTO();

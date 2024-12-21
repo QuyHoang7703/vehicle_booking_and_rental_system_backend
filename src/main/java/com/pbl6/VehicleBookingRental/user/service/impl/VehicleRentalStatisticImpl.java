@@ -163,7 +163,7 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
     }
     @Override
     public ResultStatisticDTO calculateMonthlyRevenue(Integer year) throws ApplicationException {
-        Map<String, Double> statistic = new HashMap<>();
+        Map<String, Double> statistic = new LinkedHashMap<>();
 
         List<String> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
                 .map(authority -> authority.getAuthority())

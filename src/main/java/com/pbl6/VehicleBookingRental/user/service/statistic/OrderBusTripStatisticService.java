@@ -16,4 +16,6 @@ public interface OrderBusTripStatisticService {
                                                    String route,
                                                    Integer month,
                                                    Integer year) throws ApplicationException;
+
+//    ResultStatisticDTO getRevenueStatisticFromBusinessPartner (Integer year) throws ApplicationException;
 }

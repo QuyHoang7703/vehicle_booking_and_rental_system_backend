@@ -24,7 +24,7 @@ public class VehicleRentalStatisticsController {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalStatisticService.statisticByDate(startDate,endDate));
     }
     @GetMapping("/get-monthly-venue-in-year")
-    public ResponseEntity<?> getMonthlyVenueInYear(@RequestParam("year") int year) throws ApplicationException {
+    public ResponseEntity<?> getMonthlyVenueInYear(@RequestParam("year") Integer year) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalStatisticService.calculateMonthlyRevenue(year));
     }
 }

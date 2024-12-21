@@ -8,8 +8,8 @@ import java.time.LocalDate;
 
 
 public interface OrderBusTripStatisticService {
-    ResultStatisticDTO getOrderBusTripRevenueByMonthOfYear(Integer year) throws ApplicationException;
-    ResultStatisticDTO getOrderBusTripRevenueByYear() throws ApplicationException;
+    ResultStatisticDTO getOrderBusTripRevenueByPeriod(Integer year) throws ApplicationException;
+//    ResultStatisticDTO getOrderBusTripRevenueByYear() throws ApplicationException;
     ResultPaginationDTO getStatisticOfOrdersByDays(Pageable pageable,
                                                    LocalDate startDate,
                                                    LocalDate endDate,

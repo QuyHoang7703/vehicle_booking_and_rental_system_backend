@@ -1,23 +1,29 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
+import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
+import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServiceDTO;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
+import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalOrderRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepository;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
 import com.pbl6.VehicleBookingRental.user.service.VehicleRegisterService;
 import com.pbl6.VehicleBookingRental.user.service.VehicleRentalStatisticService;
+import com.pbl6.VehicleBookingRental.user.service.statistic.StatisticService;
 import com.pbl6.VehicleBookingRental.user.util.DateUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -40,6 +46,10 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
     private BusinessPartnerService businessPartnerService;
     @Autowired
     private DateUtil dateUtil;
+    @Autowired
+    private OrdersRepo ordersRepo;
+    @Autowired
+    private StatisticService statisticService;
 
     @Override
     public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleType(String location, String vehicleType) {
@@ -152,17 +162,57 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         return vehicleRentalStatisticDTOS;
     }
     @Override
-    public Map<Integer, Double> calculateMonthlyRevenue( int year) throws ApplicationException {
-        Map<Integer, Double> monthlyRevenue = new HashMap<>();
+    public ResultStatisticDTO calculateMonthlyRevenue(Integer year) throws ApplicationException {
+        Map<String, Double> statistic = new HashMap<>();
+
+        List<String> authorities = SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .toList();
+
+        List<CarRentalOrders> carRentalOrders;
+
+        if(authorities.contains("ROLE_ADMIN")) {
+            // Get all car rental order
+            List<Orders> orders = this.ordersRepo.findByOrderType("CAR_RENTAL_ORDER");
+            carRentalOrders = orders.stream().map(Orders::getCarRentalOrders).toList();
+        }else{
+            BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
+            carRentalOrders = this.vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(businessPartner.getBusPartner().getId());
+        }
+
+        if(year!=null) {
+            this.getMonthlyRevenue(statistic, carRentalOrders, year);
+        }else{
+            this.getYearlyRevenue(statistic, carRentalOrders);
+        }
+        return this.statisticService.createResultStatisticDTO(statistic);
+    }
+
+//    @Override
+//    public Map<Integer, Double> calculateMonthlyRevenue(int year) throws ApplicationException {
+//        return Map.of();
+//    }
+
+    private void getYearlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders) {
+        for(CarRentalOrders order : carRentalOrders){
+            LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
+            LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
+            double revenue = order.getTotal();
+            // Tạo key theo năm của endDate
+            String key = String.valueOf(endDate.getYear());
+            double currentRevenue = statistics.getOrDefault(key, 0.0);
+            statistics.put(key, revenue+currentRevenue);
+        }
+    }
+
+    private void getMonthlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders, Integer year) {
         // Initialize revenue for each month
         for (int month = 1; month <= 12; month++) {
-            monthlyRevenue.put(month, 0.0);
+            String key = month + "-" + year;
+            statistics.put(key, 0.0);
         }
-        BusinessPartner businessPartner = businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
 
-        for (CarRentalOrders order : vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id
-                (businessPartner.getCarRentalPartner().getId()))
-        {
+        for (CarRentalOrders order : carRentalOrders) {
             LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
             LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
 
@@ -180,10 +230,10 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
             }
 
             int currentMonth = startDate.getMonthValue();
-            monthlyRevenue.put(currentMonth, monthlyRevenue.get(currentMonth) + order.getTotal() );
+            statistics.put(String.valueOf(currentMonth), statistics.get(currentMonth) + order.getTotal());
 
         }
-        return monthlyRevenue;
     }
+
 
 }

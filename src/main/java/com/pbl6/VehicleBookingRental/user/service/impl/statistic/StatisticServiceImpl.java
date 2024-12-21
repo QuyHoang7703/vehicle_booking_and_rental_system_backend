@@ -1,10 +1,14 @@
 package com.pbl6.VehicleBookingRental.user.service.impl.statistic;
 
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
+import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.RevenueStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
+import com.pbl6.VehicleBookingRental.user.service.statistic.OrderBusTripStatisticService;
 import com.pbl6.VehicleBookingRental.user.service.statistic.StatisticService;
+import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,25 +20,29 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class StatisticServiceImpl implements StatisticService {
-    private final OrdersRepo ordersRepo;
-
 
     @Override
     public Map<OrderTypeEnum, List<RevenueStatisticDTO>> getRevenueStatisticFromBusinessPartner(Integer year) {
-        Map<OrderTypeEnum, List<RevenueStatisticDTO>> revenueStatistic = new HashMap<>();
-
+//        Map<OrderTypeEnum, List<RevenueStatisticDTO>> revenueStatistic = new HashMap<>();
+//        revenueStatistic.put("BUS_TRIP_ORDER")
         return Map.of();
     }
 
-    public List<RevenueStatisticDTO> getRevenueOfBusPartner(Integer month, Integer year) {
-//        List<Orders> ordersOfBusPartners = this.ordersRepo.findByOrder_Type("BUS_TRIP_ORDER");
-//        Map<String, Double> statistics = new LinkedHashMap<>();
-//        // Create key
-//        for(int i = 1; i<=12; i++){
-//            String key = i + "-" + year;
-//
-//        }
+    @Override
+    public ResultStatisticDTO createResultStatisticDTO(Map<String, Double> statistics) {
+        List<RevenueStatisticDTO> revenueStatisticDTOS = statistics.entrySet().stream()
+                .map(entry -> new RevenueStatisticDTO(entry.getKey(), CurrencyFormatterUtil.formatToVND(entry.getValue())))
+                .toList();
 
-        return null;
+        Double totalRevenue = 0.0;
+        for(Map.Entry<String, Double> entry : statistics.entrySet()) {
+            totalRevenue += entry.getValue();
+        }
+
+        return ResultStatisticDTO.builder()
+                .totalRevenue(CurrencyFormatterUtil.formatToVND(totalRevenue))
+                .revenueStatistic(revenueStatisticDTOS)
+                .build();
     }
+
 }

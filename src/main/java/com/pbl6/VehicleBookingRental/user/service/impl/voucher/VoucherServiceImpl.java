@@ -93,7 +93,7 @@ public class VoucherServiceImpl implements VoucherService {
         return res;
     }
 
-    @Scheduled(cron = "0 */2 * * * *")
+//    @Scheduled(cron = "0 */2 * * * *")
     @Transactional
     public void updateStatusOfVoucher() {
         LocalDate today = LocalDate.now();

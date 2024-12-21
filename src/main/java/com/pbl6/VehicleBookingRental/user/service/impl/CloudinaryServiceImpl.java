@@ -110,24 +110,24 @@ public class CloudinaryServiceImpl implements CloudinaryService {
         }
     }
 
-    private File convert(MultipartFile file) throws IOException {
-        assert file.getOriginalFilename() != null;
-        File convFile = new File(StringUtils.join(generatePublicValue(file.getOriginalFilename()), getFileName(file.getOriginalFilename())[1]));
-        try(InputStream is = file.getInputStream()) {
-            Files.copy(is, convFile.toPath());
-        }
-        return convFile;
-    }
-
-    private void cleanDisk(File file) {
-        try {
-            log.info("file.toPath(): {}", file.toPath());
-            Path filePath = file.toPath();
-            Files.delete(filePath);
-        } catch (IOException e) {
-            log.error("Error");
-        }
-    }
+//    private File convert(MultipartFile file) throws IOException {
+//        assert file.getOriginalFilename() != null;
+//        File convFile = new File(StringUtils.join(generatePublicValue(file.getOriginalFilename()), getFileName(file.getOriginalFilename())[1]));
+//        try(InputStream is = file.getInputStream()) {
+//            Files.copy(is, convFile.toPath());
+//        }
+//        return convFile;
+//    }
+//
+//    private void cleanDisk(File file) {
+//        try {
+//            log.info("file.toPath(): {}", file.toPath());
+//            Path filePath = file.toPath();
+//            Files.delete(filePath);
+//        } catch (IOException e) {
+//            log.error("Error");
+//        }
+//    }
 
     public String generatePublicValue(String originalName){
         String fileName = getFileName(originalName)[0];

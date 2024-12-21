@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.service.statistic;
 
+import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.RevenueStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 
@@ -8,4 +9,5 @@ import java.util.Map;
 
 public interface StatisticService {
     Map<OrderTypeEnum, List<RevenueStatisticDTO>> getRevenueStatisticFromBusinessPartner(Integer year);
+    ResultStatisticDTO createResultStatisticDTO(Map<String, Double> statistics);
 }

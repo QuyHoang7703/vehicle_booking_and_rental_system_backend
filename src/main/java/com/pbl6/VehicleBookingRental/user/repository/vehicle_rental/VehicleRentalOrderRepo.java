@@ -18,4 +18,12 @@ public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,St
     List<CarRentalOrders> findCarRentalOrdersByVehicleRegisterProperties(@Param("location") String location,@Param("vehicle_type")String vehicle_type);
     List<CarRentalOrders> findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(int carRentalPartnerId);
     List<CarRentalOrders> findCarRentalOrdersByCarRentalServiceId(int carRentalServiceId);
+
+//    @Query("SELECT cro FROM CarRentalOrders cro " +
+//            "JOIN cro.carRentalService crs " +
+//            "JOIN crs.vehicleRegister vr " +
+//            "JOIN vr.carRentalPartner crp " +
+//            "WHERE crp = :carRentalPartnerId")
+//    List<CarRentalOrders> findByCarRentalPartner(@Param("carRentalPartnerId") int carRentalPartnerId);
+
 }

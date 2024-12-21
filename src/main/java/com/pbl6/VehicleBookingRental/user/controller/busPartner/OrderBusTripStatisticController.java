@@ -24,17 +24,17 @@ import java.time.LocalDate;
 public class OrderBusTripStatisticController {
     private final OrderBusTripStatisticService orderBusTripStatisticService;
 
-    @GetMapping("/bus-trip-order/statistics/revenue/by-month/{year}")
-    public ResponseEntity<ResultStatisticDTO> getRevenueByMonthOfYear(@PathVariable("year") Integer year) throws ApplicationException {
+    @GetMapping("/bus-trip-order/statistics/revenue")
+    public ResponseEntity<ResultStatisticDTO> getRevenueByMonthOfYear(@RequestParam(value = "year", required = false) Integer year) throws ApplicationException {
 
-        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripStatisticService.getOrderBusTripRevenueByMonthOfYear(year));
+        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripStatisticService.getOrderBusTripRevenueByPeriod(year));
     }
 
-    @GetMapping("/bus-trip-order/statistics/revenue/by-year")
-    public ResponseEntity<ResultStatisticDTO> getRevenueByYear() throws ApplicationException {
-
-        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripStatisticService.getOrderBusTripRevenueByYear());
-    }
+//    @GetMapping("/bus-trip-order/statistics/revenue/by-year")
+//    public ResponseEntity<ResultStatisticDTO> getRevenueByYear() throws ApplicationException {
+//
+//        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripStatisticService.getOrderBusTripRevenueByYear());
+//    }
 
     @GetMapping("/bus-trip-order/statistics/orders")
     public ResponseEntity<ResultPaginationDTO> getStatisticOfOrdersByDays(Pageable pageable,

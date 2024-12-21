@@ -2,20 +2,19 @@ package com.pbl6.VehicleBookingRental.user.service.impl.statistic;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTrip;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
-import com.pbl6.VehicleBookingRental.user.dto.RevenueStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResultStatisticBusTripDTO;
+import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.order.OrderBusTripRepository;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
 import com.pbl6.VehicleBookingRental.user.service.statistic.OrderBusTripStatisticService;
-import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
+import com.pbl6.VehicleBookingRental.user.service.statistic.StatisticService;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
@@ -23,9 +22,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,13 +37,39 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
     private final OrderBusTripRepository orderBusTripRepository;
     private final BusinessPartnerService businessPartnerService;
     private final BusTripRepository busTripRepository;
+    private final OrdersRepo ordersRepo;
+    private final StatisticService statisticService;
 
     @Override
-    public ResultStatisticDTO getOrderBusTripRevenueByMonthOfYear(Integer year) throws ApplicationException {
+    public ResultStatisticDTO getOrderBusTripRevenueByPeriod(Integer year) throws ApplicationException {
         Map<String, Double> statistics = new LinkedHashMap<>();
-        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
-        // Get order bus trip of bus partner has
-        List<OrderBusTrip> orderBusTrips = this.orderBusTripRepository.findOrderBusTripsOfBusPartner(businessPartner.getBusPartner().getId());
+
+        List<String> authorities =SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                .map(authority -> authority.getAuthority())
+                .toList();
+
+        List<OrderBusTrip> orderBusTrips;
+
+        if(authorities.contains("ROLE_ADMIN")) {
+            // Get all order bus trip
+            List<Orders> orders = this.ordersRepo.findByOrderType("BUS_TRIP_ORDER");
+            orderBusTrips = orders.stream().map(Orders::getOrderBusTrip).toList();
+        }else{
+            BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+            // Get order bus trip of bus partner has
+            orderBusTrips = this.orderBusTripRepository.findOrderBusTripsOfBusPartner(businessPartner.getBusPartner().getId());
+        }
+
+        if(year != null) {
+            this.getRevenueByMonth(statistics, year, orderBusTrips);
+        }else{
+            this.getRevenueByYear(statistics, orderBusTrips);
+        }
+
+        return this.statisticService.createResultStatisticDTO(statistics);
+    }
+
+    private void getRevenueByMonth(Map<String, Double> statistics, Integer year, List<OrderBusTrip> orderBusTrips) {
         // Create key in hash map
         for(int i = 1; i<=12; i++) {
             String key = i + "-" + year;
@@ -62,32 +87,20 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
                 statistics.put(key, revenue+currentRevenue);
             }
         }
-
-        return this.createResultStatisticDTO(statistics);
     }
 
-    @Override
-    public ResultStatisticDTO getOrderBusTripRevenueByYear() throws ApplicationException {
-        Map<String, Double> statistics = new LinkedHashMap<>();
-
-        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
-
-        // Get order bus trip of bus partner has
-        List<OrderBusTrip> orderBusTrips = this.orderBusTripRepository.findOrderBusTripsOfBusPartner(businessPartner.getBusPartner().getId());
-        // Calculate revenue for keys
+    private void getRevenueByYear(Map<String, Double> statistics, List<OrderBusTrip> orderBusTrips) {
         for(OrderBusTrip orderBusTrip : orderBusTrips) {
             Orders order = orderBusTrip.getOrder();
             LocalDateTime createdOrderAt = order.getCreate_at().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                String key = String.valueOf(createdOrderAt.getYear());
-                double revenue = orderBusTrip.getPriceTotal();
-                double currentRevenue = statistics.getOrDefault(key, 0.0);
-                statistics.put(key, revenue+currentRevenue);
-
+            String key = String.valueOf(createdOrderAt.getYear());
+            double revenue = orderBusTrip.getPriceTotal();
+            double currentRevenue = statistics.getOrDefault(key, 0.0);
+            statistics.put(key, revenue+currentRevenue);
         }
-
-
-        return this.createResultStatisticDTO(statistics);
     }
+
+
 
     @Override
     public ResultPaginationDTO getStatisticOfOrdersByDays(Pageable pageable,
@@ -122,21 +135,21 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
         return res;
     }
 
-    private ResultStatisticDTO createResultStatisticDTO(Map<String, Double> statistics) {
-        List<RevenueStatisticDTO> revenueStatisticDTOS = statistics.entrySet().stream()
-                .map(entry -> new RevenueStatisticDTO(entry.getKey(), CurrencyFormatterUtil.formatToVND(entry.getValue())))
-                .toList();
-
-        Double totalRevenue = 0.0;
-        for(Map.Entry<String, Double> entry : statistics.entrySet()) {
-            totalRevenue += entry.getValue();
-        }
-
-        return ResultStatisticDTO.builder()
-                .totalRevenue(CurrencyFormatterUtil.formatToVND(totalRevenue))
-                .revenueStatistic(revenueStatisticDTOS)
-                .build();
-    }
+//    private ResultStatisticDTO createResultStatisticDTO(Map<String, Double> statistics) {
+//        List<RevenueStatisticDTO> revenueStatisticDTOS = statistics.entrySet().stream()
+//                .map(entry -> new RevenueStatisticDTO(entry.getKey(), CurrencyFormatterUtil.formatToVND(entry.getValue())))
+//                .toList();
+//
+//        Double totalRevenue = 0.0;
+//        for(Map.Entry<String, Double> entry : statistics.entrySet()) {
+//            totalRevenue += entry.getValue();
+//        }
+//
+//        return ResultStatisticDTO.builder()
+//                .totalRevenue(CurrencyFormatterUtil.formatToVND(totalRevenue))
+//                .revenueStatistic(revenueStatisticDTOS)
+//                .build();
+//    }
 
     private ResultStatisticBusTripDTO getStatisticFromBusTrip(BusTrip busTrip, LocalDate startDate, LocalDate endDate, Integer month, Integer year) {
         ResultStatisticBusTripDTO res = new ResultStatisticBusTripDTO();

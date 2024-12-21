@@ -49,7 +49,6 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BusTripScheduleRepository busTripScheduleRepository;
     private final BusTripRepository busTripRepository;
     private final BusService busService;
-    private final BreakDayRepository breakDayRepository;
     private final BusinessPartnerService businessPartnerService;
     private final ImageRepository imageRepository;
     private final OrderBusTripRepository orderBusTripRepository;

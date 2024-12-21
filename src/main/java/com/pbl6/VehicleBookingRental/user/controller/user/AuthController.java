@@ -138,7 +138,7 @@ public class AuthController {
         log.info("authentication: " + authentication);
         log.info("principal: " + authentication.getPrincipal());
         log.info("Username from authentication: " + authentication.getName());
-
+        log.info("Authorization: " + authentication.getAuthorities());
         ResLoginDTO res = this.accountService.convertToResLoginDTO(account);
         // Create token when authentication is successful
         String accessToken = this.securityUtil.createAccessToken(authentication.getName(), res);

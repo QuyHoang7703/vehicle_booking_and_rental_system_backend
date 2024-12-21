@@ -6,7 +6,7 @@ import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.repository.UtilityRepository;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
-import com.pbl6.VehicleBookingRental.user.service.S3Service;
+import com.pbl6.VehicleBookingRental.user.service.CloudinaryService;
 import com.pbl6.VehicleBookingRental.user.service.UtilityService;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -17,6 +17,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -24,7 +25,7 @@ import java.util.List;
 public class UtilitySeviceImpl implements UtilityService {
     private final UtilityRepository utilityRepository;
     private final BusinessPartnerService businessPartnerService;
-    private final S3Service s3Service;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     public Utility findById(int id) throws IdInvalidException {
@@ -33,42 +34,42 @@ public class UtilitySeviceImpl implements UtilityService {
     }
 
     @Override
-    public Utility createUtility(Utility reqUtility, MultipartFile utilityImage) throws ApplicationException {
+    public Utility createUtility(Utility reqUtility, MultipartFile utilityImage) throws ApplicationException, IOException {
         Utility utilityDb = this.utilityRepository.findByName(reqUtility.getName())
                 .orElse(null);
         if(utilityDb != null){
             throw new ApplicationException("This utility already exists");
         }
         if(utilityImage != null){
-            String urlUtilityImage = this.s3Service.uploadFile(utilityImage);
+            String urlUtilityImage = this.cloudinaryService.uploadFile(utilityImage);
             reqUtility.setImage(urlUtilityImage);
         }
         return this.utilityRepository.save(reqUtility);
     }
 
     @Override
-    public Utility updateUtility(Utility reqUtility, MultipartFile utilityImage) throws IdInvalidException {
+    public Utility updateUtility(Utility reqUtility, MultipartFile utilityImage) throws IdInvalidException, IOException {
         Utility utilityDb = this.getUtilityById(reqUtility.getId());
         utilityDb.setName(reqUtility.getName());
         utilityDb.setDescription(reqUtility.getDescription());
 
         if(utilityImage != null){
             if(utilityDb.getImage() != null){
-                this.s3Service.deleteFile(utilityDb.getImage());
+                this.cloudinaryService.deleteFile(utilityDb.getImage());
             }
-            String urlUtilityImage = this.s3Service.uploadFile(utilityImage);
+            String urlUtilityImage = this.cloudinaryService.uploadFile(utilityImage);
             utilityDb.setImage(urlUtilityImage);
         }
         return this.utilityRepository.save(utilityDb);
     }
 
     @Override
-    public void deleteUtility(int idUtility) throws IdInvalidException {
+    public void deleteUtility(int idUtility) throws IdInvalidException, IOException {
         Utility utilityDb = this.getUtilityById(idUtility);
         if(utilityDb.getBuses()!= null && !utilityDb.getBuses().isEmpty()){
             throw new RuntimeException("Cannot delete this utility, it has buses");
         }
-        this.s3Service.deleteFile(utilityDb.getImage());
+        this.cloudinaryService.deleteFile(utilityDb.getImage());
 
         this.utilityRepository.delete(utilityDb);
     }

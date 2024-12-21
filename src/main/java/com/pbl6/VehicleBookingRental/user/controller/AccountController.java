@@ -15,7 +15,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.account.ResAccountInfoDTO
 
 import com.pbl6.VehicleBookingRental.user.dto.response.account.ResDeactivateAccount;
 import com.pbl6.VehicleBookingRental.user.service.RoleService;
-import com.pbl6.VehicleBookingRental.user.service.S3Service;
+import com.pbl6.VehicleBookingRental.user.service.CloudinaryService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.turkraft.springfilter.builder.FilterBuilder;
@@ -39,6 +39,7 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -100,7 +101,7 @@ public class AccountController {
     @PutMapping(value="/accounts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiMessage("Updated information for account")
     public ResponseEntity<ResAccountInfoDTO> updateInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file
-            , @RequestPart("account_info") ReqAccountInfoDTO reqAccountInfoDTO) throws IdInvalidException {
+            , @RequestPart("account_info") ReqAccountInfoDTO reqAccountInfoDTO) throws IOException {
         ResAccountInfoDTO resAccountInfoDTO  = this.accountService.updateAccountInfo(file, reqAccountInfoDTO);
         return ResponseEntity.ok(resAccountInfoDTO);
     }

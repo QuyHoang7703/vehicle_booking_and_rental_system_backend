@@ -26,21 +26,21 @@ public class UtilityController {
     @PostMapping("/utilities")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Utility> createUtility(@RequestPart("utilityInfo") Utility utility
-            , @RequestPart(value = "utilityImage", required = false) MultipartFile utilityImage) throws ApplicationException {
+            , @RequestPart(value = "utilityImage", required = false) MultipartFile utilityImage) throws Exception {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.utilityService.createUtility(utility, utilityImage));
     }
 
     @PutMapping("/utilities")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Utility> updateUtility(@RequestPart("utilityInfo") Utility utility
-            , @RequestPart(value = "utilityImage", required = false) MultipartFile utilityImage) throws IdInvalidException {
+            , @RequestPart(value = "utilityImage", required = false) MultipartFile utilityImage) throws Exception {
         return ResponseEntity.status(HttpStatus.OK).body(this.utilityService.updateUtility(utility, utilityImage));
     }
 
     @DeleteMapping("/utilities")
     @PreAuthorize("hasRole('ADMIN')")
     @ApiMessage("Deleted this utility")
-    public ResponseEntity<Void> deleteUtility(@RequestParam("idUtility") int idUtility) throws IdInvalidException {
+    public ResponseEntity<Void> deleteUtility(@RequestParam("idUtility") int idUtility) throws Exception {
         this.utilityService.deleteUtility(idUtility);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }

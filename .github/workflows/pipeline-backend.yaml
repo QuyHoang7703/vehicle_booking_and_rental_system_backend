@@ -19,9 +19,6 @@ jobs:
       AWS_SECRET: ${{ secrets.AWS_SECRET }}
       GG_Client_ID: ${{ secrets.GG_Client_ID }}
       GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
-      CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
-      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
 
 
     steps:
@@ -40,9 +37,6 @@ jobs:
           AWS_SECRET: ${{ secrets.AWS_SECRET }}
           GG_Client_ID: ${{ secrets.GG_Client_ID }}
           GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
-          CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
         run: mvn clean compile
 
   unit-test:
@@ -108,9 +102,6 @@ jobs:
           AWS_SECRET: ${{ secrets.AWS_SECRET }}
           GG_Client_ID: ${{ secrets.GG_Client_ID }}
           GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
-          CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
         run: mvn clean test
 
 
@@ -125,9 +116,6 @@ jobs:
       AWS_SECRET: ${{ secrets.AWS_SECRET }}
       GG_Client_ID: ${{ secrets.GG_Client_ID }}
       GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
-      CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
-      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
 
     steps:
       - name: Checkout Code
@@ -153,9 +141,6 @@ jobs:
       AWS_SECRET: ${{ secrets.AWS_SECRET }}
       GG_Client_ID: ${{ secrets.GG_Client_ID }}
       GG_Client_Secret: ${{ secrets.GG_Client_Secret }}
-      CLOUDINARY_NAME: ${{ secrets.CLOUDINARY_NAME }}
-      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
 
 
     steps:

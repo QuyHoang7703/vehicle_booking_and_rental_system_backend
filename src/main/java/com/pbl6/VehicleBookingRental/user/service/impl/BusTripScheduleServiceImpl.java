@@ -340,7 +340,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     // @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
-    @Scheduled(cron = "0 */30 * * * *")
+    @Scheduled(cron = "0 */2 * * * *")
     public void updateBusTripScheduleStatus() {
         LocalDate today = LocalDate.now();
         log.info("Today is: " + today);

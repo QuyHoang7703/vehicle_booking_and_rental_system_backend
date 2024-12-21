@@ -6,8 +6,10 @@ import java.io.IOException;
 import java.util.List;
 
 public interface CloudinaryService {
-    String uploadImage(MultipartFile file) throws IOException;
+
+    String uploadFile(MultipartFile file) throws IOException;
     void deleteFile(String imageName) throws IOException;
-    List<String> uploadImages(List<MultipartFile> files) throws IOException;
+    List<String> uploadFiles(List<MultipartFile> files) throws IOException;
+
     void deleteFiles(List<String> imageNames) throws IOException;
 }

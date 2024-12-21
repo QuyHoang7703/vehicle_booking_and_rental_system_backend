@@ -10,5 +10,6 @@ public interface VehicleTypeService {
     VehicleType updateVehicleType(VehicleType vehicleType);
     VehicleType findVehicleTypeById(int id);
     void deleteVehicleType(int id);
+
     ResultPaginationDTO getAllVehicleTypes(Specification<VehicleType> specification, Pageable pageable);
 }

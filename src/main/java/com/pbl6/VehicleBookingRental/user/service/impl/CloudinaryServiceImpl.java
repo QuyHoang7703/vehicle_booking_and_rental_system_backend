@@ -26,7 +26,9 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     private final Cloudinary cloudinary;
 
     @Override
-    public String uploadImage(MultipartFile file) throws IOException {
+
+    public String uploadFile(MultipartFile file) throws IOException {
+
         assert file.getOriginalFilename() != null;
         String publicValue = generatePublicValue(file.getOriginalFilename());
         log.info("publicValue is: {}", publicValue);
@@ -62,10 +64,12 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
-    public List<String> uploadImages(List<MultipartFile> files) throws IOException {
+
+    public List<String> uploadFiles(List<MultipartFile> files) throws IOException {
         List<String> imageUrls = new ArrayList<>();
         for(MultipartFile file : files) {
-            String imageUrl = this.uploadImage(file);
+            String imageUrl = this.uploadFile(file);
+
             imageUrls.add(imageUrl);
         }
         return imageUrls;

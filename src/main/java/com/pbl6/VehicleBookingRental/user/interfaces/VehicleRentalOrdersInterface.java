@@ -16,4 +16,8 @@ public interface VehicleRentalOrdersInterface {
     ResVehicleRentalOrderDetailDTO convertToResVehicleRentalOrderDetailDTO(Orders orders) throws ApplicationException;
     public double calculatePriceOrderByStartAndEndDate(Instant startRentalTime, Instant endRentalTime, double priceOneDay);
     public List<ResVehicleRentalOrderDetailDTO> getOrderByServiceId(int id);
+    public List<ResVehicleRentalOrderDetailDTO> getAllOrder();
+    public List<ResVehicleRentalOrderDetailDTO> getAllOrderUser();
+
+    public List<ResVehicleRentalOrderDetailDTO> getOrderByStatus(String status);
 }

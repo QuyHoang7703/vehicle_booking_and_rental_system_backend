@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
 
+import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
@@ -44,19 +45,11 @@ import static com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum.C
 @RequiredArgsConstructor
 public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
     @Autowired
-    private OrdersRepo ordersRepo;
-    @Autowired
-    private AccountRepository accountRepository;
-    @Autowired
     private VehicleRentalServiceRepo vehicleRentalServiceRepo;
     @Autowired
     private VehicleRentalOrderRepo vehicleRentalOrderRepo;
     @Autowired
-    private final NotificationService notificationService;
-    @Autowired
-    private  NotificationRepo notificationRepo;
-    @Autowired
-    private NotificationAccountRepo notificationAccountRepo;
+    private BusinessPartnerService businessPartnerService;
     private final AccountService accountService;
     private final RedisService<String, String, OrderVehicleRentalRedisDTO> redisService;
 
@@ -147,6 +140,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
                 .startRentalTime(carRentalOrder.getStart_rental_time())
                 .endRentalTime(carRentalOrder.getEnd_rental_time())
                 .pickupLocation(carRentalOrder.getPickup_location())
+                .cancelAt(carRentalOrder.getOrder().getCancelTime())
                 .build();
 
         return rentalInfo;
@@ -163,7 +157,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
                 .build();
         return pricingInfo;
     }
-    @Override
+
     public double calculatePriceOrderByStartAndEndDate(Instant startRentalTime,Instant endRentalTime,double priceOneDay){
         double total = 0.0;
         // Chuyển đổi Instant thành LocalDateTime để làm việc với giờ cụ thể
@@ -200,6 +194,71 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
                     try {
                         return convertToResVehicleRentalOrderDetailDTO(orders);
                     } catch (ApplicationException e) {
+                        return null;
+                    }
+                }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ResVehicleRentalOrderDetailDTO> getAllOrder(){
+        try{
+            BusinessPartner currenBP = businessPartnerService.getCurrentBusinessPartner(CAR_RENTAL_PARTNER);
+            List<CarRentalOrders> orders = vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(currenBP.getCarRentalPartner().getId());
+            return Optional.ofNullable(orders)
+                    .orElse(Collections.emptyList())
+                    .stream().map(order->{
+                        try {
+                            ResVehicleRentalOrderDetailDTO resVehicleRentalOrderDetailDTO = convertToResVehicleRentalOrderDetailDTO(order.getOrder());
+                            return resVehicleRentalOrderDetailDTO;
+                        } catch (ApplicationException e) {
+                            System.out.println(e.getMessage());
+                            return null;
+                        }
+                    }).collect(Collectors.toList());
+        }catch (Exception e){
+            System.out.println(e.getLocalizedMessage());
+            return null;
+        }
+    }
+    @Override
+    public List<ResVehicleRentalOrderDetailDTO> getAllOrderUser(){
+        try{
+            String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
+            if(email==null){
+                throw new ApplicationException("Email is invalid");
+            }
+            Account currentAccount = accountService.handleGetAccountByUsername(email);
+            List<CarRentalOrders> orders = vehicleRentalOrderRepo.findCarRentalOrdersByAccountId(currentAccount.getId());
+            return Optional.ofNullable(orders)
+                    .orElse(Collections.emptyList())
+                    .stream().map(order->{
+                        try {
+                            ResVehicleRentalOrderDetailDTO resVehicleRentalOrderDetailDTO = convertToResVehicleRentalOrderDetailDTO(order.getOrder());
+                            return resVehicleRentalOrderDetailDTO;
+                        } catch (ApplicationException e) {
+                            System.out.println(e.getMessage());
+                            return null;
+                        }
+                    }).collect(Collectors.toList());
+        }catch (Exception e){
+            System.out.println(e.getLocalizedMessage());
+            return null;
+        }
+    }
+    @Override
+    public List<ResVehicleRentalOrderDetailDTO> getOrderByStatus(String status) {
+        if (!status.equalsIgnoreCase("returned") && !status.equalsIgnoreCase("not_returned")) {
+            throw new IllegalArgumentException("Invalid status. Use 'returned' or 'not_returned'.");
+        }
+        List<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findCarRentalOrdersByStatus(status.toLowerCase());
+
+        return Optional.ofNullable(carRentalOrders).orElse(Collections.emptyList())
+                .stream().map(order->{
+                    try{
+                        ResVehicleRentalOrderDetailDTO o = convertToResVehicleRentalOrderDetailDTO(order.getOrder());
+                        return o;
+                    }catch (Exception e){
+                        System.out.println(e.getMessage());
                         return null;
                     }
                 }).collect(Collectors.toList());

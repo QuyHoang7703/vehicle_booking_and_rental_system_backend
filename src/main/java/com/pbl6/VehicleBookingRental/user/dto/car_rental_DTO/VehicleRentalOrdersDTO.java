@@ -20,6 +20,7 @@ public class VehicleRentalOrdersDTO {
     private double car_deposit;
     private double reservation_fee;
     private double price;
+    private Instant cancel_at;
 
     private int vehicle_rental_service_id;
     private int account_id;

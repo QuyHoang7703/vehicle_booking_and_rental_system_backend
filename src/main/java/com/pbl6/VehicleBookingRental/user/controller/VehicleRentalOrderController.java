@@ -64,4 +64,20 @@ public class VehicleRentalOrderController {
     public ResponseEntity<?> getOrderByServiceId(@RequestParam("service_id") int service_id){
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getOrderByServiceId(service_id));
     }
+    @GetMapping("/get-all-orders")
+    public ResponseEntity<?> getAllOrder()
+    {
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getAllOrder());
+    }
+    @GetMapping("/get-all-orders-user")
+    public ResponseEntity<?> getAllOrderUser()
+    {
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getAllOrderUser());
+    }
+    @GetMapping("/get-orders-by-status")
+    public ResponseEntity<?> getAllOrder(@RequestParam("status") String status)
+    {
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getOrderByStatus(status));
+    }
+
 }

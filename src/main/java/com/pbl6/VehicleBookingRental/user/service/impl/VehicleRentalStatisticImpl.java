@@ -188,6 +188,11 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         return this.statisticService.createResultStatisticDTO(statistic);
     }
 
+//    @Override
+//    public Map<Integer, Double> calculateMonthlyRevenue(int year) throws ApplicationException {
+//        return Map.of();
+//    }
+
     private void getYearlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders) {
         for(CarRentalOrders order : carRentalOrders){
             LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());

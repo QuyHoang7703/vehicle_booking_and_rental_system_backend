@@ -7,8 +7,10 @@ import java.util.List;
 
 @Data
 public class VehicleRentalServiceDTO {
-    private int id;
-    private double price;
+    private int vehicle_rental_service_id;
+    private int vehicle_register_id;
+    private double driverPrice;
+    private double selfDriverPrice;
     private int type;
     private String location;
     private String manufacturer;
@@ -28,6 +30,6 @@ public class VehicleRentalServiceDTO {
     private List<String> imagesVehicleRegister;
     private String partnerName;
     private String partnerPhoneNumber;
-    private int vehicle_register_id;
+
     private int vehicle_type_id;
 }

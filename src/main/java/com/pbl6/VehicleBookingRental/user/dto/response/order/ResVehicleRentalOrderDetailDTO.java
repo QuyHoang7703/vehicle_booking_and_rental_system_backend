@@ -33,6 +33,7 @@ public class ResVehicleRentalOrderDetailDTO {
         private Instant startRentalTime;
         private Instant endRentalTime;
         private String pickupLocation;
+        private Instant cancelAt;
     }
 
     @Data

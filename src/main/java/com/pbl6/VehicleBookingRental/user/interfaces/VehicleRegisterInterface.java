@@ -16,14 +16,13 @@ import java.util.Map;
 
 public interface VehicleRegisterInterface {
     public VehicleType findVehicleTypeById(int id);
-    public CarRentalPartner findCarRentalPartnerById(int id);
     public boolean register_vehicle(VehicleRegister vehicleRegister, List<MultipartFile> images);
 
     public List<VehicleRentalServiceDTO> get_all_by_service_type(int serviceType,String status);
 
     public boolean register_service_rental(CarRentalService carRentalService);
 
-    public VehicleRentalServiceDTO get_vehicle_rental_service_by_id(int id);
+    public VehicleRentalServiceDTO get_vehicle_rental_service_by_vehicle_register_id(int id);
 
     public boolean update_vehicle_rental_service(VehicleRentalServiceDTO vehicleRentalServiceDTO,List<MultipartFile> images);
 

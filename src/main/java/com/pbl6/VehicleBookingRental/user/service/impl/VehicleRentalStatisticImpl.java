@@ -15,6 +15,7 @@ import com.pbl6.VehicleBookingRental.user.service.VehicleRegisterService;
 import com.pbl6.VehicleBookingRental.user.service.VehicleRentalStatisticService;
 import com.pbl6.VehicleBookingRental.user.util.DateUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
@@ -151,14 +152,17 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         return vehicleRentalStatisticDTOS;
     }
     @Override
-    public Map<Integer, Double> calculateMonthlyRevenue( int year){
+    public Map<Integer, Double> calculateMonthlyRevenue( int year) throws ApplicationException {
         Map<Integer, Double> monthlyRevenue = new HashMap<>();
         // Initialize revenue for each month
         for (int month = 1; month <= 12; month++) {
             monthlyRevenue.put(month, 0.0);
         }
+        BusinessPartner businessPartner = businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
 
-        for (CarRentalOrders order : vehicleRentalOrderRepo.findAll()) {
+        for (CarRentalOrders order : vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id
+                (businessPartner.getCarRentalPartner().getId()))
+        {
             LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
             LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
 

@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.repository.vehicle_rental;
 
+import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +19,7 @@ public interface VehicleRegisterRepo extends JpaRepository<VehicleRegister,Integ
     public int updateStatus(int vehicle_register_id,String status);
 
     @Query("SELECT u FROM VehicleRegister u INNER JOIN VehicleType v ON u.vehicleType.id = v.id " +
-            "WHERE (:location IS NULL OR u.location = :location )" +
+           "WHERE (:location IS NULL OR u.location LIKE CONCAT('%', :location, '%'))"+
             "AND (:manufacturer IS NULL OR u.manufacturer = :manufacturer )" +
             "AND (:vehicle_type_name IS NULL OR v.name = :vehicle_type_name)")
     public List<VehicleRegister> findVehicleRegisterByLocationOrManufacturerOrVehicleType_Name(
@@ -32,5 +33,6 @@ public interface VehicleRegisterRepo extends JpaRepository<VehicleRegister,Integ
     // Lấy danh sách giá trị DISTINCT của thuộc tính 'brand'
     @Query("SELECT DISTINCT v.manufacturer FROM VehicleRegister v")
     List<String> findDistinctManufacturer();
+    List<VehicleRegister> findVehicleRegisterByCarRentalPartnerIdAndStatus(int id,String status);
 
 }

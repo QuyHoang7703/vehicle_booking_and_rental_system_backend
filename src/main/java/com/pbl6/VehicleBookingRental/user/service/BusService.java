@@ -13,12 +13,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 public interface BusService {
-    Bus createBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException;
-    Bus updateBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException;
+    Bus createBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException, IOException;
+    Bus updateBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException, IOException;
     ResBusDetailDTO convertToResBusDetail(Bus bus);
     void deleteBus(int busId) throws IdInvalidException, ApplicationException;
     Bus findBusById(int busId) throws IdInvalidException, ApplicationException;

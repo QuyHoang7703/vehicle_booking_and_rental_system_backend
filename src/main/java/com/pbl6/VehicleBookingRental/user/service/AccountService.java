@@ -54,8 +54,9 @@ public class AccountService {
     private final RoleRepository roleRepository;
     private final AccountRoleRepository accountRoleRepository;
     private final RoleService roleSerivice;
-    private final S3Service s3Service;
+//    private final CloudinaryService cloudinaryService;
     private final AccountRoleService accountRoleService;
+    private final CloudinaryService cloudinaryService;
 
 
     public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInvalidException, IOException {
@@ -137,7 +138,7 @@ public class AccountService {
         return null;
     }
 
-    public Account handleUpdateAccount(MultipartFile file, ReqAccountInfoDTO reqAccountInfoDTO) {
+    public Account handleUpdateAccount(MultipartFile file, ReqAccountInfoDTO reqAccountInfoDTO) throws IOException {
         Account accountUpdate = this.handleGetAccountByUsername(reqAccountInfoDTO.getUsername());
         if(accountUpdate == null) {
             throw new UsernameNotFoundException("Username not found");
@@ -148,8 +149,8 @@ public class AccountService {
         accountUpdate.setBirthDay(reqAccountInfoDTO.getBirthDay());
         // accountUpdate.setLockReason(reqAccount.getLockReason());
         if(file != null) {
-            String urlAvatar = this.s3Service.uploadFile(file);
-//            this.s3Service.deleteFile(account.getAvatar());
+            String urlAvatar = this.cloudinaryService.uploadFile(file);
+//            this.cloudinaryService.deleteFile(account.getAvatar());
             accountUpdate.setAvatar(urlAvatar);
 
         }
@@ -314,7 +315,7 @@ public class AccountService {
 
     }
 
-    public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IdInvalidException {
+    public ResAccountInfoDTO updateAccountInfo(MultipartFile avatar, ReqAccountInfoDTO reqAccountInfoDTO) throws IOException {
         String username = SecurityUtil.getCurrentLogin().isPresent()?
                 SecurityUtil.getCurrentLogin().get() : "";
         Account account = this.handleGetAccountByUsername(username);
@@ -323,9 +324,9 @@ public class AccountService {
         account.setGender(reqAccountInfoDTO.getGender());
         account.setPhoneNumber(reqAccountInfoDTO.getPhoneNumber());
         if(avatar != null) {
-            String urlAvatar = this.s3Service.uploadFile(avatar);
+            String urlAvatar = this.cloudinaryService.uploadFile(avatar);
             if(account.getAvatar()!=null) {
-                this.s3Service.deleteFile(account.getAvatar());
+                this.cloudinaryService.deleteFile(account.getAvatar());
             }
             account.setAvatar(urlAvatar);
         }

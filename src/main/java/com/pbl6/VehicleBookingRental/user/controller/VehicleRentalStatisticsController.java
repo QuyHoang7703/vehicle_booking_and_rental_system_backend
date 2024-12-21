@@ -6,6 +6,7 @@ import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -24,6 +25,7 @@ public class VehicleRentalStatisticsController {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalStatisticService.statisticByDate(startDate,endDate));
     }
     @GetMapping("/get-monthly-venue-in-year")
+    @PreAuthorize("hasRole('CAR_RENTAL_PARTNER') or hasRole('ADMIN')")
     public ResponseEntity<?> getMonthlyVenueInYear(@RequestParam("year") Integer year) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalStatisticService.calculateMonthlyRevenue(year));
     }

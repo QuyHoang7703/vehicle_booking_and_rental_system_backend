@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
-import com.pbl6.VehicleBookingRental.user.service.S3Service;
+import com.pbl6.VehicleBookingRental.user.service.CloudinaryService;
 import com.pbl6.VehicleBookingRental.user.service.TokenService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
@@ -56,7 +56,7 @@ public class AuthController {
     private final SecurityUtil securityUtil;
     private final AccountService accountService;
     private final PasswordEncoder passwordEncoder;
-    private final S3Service s3Service;
+    private final CloudinaryService cloudinaryService;
     private final TokenService tokenService;
     @Value("${pbl6.jwt.access-token-validity-in-seconds}")
     private long accessTokenExpiration;
@@ -90,7 +90,7 @@ public class AuthController {
     @PostMapping(value="auth/register-info", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ApiMessage("Register a new user")
     public ResponseEntity<ResAccountInfoDTO> addInfoUser(@RequestParam(value="fileAvatar", required = false) MultipartFile file,
-                                                        @RequestPart("account_info") ReqAccountInfoDTO accountInfoDTO) throws IdInvalidException {
+                                                        @RequestPart("account_info") ReqAccountInfoDTO accountInfoDTO) throws IdInvalidException, IOException {
         Account updatedAccount = this.accountService.handleUpdateAccount(file, accountInfoDTO);
 
         return ResponseEntity.ok(this.accountService.convertToResAccountInfoDTO(updatedAccount));

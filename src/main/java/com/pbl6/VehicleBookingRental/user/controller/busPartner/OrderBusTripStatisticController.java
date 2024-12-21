@@ -20,7 +20,7 @@ import java.time.LocalDate;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("api/v1")
-@PreAuthorize("hasRole('BUS_PARTNER')")
+@PreAuthorize("hasRole('BUS_PARTNER') or hasRole('ADMIN')")
 public class OrderBusTripStatisticController {
     private final OrderBusTripStatisticService orderBusTripStatisticService;
 

@@ -35,7 +35,7 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     private final BusinessPartnerRepository businessPartnerRepository;
     private final BusPartnerRepository busPartnerRepository;
     private final AccountService accountService;
-    private final S3Service s3Service;
+    private final CloudinaryService cloudinaryService;
     private final ImageRepository imageRepository;
     private final ImageService imageService;
     private final BankAccountService bankAccountService;
@@ -71,7 +71,7 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 
         businessPartner.setAccount(account);
         if(avatar != null) {
-            String url = this.s3Service.uploadFile(avatar);
+            String url = this.cloudinaryService.uploadFile(avatar);
             businessPartner.setAvatar(url);
         }
         BusinessPartner savedBusinessPartner = this.businessPartnerRepository.save(businessPartner);

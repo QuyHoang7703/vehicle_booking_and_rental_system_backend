@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     private final AccountService accountService;
     private final ImageService imageService;
-    private final S3Service s3Service;
+    private final CloudinaryService cloudinaryService;
     private final BusinessPartnerRepository businessPartnerRepository;
     private final CarRentalPartnerRepository carRentalPartnerRepository;
     private final BusinessPartnerService businessPartnerService;
@@ -72,7 +72,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
         businessPartner.setPolicy(policiesAsString);
 
         if(avatar != null) {
-            String url = this.s3Service.uploadFile(avatar);
+            String url = this.cloudinaryService.uploadFile(avatar);
             businessPartner.setAvatar(url);
         }
         BusinessPartner savedBusinessPartner = this.businessPartnerRepository.save(businessPartner);

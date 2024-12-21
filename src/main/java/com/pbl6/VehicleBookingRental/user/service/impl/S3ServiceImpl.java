@@ -31,7 +31,7 @@ public class S3ServiceImpl implements S3Service{
 
 
     public String getImageUrl(String imagePath) {
-        return imageUrl + imagePath; 
+        return imageUrl + imagePath;
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -39,11 +40,12 @@ public class BusServiceImpl implements BusService {
     private final BusinessPartnerService businessPartnerService;
     private final ImageRepository imageRepository;
     private final ImageService imageService;
-    private final S3Service s3Service;
+//    private final S3Service s3Service;
     private final DropOffLocationRepository dropOffLocationRepository;
     private final BusTripScheduleRepository busTripScheduleRepository;
+    private final CloudinaryService cloudinaryService;
     @Override
-    public Bus createBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException {
+    public Bus createBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws Exception {
         if(this.busRepository.existsByLicensePlate(reqBus.getLicensePlate())) {
             throw new ApplicationException("Bus is available");
         }
@@ -78,7 +80,7 @@ public class BusServiceImpl implements BusService {
     }
 
     @Override
-    public Bus updateBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException {
+    public Bus updateBus(ReqBusDTO reqBus, List<MultipartFile> busImages) throws IdInvalidException, ApplicationException, IOException {
         Bus busDb = this.busRepository.findById(reqBus.getId())
                 .orElseThrow(() -> new IdInvalidException("Bus not found"));
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
@@ -103,7 +105,7 @@ public class BusServiceImpl implements BusService {
             List<String> currentUrlImages = this.imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.BUS), busDb.getId())
                     .stream().map(Images::getPathImage).toList();
             // Delete images of bus in AWS S3
-            this.s3Service.deleteFiles(currentUrlImages);
+            this.cloudinaryService.deleteFiles(currentUrlImages);
             // Delete images of bus in Images (Database)
             this.imageService.deleteImages(busDb.getId(), String.valueOf(ImageOfObjectEnum.BUS));
             this.imageService.uploadAndSaveImages(busImages, String.valueOf(ImageOfObjectEnum.BUS), busDb.getId(), String.valueOf(ImageOfObjectEnum.BUS));

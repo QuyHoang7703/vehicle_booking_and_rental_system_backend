@@ -11,7 +11,6 @@ import com.pbl6.VehicleBookingRental.user.service.BusTripScheduleService;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

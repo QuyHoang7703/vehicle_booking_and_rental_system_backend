@@ -2,9 +2,11 @@ package com.pbl6.VehicleBookingRental.user.controller;
 
 import com.pbl6.VehicleBookingRental.user.domain.Voucher.Voucher;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.voucher.ReqUpdateVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.voucher.ReqVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.voucher.ResVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.service.voucher.VoucherService;
+import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
@@ -38,6 +40,19 @@ public class VoucherController {
     public ResponseEntity<ResultPaginationDTO> getAllVouchers(@Filter Specification<Voucher> spec,
                                                               @PageableDefault(size = 3) Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK).body(this.voucherService.getAllVouchers(spec, pageable));
+    }
+
+    @DeleteMapping("vouchers/{voucherId}")
+    @ApiMessage("Deleted this voucher")
+    public ResponseEntity<Void> deleteVouchers(@PathVariable("voucherId") int voucherId) throws Exception {
+        this.voucherService.deleteVoucher(voucherId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @PatchMapping("vouchers")
+    public ResponseEntity<ResVoucherDTO> updateVoucher(@RequestBody ReqUpdateVoucherDTO req) throws IdInvalidException {
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.voucherService.updateVoucher(req));
     }
 
 }

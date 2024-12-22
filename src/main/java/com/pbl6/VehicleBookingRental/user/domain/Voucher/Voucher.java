@@ -20,7 +20,7 @@ public class Voucher {
     private int id;
 
     private String name;
-    private String description;
+//    private String description;
     private LocalDate startDate;
     private LocalDate endDate;
     private double voucherPercentage;

@@ -14,7 +14,7 @@ import java.time.LocalDate;
 public class ResVoucherDTO {
     private int id;
     private String name;
-    private String description;
+//    private String description;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate startDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")

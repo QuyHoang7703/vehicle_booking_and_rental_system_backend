@@ -1,10 +1,13 @@
 package com.pbl6.VehicleBookingRental.user.service.impl.voucher;
 
+import com.pbl6.VehicleBookingRental.user.domain.Voucher.AccountVoucher;
 import com.pbl6.VehicleBookingRental.user.domain.Voucher.Voucher;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.voucher.ReqUpdateVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.voucher.ReqVoucherDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.voucher.ResVoucherDTO;
+import com.pbl6.VehicleBookingRental.user.repository.voucher.AccountVoucherRepository;
 import com.pbl6.VehicleBookingRental.user.repository.voucher.VoucherRepository;
 import com.pbl6.VehicleBookingRental.user.service.voucher.VoucherService;
 import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
@@ -28,6 +31,7 @@ import java.util.List;
 @Slf4j
 public class VoucherServiceImpl implements VoucherService {
     private final VoucherRepository voucherRepository;
+    private final AccountVoucherRepository accountVoucherRepository;
 
     @Override
     public ResVoucherDTO createVoucher(ReqVoucherDTO reqVoucherDTO) throws ApplicationException {
@@ -36,7 +40,6 @@ public class VoucherServiceImpl implements VoucherService {
         }
         Voucher voucher = new Voucher();
         voucher.setName(reqVoucherDTO.getName());
-        voucher.setDescription(reqVoucherDTO.getDescription());
         voucher.setStartDate(reqVoucherDTO.getStartDate());
         voucher.setEndDate(reqVoucherDTO.getEndDate());
         voucher.setVoucherPercentage(reqVoucherDTO.getVoucherPercentage());
@@ -81,7 +84,6 @@ public class VoucherServiceImpl implements VoucherService {
         ResVoucherDTO res = ResVoucherDTO.builder()
                 .id(voucher.getId())
                 .name(voucher.getName())
-                .description(voucher.getDescription())
                 .startDate(voucher.getStartDate())
                 .endDate(voucher.getEndDate())
                 .voucherPercentage(voucher.getVoucherPercentage())
@@ -93,17 +95,44 @@ public class VoucherServiceImpl implements VoucherService {
         return res;
     }
 
-//    @Scheduled(cron = "0 */2 * * * *")
+    @Override
+    public void deleteVoucher(int voucherId) throws IdInvalidException, ApplicationException {
+        Voucher voucher = this.voucherRepository.findById(voucherId)
+                .orElseThrow(() -> new IdInvalidException("Voucher not found"));
+
+        // User have already claim voucher -> Can't delete this voucher
+        if(voucher.getAccountVouchers() != null && !voucher.getAccountVouchers().isEmpty()) {
+            throw new ApplicationException("Someone already claimed this voucher");
+        }
+
+        this.voucherRepository.delete(voucher);
+
+    }
+
+    @Override
+    public ResVoucherDTO updateVoucher(ReqUpdateVoucherDTO req) throws IdInvalidException {
+        Voucher voucherDb = this.voucherRepository.findById(req.getId())
+                .orElseThrow(() -> new IdInvalidException("Voucher not found"));
+        voucherDb.setName(req.getName());
+        voucherDb.setRemainingQuantity(req.getRemainingQuantity());
+
+        return this.convertToResVoucherDTO(this.voucherRepository.save(voucherDb));
+    }
+
     @Transactional
+    @Scheduled(cron = "0 */2 * * * *")
     public void updateStatusOfVoucher() {
         LocalDate today = LocalDate.now();
-
+        // Update status of voucher expired
         List<Voucher> vouchersToUpdate = voucherRepository.findByEndDateBefore(today);
 
         if (!vouchersToUpdate.isEmpty()) {
             vouchersToUpdate.forEach(voucher -> {
                 voucher.setExpired(true);
                 log.info("Voucher with ID: {} marked as expired.", voucher.getId());
+                // Delete expired vouchers of accounts
+                List<AccountVoucher> accountVouchers = voucher.getAccountVouchers();
+                this.accountVoucherRepository.deleteAll(accountVouchers);
             });
             voucherRepository.saveAll(vouchersToUpdate);
         } else {

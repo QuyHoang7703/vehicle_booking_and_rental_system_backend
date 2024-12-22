@@ -29,4 +29,11 @@ public interface DropOffLocationRepository extends JpaRepository<DropOffLocation
                 "(SELECT MIN(dol_sub.priceTicket) FROM DropOffLocation dol_sub " +
                 "WHERE dol_sub.province = :province)")
     List<DropOffLocation> findPriceTicketForArrivalLocation(@Param("province") String province);
+
+    @Query("SELECT dol FROM DropOffLocation dol " +
+            "JOIN dol.busTrip bt " +
+            "WHERE bt.id = :busTripId " +
+            "AND dol.province = :arrivalLocation")
+    Optional<DropOffLocation> findArrivalLocationOfBusTrip(@Param("busTripId") int busTripId,
+                                                           @Param("arrivalLocation") String arrivalLocation);
 }

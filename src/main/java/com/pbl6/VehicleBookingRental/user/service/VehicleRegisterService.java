@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -120,6 +121,62 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 if(serviceList.size() > 1){
                     vehicleRentalServiceDTO.setType(2);
                 }
+            }
+
+            // Thiết lập danh sách hình ảnh
+            List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(
+                    String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER),
+                    vehicleRegister.getId()
+            );
+            List<String> imagePaths = Optional.ofNullable(images)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(Images::getPathImage)
+                    .collect(Collectors.toList());
+            vehicleRentalServiceDTO.setImagesVehicleRegister(imagePaths);
+        } else {
+            return null; // Trả về null nếu VehicleRegister không tồn tại
+        }
+
+        return vehicleRentalServiceDTO;
+    }
+    @Override
+    public VehicleRentalServiceDTO get_vehicle_rental_service_by_vehicleRentalServiceID(int vehicleRentalID) {
+        VehicleRentalServiceDTO vehicleRentalServiceDTO = new VehicleRentalServiceDTO();
+
+        Optional<CarRentalService> carRentalService = vehicleRentalServiceRepo.findById(vehicleRentalID);
+        if (carRentalService.isPresent()) {
+            VehicleRegister vehicleRegister = carRentalService.get().getVehicleRegister();
+
+            // Thiết lập các thuộc tính từ VehicleRegister
+            vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
+            vehicleRentalServiceDTO.setManufacturer(vehicleRegister.getManufacturer());
+            vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
+            vehicleRentalServiceDTO.setDescription(vehicleRegister.getDescription());
+            vehicleRentalServiceDTO.setVehicle_type(vehicleRegister.getVehicleType().getName());
+            vehicleRentalServiceDTO.setQuantity(vehicleRegister.getQuantity());
+            vehicleRentalServiceDTO.setStatus(vehicleRegister.getStatus());
+            vehicleRentalServiceDTO.setDate_of_status(vehicleRegister.getDate_of_status());
+            vehicleRentalServiceDTO.setDiscount_percentage(vehicleRegister.getDiscount_percentage());
+            vehicleRentalServiceDTO.setCar_deposit(vehicleRegister.getCar_deposit());
+            vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
+            vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
+            vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
+            vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
+            vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
+            vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
+            vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
+            vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
+            vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
+
+            // Thiết lập thông tin từ CarRentalService nếu tồn tại
+            vehicleRentalServiceDTO.setVehicle_rental_service_id(carRentalService.get().getId());
+            vehicleRentalServiceDTO.setType(carRentalService.get().getType());
+
+            if (carRentalService.get().getType() == 0) {
+                vehicleRentalServiceDTO.setSelfDriverPrice(carRentalService.get().getPrice());
+            } else if (carRentalService.get().getType() == 1) {
+                vehicleRentalServiceDTO.setDriverPrice(carRentalService.get().getPrice());
             }
 
             // Thiết lập danh sách hình ảnh
@@ -308,7 +365,6 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 }
               }
         }
-
         return vehicleRentalServiceDTOList;
     }
     @Override
@@ -400,39 +456,44 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     }
     private int calculateAmountByOrder(Instant startDate,Instant endDate,int car_rental_service_id){
         // Lấy danh sách các ngày
-        List<LocalDate> days = dateUtil.getDaysBetweenDates(startDate, endDate);
+        List<Map<LocalDateTime,LocalDateTime>> dayTimes = dateUtil.getDaysBetweenDateTimes(startDate, endDate);
         // Lấy số lượng xe thuê theo từng ngày
-        Map<LocalDate, Integer> carQuantitiesByDay = getCarQuantitiesByDay(days, car_rental_service_id);
+        Map<LocalDate, Integer> carQuantitiesByDay = getCarAmountsByDay(dayTimes, car_rental_service_id);
 
         return  carQuantitiesByDay.values().stream()
                 .max(Integer::compareTo) // Tìm giá trị lớn nhất
                 .orElse(0); // Nếu Map trống, trả về giá trị mặc định là 0
     }
 
-    private Map<LocalDate, Integer> getCarQuantitiesByDay(List<LocalDate> days, int carRentalServiceId) {
+    private Map<LocalDate, Integer> getCarAmountsByDay(List<Map<LocalDateTime, LocalDateTime>> dayTimes, int carRentalServiceId) {
         // Giả sử bạn đã có danh sách các đơn đặt xe từ DB >= currentDate
-        List<CarRentalOrders> orders = vehicleRentalOrderRepo.findFutureOrdersByCarRentalServiceId(carRentalServiceId,Instant.now());
+        List<CarRentalOrders> orders = vehicleRentalOrderRepo.findFutureOrdersByCarRentalServiceId(carRentalServiceId, Instant.now(),"not_returned");
 
         // Tạo một Map để lưu số lượng xe theo từng ngày
-        Map<LocalDate, Integer> carQuantitiesByDay = new HashMap<>();
+        Map<LocalDate, Integer> carAmountsByDay = new HashMap<>();
 
-        for (LocalDate day : days) {
-            // Lọc các đơn đặt có thời gian thuê trùng với ngày hiện tại
-            int totalCarsForDay = orders.stream()
-                    .filter(order -> {
-                        LocalDate orderStart = order.getStart_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
-                        LocalDate orderEnd = order.getEnd_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
-                        return (day.isEqual(orderStart) || day.isEqual(orderEnd) ||
-                                (day.isAfter(orderStart) && day.isBefore(orderEnd)));
-                    })
-                    .mapToInt(CarRentalOrders::getAmount) // Lấy số lượng xe của từng đơn đặt
-                    .sum(); // Tính tổng số lượng xe
+        for (Map<LocalDateTime, LocalDateTime> range : dayTimes) {
+            for (Map.Entry<LocalDateTime, LocalDateTime> entry : range.entrySet()) {
+                LocalDateTime dayStart = entry.getKey();
+                LocalDateTime dayEnd = entry.getValue();
 
-            // Gán kết quả vào Map
-            carQuantitiesByDay.put(day, totalCarsForDay);
+
+                // Lọc các đơn đặt có thời gian thuê trùng với khoảng thời gian hiện tại
+                int totalCarsForDay = orders.stream()
+                        .filter(order -> {
+                            LocalDateTime orderStart = order.getStart_rental_time().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                            LocalDateTime orderEnd = order.getEnd_rental_time().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                            return (dayStart.isEqual(orderStart) || dayEnd.isEqual(orderEnd) ||
+                                    (dayStart.isBefore(orderEnd) && dayEnd.isAfter(orderStart)));
+                        })
+                        .mapToInt(CarRentalOrders::getAmount) // Lấy số lượng xe của từng đơn đặt
+                        .sum(); // Tính tổng số lượng xe
+
+                // Gán kết quả vào Map
+                carAmountsByDay.put(dayStart.toLocalDate(), totalCarsForDay);
+            }
         }
-        return carQuantitiesByDay;
+        return carAmountsByDay;
     }
-
 }
 

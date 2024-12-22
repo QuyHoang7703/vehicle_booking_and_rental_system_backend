@@ -370,4 +370,21 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         }
     }
 
+    @Override
+    public MessageDTO getMsgById(int msgID) {
+        Message message = messageRepo.findById(msgID).orElse(null);
+        MessageDTO messageDTO = new MessageDTO();
+        if(message != null){
+            messageDTO.setId(message.getId());
+            messageDTO.setSenderId(message.getSenderId());
+            messageDTO.setSender_type(message.getSender_type());
+            messageDTO.setContent(message.getContent());
+            messageDTO.setSeen(message.isSeen());
+            messageDTO.setSeen_at(message.getSeen_at() != null ? message.getSeen_at().toInstant() : null);
+            messageDTO.setSendAt(message.getSendAt() != null ? message.getSendAt().toInstant() : null);
+            messageDTO.setConversation_id(message.getConversation().getId());
+        }
+        return messageDTO;
+    }
+
 }

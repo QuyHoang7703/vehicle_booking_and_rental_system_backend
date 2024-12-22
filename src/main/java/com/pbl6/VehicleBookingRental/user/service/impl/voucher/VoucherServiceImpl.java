@@ -110,10 +110,19 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
-    public ResVoucherDTO updateVoucher(ReqUpdateVoucherDTO req) throws IdInvalidException {
+    public ResVoucherDTO updateVoucher(ReqUpdateVoucherDTO req) throws IdInvalidException, ApplicationException {
         Voucher voucherDb = this.voucherRepository.findById(req.getId())
                 .orElseThrow(() -> new IdInvalidException("Voucher not found"));
+        if(voucherDb.getAccountVouchers() != null && !voucherDb.getAccountVouchers().isEmpty()) {
+            throw new ApplicationException("Someone already claimed this voucher");
+        }
+
         voucherDb.setName(req.getName());
+        voucherDb.setStartDate(req.getStartDate());
+        voucherDb.setEndDate(req.getEndDate());
+        voucherDb.setVoucherPercentage(req.getVoucherPercentage());
+        voucherDb.setMaxDiscountValue(req.getMaxDiscountValue());
+        voucherDb.setMinOrderValue(req.getMinOrderValue());
         voucherDb.setRemainingQuantity(req.getRemainingQuantity());
 
         return this.convertToResVoucherDTO(this.voucherRepository.save(voucherDb));

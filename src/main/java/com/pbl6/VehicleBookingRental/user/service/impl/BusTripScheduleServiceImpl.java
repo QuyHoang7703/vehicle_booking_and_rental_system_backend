@@ -56,28 +56,48 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final BreakDayRepository breakDayRepository;
 
     @Override
+    @Transactional
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
-        if(this.busTripScheduleRepository.existsByBusTrip_IdAndBus_Id(reqBusTripScheduleDTO.getBusTripId(), reqBusTripScheduleDTO.getBusId())) {
-            throw new ApplicationException("This bus trip schedule has already existed");
-        }
+//        if(this.busTripScheduleRepository.existsByBusTrip_IdAndBus_Id(reqBusTripScheduleDTO.getBusTripId(), reqBusTripScheduleDTO.getBusId())) {
+//            throw new ApplicationException("This bus trip schedule has already existed");
+//        }
         BusTripSchedule busTripSchedule = new BusTripSchedule();
 
         BusTrip busTrip = this.busTripRepository.findById(reqBusTripScheduleDTO.getBusTripId())
                 .orElseThrow(()-> new IdInvalidException("BusTrip not found"));
+
         busTripSchedule.setBusTrip(busTrip);
+
 
         // Get the bus
         Bus bus = this.busService.findBusById(reqBusTripScheduleDTO.getBusId());
-        // Có kiểm tra bus trip schedule thêm có hợp lệ ?
-//        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(busTrip.getArrivalLocation(), busTripSchedule.getId())
-//                .orElseThrow(() -> new ApplicationException("Not found the drop off location"));
+        // Lấy ra danh sách lịch trình của xe
+        List<BusTripSchedule> busTripSchedules = bus.getBusTripSchedules();
+        for(BusTripSchedule schedule : busTripSchedules) {
+            // Tính toán thời gian đến của mỗi lịch trình của xe
+            DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(schedule.getBusTrip().getArrivalLocation(), schedule.getId())
+                    .orElseThrow(()-> new ApplicationException("DropOffLocation not found"));
+
+            LocalDateTime departureDateTime = LocalDateTime.of(LocalDate.now(), schedule.getDepartureTime());
+
+            // Thời gian đến cộng thêm 1 tiếng để phòng chờ có việc phát sinh
+            LocalDateTime arrivalDateTime = departureDateTime.plus(dropOffLocation.getJourneyDuration()).plusHours(1);
+
+            LocalDateTime newDepartDateTime = LocalDateTime.of(LocalDate.now(), reqBusTripScheduleDTO.getDepartureTime());
+
+            // Nếu thời gian khởi hành mới nằm trong khoảng thời gian mà bus đã chạy ở 1 lịch trình khác -> Xung đột lịch
+            if ((newDepartDateTime.isAfter(departureDateTime) && newDepartDateTime.isBefore(arrivalDateTime))
+                    || newDepartDateTime.isEqual(departureDateTime)
+                    || newDepartDateTime.isEqual(arrivalDateTime)) {
+                throw new ApplicationException("Conflict schedules of the bus");
+            }
+        }
 
         busTripSchedule.setBus(bus);
         busTripSchedule.setAvailableSeats(bus.getBusType().getNumberOfSeat());
 
         busTripSchedule.setDepartureTime(reqBusTripScheduleDTO.getDepartureTime());
         busTripSchedule.setDiscountPercentage(reqBusTripScheduleDTO.getDiscountPercentage());
-//        busTripSchedule.setPriceTicket(reqBusTripScheduleDTO.getPriceTicket());
         busTripSchedule.setStartOperationDay(reqBusTripScheduleDTO.getStartOperationDay());
 
         if(reqBusTripScheduleDTO.getStartOperationDay().isEqual(LocalDate.now()) || reqBusTripScheduleDTO.getStartOperationDay().isBefore(LocalDate.now())) {
@@ -98,7 +118,6 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
            busTripSchedule.setBreakDays(breakDays);
         }
 
-
         return this.busTripScheduleRepository.save(busTripSchedule);
     }
 
@@ -108,7 +127,6 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .id(busTripSchedule.getBusTrip().getId())
                 .departureLocation(busTripSchedule.getBusTrip().getDepartureLocation())
                 .arrivalLocation(busTripSchedule.getBusTrip().getArrivalLocation())
-//                .durationJourney(busTripSchedule.getBusTrip().getDurationJourney())
                 .build();
         ResBusTripScheduleForAdminDTO.BusInfo busInfo = ResBusTripScheduleForAdminDTO.BusInfo.builder()
                 .licensePlate(busTripSchedule.getBus().getLicensePlate())
@@ -120,19 +138,19 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .busTripInfo(busTripInfo)
                 .busInfo(busInfo)
                 .departureTime(busTripSchedule.getDepartureTime())
-//                .arrivalTime(busTripSchedule.getDepartureTime().plus(busTripSchedule.getBusTrip().getDurationJourney()))
                 .discountPercentage(busTripSchedule.getDiscountPercentage())
-//                .priceTicket(CurrencyFormatterUtil.formatToVND(busTripSchedule.getPriceTicket()))
                 .startOperationDay(busTripSchedule.getStartOperationDay())
-                .availableSeats(this.getAvailableNumberOfSeatsByDepartureDate(busTripSchedule, departureDate)) // Có thể thay thế sau này khi order
+                .availableSeats(departureDate !=null ? this.getAvailableNumberOfSeatsByDepartureDate(busTripSchedule, departureDate)
+                        : busTripSchedule.getBus().getBusType().getNumberOfSeat()) // Có thể thay thế sau này khi order
                 .breakDays(busTripSchedule.getBreakDays())
-//                .isOperation(busTripSchedule.isOperation())
                 .build();
 
         boolean isOperation = busTripSchedule.getBreakDays().stream().anyMatch(breakDay ->
                 (!departureDate.isBefore(breakDay.getStartDay()) && !departureDate.isAfter(breakDay.getEndDay())));
 
         res.setOperation(!isOperation);
+
+
 
         return res;
     }

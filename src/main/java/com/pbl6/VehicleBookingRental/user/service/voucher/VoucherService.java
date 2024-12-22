@@ -16,5 +16,5 @@ public interface VoucherService {
     ResultPaginationDTO getAllVouchers(Specification<Voucher> specification, Pageable pageable);
     ResVoucherDTO convertToResVoucherDTO(Voucher voucher);
     void deleteVoucher(int voucherId) throws IdInvalidException, ApplicationException;
-    ResVoucherDTO updateVoucher(ReqUpdateVoucherDTO req) throws IdInvalidException;
+    ResVoucherDTO updateVoucher(ReqUpdateVoucherDTO req) throws IdInvalidException, ApplicationException;
 }

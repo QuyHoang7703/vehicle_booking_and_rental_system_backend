@@ -50,7 +50,7 @@ public class VoucherController {
     }
 
     @PatchMapping("vouchers")
-    public ResponseEntity<ResVoucherDTO> updateVoucher(@RequestBody ReqUpdateVoucherDTO req) throws IdInvalidException {
+    public ResponseEntity<ResVoucherDTO> updateVoucher(@RequestBody ReqUpdateVoucherDTO req) throws Exception {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.voucherService.updateVoucher(req));
     }

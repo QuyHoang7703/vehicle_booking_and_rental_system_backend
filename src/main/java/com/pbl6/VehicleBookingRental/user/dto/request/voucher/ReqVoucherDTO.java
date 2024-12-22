@@ -11,7 +11,6 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class ReqVoucherDTO {
-    private int id;
     private String name;
 //    private String description;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")

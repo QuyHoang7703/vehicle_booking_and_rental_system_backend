@@ -94,8 +94,13 @@ public class VehicleRegisterController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
     @GetMapping("/get-vehicle-register")
-    public ResponseEntity<?> getVehicleRegisterById(@RequestParam("vehicle_rental_service_id") int id){
+    public ResponseEntity<?> getVehicleRegisterById(@RequestParam("vehicle_register_id") int id){
         VehicleRentalServiceDTO vehicleRentalServiceDTO = vehicleRegisterInterface.get_vehicle_rental_service_by_vehicle_register_id(id);
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalServiceDTO);
+    }
+    @GetMapping("/get-vehicle-rental-service")
+    public ResponseEntity<?> getVehicleRentalById(@RequestParam("vehicle_rental_service_id") int id){
+        VehicleRentalServiceDTO vehicleRentalServiceDTO = vehicleRegisterInterface.get_vehicle_rental_service_by_vehicleRentalServiceID(id);
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalServiceDTO);
     }
     @PatchMapping("/update-vehicle-rental-service")

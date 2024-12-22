@@ -172,6 +172,10 @@ public class ChatController {
         }
         return ResponseEntity.status(HttpStatus.OK).body("Update message failed");
     }
+    @GetMapping("/chat/get-message-by-id")
+    public ResponseEntity<?> getMessageById(@RequestParam("messageId") int msgId){
+        return ResponseEntity.status(HttpStatus.OK).body(chatMessageService.getMsgById(msgId));
+    }
     @PostMapping("/notification/update-unseen-notification")
     public ResponseEntity<?> updateUnseenNotification (@RequestParam("account_id") int senderId,@RequestParam("account_type") String senderType,@RequestParam("notification_id")int notification_id){
         boolean result = notificationService.updateUnseenNotification(senderId,AccountEnum.valueOf(senderType),notification_id);

@@ -21,4 +21,5 @@ public interface ChatMessageService {
     public Integer createConversation(int senderId,String senderType,int recipientId,String recipientType) ;
     public List<MessageDTO> getMessagesByConversationId(int conversationId);
     public boolean updateUnseenMessages(int senderId,int conversationId,String senderType);
+    public MessageDTO getMsgById(int msgID);
 }

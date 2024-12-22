@@ -221,6 +221,7 @@ public class OrderServiceImpl implements OrderService {
 
         int accountIdOfBusPartner = busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().getAccount().getId();
         //create new notification
+        //to partner
         NotificationDTO notificationDTO = new NotificationDTO();
         notificationDTO.setMessage("Bạn có một đơn đặt xe mới ");
         notificationDTO.setTitle("Đơn đặt xe mới");
@@ -228,6 +229,14 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
         createNotificationToPartner(accountIdOfBusPartner,  AccountEnum.BUS_PARTNER,notificationDTO);
+        // to user
+        NotificationDTO notificationDTO2 = new NotificationDTO();
+        notificationDTO2.setMessage(" Chúc mừng bạn đã đặt vé thành công ");
+        notificationDTO2.setTitle("Đặt vé thành công");
+        notificationDTO2.setType(NotificationTypeEnum.BOOKING_COMPLETED);
+        notificationDTO2.setCreate_at(Instant.now());
+        notificationDTO2.setSeen(false);
+        createNotificationToPartner(currentAccount.getId(),  AccountEnum.USER,notificationDTO2);
 
     }
 
@@ -319,7 +328,14 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
         createNotificationToPartner(accountIdOfVehicleRentalPartner,  AccountEnum.CAR_RENTAL_PARTNER,notificationDTO);
+        // to user
+        NotificationDTO notificationDTO2 = new NotificationDTO();
+        notificationDTO2.setMessage(" Chúc mừng bạn đã đặt xe thành công ");
+        notificationDTO2.setTitle("Đặt xe thành công");
+        notificationDTO2.setType(NotificationTypeEnum.BOOKING_COMPLETED);
+        notificationDTO2.setCreate_at(Instant.now());
+        notificationDTO2.setSeen(false);
+        createNotificationToPartner(currentAccount.getId(), AccountEnum.USER,notificationDTO2);
     }
-
 
 }

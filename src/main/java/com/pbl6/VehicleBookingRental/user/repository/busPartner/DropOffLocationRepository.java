@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,4 +22,11 @@ public interface DropOffLocationRepository extends JpaRepository<DropOffLocation
                                                                  @Param("busTripScheduleId") int busTripScheduleId);
 
     Optional<DropOffLocation> findByProvinceAndBusTripId(String province, int busTripId);
+
+    @Query("SELECT dol FROM DropOffLocation dol " +
+            "WHERE dol.province = :province " +
+            "AND dol.priceTicket = " +
+                "(SELECT MIN(dol_sub.priceTicket) FROM DropOffLocation dol_sub " +
+                "WHERE dol_sub.province = :province)")
+    List<DropOffLocation> findPriceTicketForArrivalLocation(@Param("province") String province);
 }

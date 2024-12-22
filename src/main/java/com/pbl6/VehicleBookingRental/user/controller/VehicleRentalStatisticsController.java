@@ -24,9 +24,9 @@ public class VehicleRentalStatisticsController {
     {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalStatisticService.statisticByDate(startDate,endDate));
     }
-    @GetMapping("/get-monthly-venue-in-year")
+    @GetMapping("/revenue")
     @PreAuthorize("hasRole('CAR_RENTAL_PARTNER') or hasRole('ADMIN')")
-    public ResponseEntity<?> getMonthlyVenueInYear(@RequestParam("year") Integer year) throws ApplicationException {
+    public ResponseEntity<?> getMonthlyVenueInYear(@RequestParam(value = "year", required = false) Integer year) throws ApplicationException {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalStatisticService.calculateMonthlyRevenue(year));
     }
 }

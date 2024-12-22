@@ -6,6 +6,7 @@ import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.RevenueStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
+import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
 import com.pbl6.VehicleBookingRental.user.service.VehicleRentalStatisticService;
 import com.pbl6.VehicleBookingRental.user.service.statistic.OrderBusTripStatisticService;

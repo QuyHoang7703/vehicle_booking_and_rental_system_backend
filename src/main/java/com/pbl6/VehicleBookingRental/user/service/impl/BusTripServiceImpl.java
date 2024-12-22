@@ -1,7 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
-import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
+import com.pbl6.VehicleBookingRental.user.domain.Images;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
@@ -9,15 +9,19 @@ import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResDropOffLocationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResPickupAndDropOffLocation;
+import com.pbl6.VehicleBookingRental.user.dto.response.homePage.PopularRouteDTO;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.*;
+import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.BusTripService;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
 import com.pbl6.VehicleBookingRental.user.service.DropOffLocationService;
+import com.pbl6.VehicleBookingRental.user.util.CurrencyFormatterUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.persistence.criteria.Join;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -30,6 +34,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BusTripServiceImpl implements BusTripService {
     private final BusTripRepository busTripRepository;
     private final BusinessPartnerService businessPartnerService;
@@ -214,6 +219,8 @@ public class BusTripServiceImpl implements BusTripService {
 
         return routes;
     }
+
+
 
 
 }

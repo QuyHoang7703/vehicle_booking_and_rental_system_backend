@@ -5,6 +5,7 @@ import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResPickupAndDropOffLocation;
+import com.pbl6.VehicleBookingRental.user.dto.response.homePage.PopularRouteDTO;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import org.springframework.data.domain.Pageable;

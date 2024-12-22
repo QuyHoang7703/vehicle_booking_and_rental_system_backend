@@ -2,12 +2,8 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
-import com.pbl6.VehicleBookingRental.user.domain.VehicleType;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
-import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
-import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServiceDTO;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
@@ -21,6 +17,7 @@ import com.pbl6.VehicleBookingRental.user.service.statistic.StatisticService;
 import com.pbl6.VehicleBookingRental.user.util.DateUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +30,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService {
     @Autowired
     private  VehicleRentalOrderRepo vehicleRentalOrderRepo;
@@ -173,15 +171,16 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
 
         if(authorities.contains("ROLE_ADMIN")) {
             // Get all car rental order
-            List<Orders> orders = this.ordersRepo.findByOrderType("CAR_RENTAL_ORDER");
+            List<Orders> orders = this.ordersRepo.findByOrderType("VEHICLE_RENTAL_ORDER");
             carRentalOrders = orders.stream().map(Orders::getCarRentalOrders).toList();
         }else{
             BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
-            carRentalOrders = this.vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(businessPartner.getBusPartner().getId());
+            carRentalOrders = this.vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(businessPartner.getCarRentalPartner().getId());
         }
 
         if(year!=null) {
             this.getMonthlyRevenue(statistic, carRentalOrders, year);
+
         }else{
             this.getYearlyRevenue(statistic, carRentalOrders);
         }
@@ -230,7 +229,8 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
             }
 
             int currentMonth = startDate.getMonthValue();
-            statistics.put(String.valueOf(currentMonth), statistics.get(currentMonth) + order.getTotal());
+            String key = currentMonth + "-" + year;
+            statistics.put(key, statistics.get(key) + order.getTotal());
 
         }
     }

@@ -72,7 +72,15 @@ public class BusTripServiceImpl implements BusTripService {
 
         // Check busTrip has busTripSchedule ? -> Can't update
         if(busTripDb.getBusTripSchedules()!=null && !busTripDb.getBusTripSchedules().isEmpty()) {
-            throw new ApplicationException("Can't update this bus trip scheduled");
+            // Don't allow to update departure and arrival location for bus trip had schedules
+            if(!reqBusTripDTO.getDepartureLocation().equals(busTripDb.getDepartureLocation()) ||
+            !reqBusTripDTO.getArrivalLocation().equals(busTripDb.getArrivalLocation())) {
+                throw new ApplicationException("Can't update departure or arrival location for a bus trip with schedules.");
+            }
+            // Only update pickupLocations
+            List<String> pickupLocations = reqBusTripDTO.getPickupLocations();
+            busTripDb.setPickupLocations(String.join("!", pickupLocations));
+            return this.busTripRepository.save(busTripDb);
         }
 
         busTripDb.setDepartureLocation(reqBusTripDTO.getDepartureLocation());

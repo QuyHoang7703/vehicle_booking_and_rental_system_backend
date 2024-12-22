@@ -3,9 +3,12 @@ package com.pbl6.VehicleBookingRental.user.controller.busPartner;
 import com.pbl6.VehicleBookingRental.user.dto.LocationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.OpenRouteServiceDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqDropOffLocationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqUpdateDropOffLocationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResDropOffLocationDTO;
 import com.pbl6.VehicleBookingRental.user.service.DropOffLocationService;
 import com.pbl6.VehicleBookingRental.user.service.OSRService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
+import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -45,5 +48,11 @@ public class DropOffLocationController {
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PatchMapping("dropOffLocations")
+    public ResponseEntity<ResDropOffLocationDTO> updateDropOffLocation(@RequestBody ReqUpdateDropOffLocationDTO req) throws Exception {
+
+        return ResponseEntity.status(HttpStatus.OK).body(this.dropOffLocationService.updateDropOffLocation(req));
     }
 }

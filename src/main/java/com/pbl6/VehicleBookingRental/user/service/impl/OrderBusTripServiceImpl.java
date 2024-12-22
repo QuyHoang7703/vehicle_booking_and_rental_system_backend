@@ -268,35 +268,6 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         return res;
     }
 
-//    @Override
-//    public ResultPaginationDTO getAllOrderBusTrip2(Pageable pageable, OrderStatusEnum status, Boolean isGone) throws ApplicationException {
-//        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
-//        Page<OrderBusTrip> orderBusTripPage = this.orderBusTripRepository.findOrderByStatus(email, status, isGone, LocalDateTime.now(), pageable);
-//        log.info("SIZE: " + orderBusTripPage.getTotalElements());
-//        ResultPaginationDTO res = new ResultPaginationDTO();
-//        Meta meta = new Meta();
-//        meta.setCurrentPage(pageable.getPageNumber()+1);
-//        meta.setPageSize(pageable.getPageSize());
-//        meta.setPages(pageable.getPageSize());
-//
-//        meta.setTotal(orderBusTripPage.getTotalElements());
-//
-//        List<ResOrderBusTripDTO> resOrderBusTripDTOS = orderBusTripPage.getContent().stream()
-//                .map(orderBusTrip -> {
-//                    try {
-//                        return this.convertToResOrderBusTripDTO(orderBusTrip);
-//                    } catch (ApplicationException | IdInvalidException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                })
-//                .toList();
-//
-//        res.setMeta(meta);
-//        res.setResult(resOrderBusTripDTOS);
-//
-//        return res;
-//    }
-
     @Override
     public void cancelOrderBusTrip(String orderBusTripId) throws IdInvalidException, ApplicationException {
         OrderBusTrip orderBusTrip = this.orderBusTripRepository.findById(orderBusTripId)
@@ -417,12 +388,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 .build();
 
         double pricePerTicket = orderBusTrip.getPricePerTicket();
-//        double priceTotal = pricePerTicket * orderInfo.getNumberOfTicket();
         double discountPercentage = orderBusTrip.getDiscountPercentage();
-//        double voucherValue = orderBusTrip.getVoucherValue();
-//        if(discountPercentage != 0.0){
-//            priceTotal = priceTotal * (1 - discountPercentage/100);
-//        }
 
         orderInfo.setPricePerTicket(CurrencyFormatterUtil.formatToVND(pricePerTicket));
         orderInfo.setDiscountPercentage(discountPercentage);

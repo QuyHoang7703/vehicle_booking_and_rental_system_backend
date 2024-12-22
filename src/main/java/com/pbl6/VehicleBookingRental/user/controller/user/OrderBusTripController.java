@@ -7,8 +7,6 @@ import com.pbl6.VehicleBookingRental.user.dto.request.order.ReqOrderBusTripDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResOrderKey;
 import com.pbl6.VehicleBookingRental.user.service.OrderBusTripService;
 import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
-import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
-import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;

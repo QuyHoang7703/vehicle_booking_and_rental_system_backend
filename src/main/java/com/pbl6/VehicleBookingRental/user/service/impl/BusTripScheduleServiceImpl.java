@@ -7,6 +7,7 @@ import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.*;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBreakDayDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.*;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
@@ -24,10 +25,7 @@ import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
-import jakarta.persistence.criteria.Expression;
-import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -55,6 +53,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     private final DropOffLocationRepository dropOffLocationRepository;
     private final AccountService accountService;
     private final OrdersRepo ordersRepo;
+    private final BreakDayRepository breakDayRepository;
 
     @Override
     public BusTripSchedule createBusTripSchedule(ReqBusTripScheduleDTO reqBusTripScheduleDTO) throws IdInvalidException, ApplicationException {
@@ -127,8 +126,14 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .startOperationDay(busTripSchedule.getStartOperationDay())
                 .availableSeats(this.getAvailableNumberOfSeatsByDepartureDate(busTripSchedule, departureDate)) // Có thể thay thế sau này khi order
                 .breakDays(busTripSchedule.getBreakDays())
-                .isOperation(busTripSchedule.isOperation())
+//                .isOperation(busTripSchedule.isOperation())
                 .build();
+
+        boolean isOperation = busTripSchedule.getBreakDays().stream().anyMatch(breakDay ->
+                (!departureDate.isBefore(breakDay.getStartDay()) && !departureDate.isAfter(breakDay.getEndDay())));
+
+        res.setOperation(!isOperation);
+
         return res;
     }
 
@@ -340,8 +345,8 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
     // @Scheduled(cron = "0 0 0 * * ?")
     @Transactional
-//    @Scheduled(cron = "0 */2 * * * *")
-    public void updateBusTripScheduleStaFtus() {
+    @Scheduled(cron = "0 */2 * * * *")
+    public void updateBusTripScheduleStatus() {
         LocalDate today = LocalDate.now();
         log.info("Today is: " + today);
 
@@ -497,6 +502,48 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         res.setResult(resBusTripScheduleForAdminDTO2s);
         return res;
+    }
+
+    @Override
+    public void addBreakDay(ReqBreakDayDTO reqBreakDayDTO) throws IdInvalidException, ApplicationException {
+        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(reqBreakDayDTO.getBusTripScheduleId())
+                .orElseThrow(()-> new IdInvalidException("Bus trip schedule not found"));
+
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+        if(!busTripSchedule.getBusTrip().getBusPartner().getBusinessPartner().equals(businessPartner)) {
+            throw new ApplicationException("You don't have permission to add break days for this bus trip schedule");
+        }
+
+        // Find order bus trip in break days
+        List<OrderBusTrip> orderBusTrips = reqBreakDayDTO.getBreakDays().stream()
+                .flatMap(breakDay -> this.orderBusTripRepository.findOrderBusTripBetweenDates(
+                        businessPartner.getBusPartner().getId(),
+                        breakDay.getStartDay(),
+                        breakDay.getEndDay())
+                .stream())
+                .toList();
+        log.info("orderBusTrip length in break days: " + orderBusTrips.size());
+        // Update status of order
+        List<BreakDay> notAvailableBreakDays = new ArrayList<>();
+        if(!orderBusTrips.isEmpty()) {
+            for(OrderBusTrip orderBusTrip : orderBusTrips) {
+                orderBusTrip.setStatus(OrderStatusEnum.CANCELLED);
+                Orders order = orderBusTrip.getOrder();
+                //Update order
+                order.setCancelTime(Instant.now());
+                order.setCancelUserId(businessPartner.getId());
+                this.ordersRepo.save(order);
+            }
+        }
+
+       for(BreakDay breakDay : reqBreakDayDTO.getBreakDays()) {
+           if(!this.breakDayRepository.existsByStartDayAndEndDayAndBusTripSchedule_Id(breakDay.getStartDay(), breakDay.getEndDay(), busTripSchedule.getId())) {
+               breakDay.setBusTripSchedule(busTripSchedule);
+               notAvailableBreakDays.add(breakDay);
+           }
+       }
+        this.breakDayRepository.saveAll(notAvailableBreakDays);
+
     }
 
     public ResBusTripScheduleForAdminDTO2 convertToResBusTripScheduleForAdminDTO2(BusTripSchedule busTripSchedule) throws ApplicationException {

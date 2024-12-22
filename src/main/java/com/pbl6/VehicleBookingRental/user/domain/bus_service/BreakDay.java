@@ -3,6 +3,7 @@ package com.pbl6.VehicleBookingRental.user.domain.bus_service;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,8 +23,10 @@ public class BreakDay {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+//    @NotBlank(message = "start day not blank")
     private LocalDate startDay;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+//    @NotBlank(message = "end day not blank")
     private LocalDate endDay;
 
     @ManyToOne

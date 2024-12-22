@@ -4,6 +4,7 @@ import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTrip;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.DropOffLocation;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqDropOffLocationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqUpdateDropOffLocationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResDropOffLocationDTO;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.DropOffLocationRepository;
@@ -64,5 +65,25 @@ public class DropOffLocationServiceImpl implements DropOffLocationService {
                 .build();
 
         return res;
+    }
+
+    @Override
+    public ResDropOffLocationDTO updateDropOffLocation(ReqUpdateDropOffLocationDTO req) throws ApplicationException, IdInvalidException {
+        if(req.getDropOffLocations() == null || req.getDropOffLocations().isEmpty()) {
+            throw new ApplicationException("Can't left blank drop off location");
+        }
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+
+        DropOffLocation dropOffLocationDb = this.dropOffLocationRepository.findById(req.getId())
+                .orElseThrow(()-> new IdInvalidException("Drop off location not found"));
+
+        if(dropOffLocationDb.getBusTrip().getBusPartner().getId() != businessPartner.getBusPartner().getId()){
+            throw new ApplicationException("You don't have permission to update drop off location");
+        }
+
+        String dropOffLocation = String.join("!", req.getDropOffLocations());
+        dropOffLocationDb.setDropOffLocation(dropOffLocation);
+
+        return this.convertToResDropOffLocationDTO(this.dropOffLocationRepository.save(dropOffLocationDb));
     }
 }

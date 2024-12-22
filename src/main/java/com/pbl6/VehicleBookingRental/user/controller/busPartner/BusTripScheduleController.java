@@ -4,12 +4,14 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBreakDayDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
 import com.pbl6.VehicleBookingRental.user.service.BusTripScheduleService;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -80,6 +82,12 @@ public class BusTripScheduleController {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripScheduleService.getAllBusTripSchedules(spec, pageable));
 
+    }
+
+    @PostMapping("busTripSchedules/breakDays")
+    public ResponseEntity<Void> addBreakDayForBusTripSchedules(@RequestBody ReqBreakDayDTO reqBreakDayDTO) throws Exception {
+        this.busTripScheduleService.addBreakDay(reqBreakDayDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
 

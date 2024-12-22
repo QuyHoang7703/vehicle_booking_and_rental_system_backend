@@ -27,37 +27,16 @@ public interface OrderBusTripRepository extends JpaRepository<OrderBusTrip, Stri
             "WHERE bp.id = :busPartnerId")
     List<OrderBusTrip> findOrderBusTripsOfBusPartner(@Param("busPartnerId") int busPartnerId);
 
-//    @Query(value = "SELECT obt.* " +
-//            "FROM order_bus_trip obt " +
-//            "JOIN account acc ON obt.account_id = acc.id " +
-//            "JOIN orders ord ON obt.order_id = ord.id " +
-//            "WHERE acc.email = :email " +
-//            "AND obt.status = :status " +
-//            "AND (" +
-//            "(:isGone IS NULL) OR " +
-//            "(:isGone = TRUE AND TIMESTAMPADD(SECOND, (obt.journey_duration / 1000000000), TIMESTAMP(obt.departure_date, obt.departure_time)) < :currentDateTime) OR " +
-//            "(:isGone = FALSE AND TIMESTAMPADD(SECOND, (obt.journey_duration / 1000000000), TIMESTAMP(obt.departure_date, obt.departure_time)) > :currentDateTime)" +
-//            ") " +
-//            "ORDER BY ord.create_at DESC",
-//            countQuery = "SELECT COUNT(*) " +
-//                    "FROM order_bus_trip obt " +
-//                    "JOIN account acc ON obt.account_id = acc.id " +
-//                    "JOIN orders ord ON obt.order_id = ord.id " +
-//                    "WHERE acc.email = :email " +
-//                    "AND obt.status = :status " +
-//                    "AND (" +
-//                    "(:isGone IS NULL) OR " +
-//                    "(:isGone = TRUE AND TIMESTAMPADD(SECOND, (obt.journey_duration / 1000000000), TIMESTAMP(obt.departure_date, obt.departure_time)) < :currentDateTime) OR " +
-//                    "(:isGone = FALSE AND TIMESTAMPADD(SECOND, (obt.journey_duration / 1000000000), TIMESTAMP(obt.departure_date, obt.departure_time)) > :currentDateTime)" +
-//                    ")",
-//            nativeQuery = true)
-//    Page<OrderBusTrip> findOrderByStatus(
-//            @Param("email") String email,
-//            @Param("status") OrderStatusEnum status,
-//            @Param("isGone") Boolean isGone,
-//            @Param("currentDateTime") LocalDateTime currentDateTime,
-//            Pageable pageable);
 
+    @Query("SELECT obt FROM OrderBusTrip obt " +
+            "JOIN obt.busTripSchedule bts " +
+            "JOIN bts.busTrip bt " +
+            "JOIN bt.busPartner bp " +
+            "WHERE obt.departureDate BETWEEN :startDate AND :endDate " +
+            "AND bp.id = :busPartnerId")
+    List<OrderBusTrip> findOrderBusTripBetweenDates(@Param("busPartnerId") int busPartnerId,
+                                                    @Param("startDate") LocalDate startDate,
+                                                    @Param("endDate") LocalDate endDate);
 
 
 

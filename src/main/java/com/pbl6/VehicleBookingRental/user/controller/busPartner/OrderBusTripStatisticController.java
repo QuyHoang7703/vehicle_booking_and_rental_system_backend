@@ -30,11 +30,6 @@ public class OrderBusTripStatisticController {
         return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripStatisticService.getOrderBusTripRevenueByPeriod(year));
     }
 
-//    @GetMapping("/bus-trip-order/statistics/revenue/by-year")
-//    public ResponseEntity<ResultStatisticDTO> getRevenueByYear() throws ApplicationException {
-//
-//        return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripStatisticService.getOrderBusTripRevenueByYear());
-//    }
 
     @GetMapping("/bus-trip-order/statistics/orders")
     public ResponseEntity<ResultPaginationDTO> getStatisticOfOrdersByDays(Pageable pageable,
@@ -52,5 +47,7 @@ public class OrderBusTripStatisticController {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.orderBusTripStatisticService.getStatisticOfOrdersByDays(pageable, startDate, endDate, route, month, year));
     }
+
+
 
 }

@@ -3,6 +3,7 @@ package com.pbl6.VehicleBookingRental.user.service;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BreakDay;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBreakDayDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
@@ -26,5 +27,7 @@ public interface BusTripScheduleService {
     boolean checkBusTripScheduleHasOrder(int busTripScheduleId) throws IdInvalidException, ApplicationException;
 
     public ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException;
+
+    void addBreakDay(ReqBreakDayDTO reqBreakDayDTO) throws IdInvalidException, ApplicationException;
 
 }

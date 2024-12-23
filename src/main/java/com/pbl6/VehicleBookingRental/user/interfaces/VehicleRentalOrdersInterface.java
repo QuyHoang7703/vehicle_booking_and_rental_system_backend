@@ -20,4 +20,5 @@ public interface VehicleRentalOrdersInterface {
     public List<ResVehicleRentalOrderDetailDTO> getAllOrderUser();
 
     public List<ResVehicleRentalOrderDetailDTO> getOrderByStatus(String status);
+    public boolean cancelVehicleRentalService(String vehicleRentalOrderId) throws ApplicationException;
 }

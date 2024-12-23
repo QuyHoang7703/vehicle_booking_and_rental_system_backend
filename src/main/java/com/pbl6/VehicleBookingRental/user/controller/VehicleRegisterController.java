@@ -105,7 +105,7 @@ public class VehicleRegisterController {
     }
     @PatchMapping("/update-vehicle-rental-service")
     public ResponseEntity<?> update_vehicle_rental_service(@RequestPart("vehicleRentalService") VehicleRentalServiceDTO vehicleRentalServiceDTO,
-                                                           @RequestParam(value = "vehicleRegisterImages",required = false) List<MultipartFile>images){
+                                                           @RequestParam(value = "vehicleRegisterImages",required = false) List<MultipartFile> images){
         RestResponse<String> restResponse = new RestResponse<>();
         restResponse.setStatusCode(200);
 

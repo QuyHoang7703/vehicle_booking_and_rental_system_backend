@@ -38,8 +38,6 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     @Autowired
     private VehicleTypeRepository vehicleTypeRepo;
     @Autowired
-    private CarRentalPartnerRepo carRentalPartnerRepo;
-    @Autowired
     private ImageService imageService;
     @Autowired
     private ImageRepository imageRepository;

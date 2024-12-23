@@ -11,4 +11,5 @@ public interface VehicleRentalStatisticService {
     public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleType(String location,String vehicleType);
     public List<VehicleRentalStatisticDTO> statisticByDate(String startDate,String endDate);
     public ResultStatisticDTO calculateMonthlyRevenue(Integer year) throws ApplicationException;
+    public Map<Integer,Double> calculateRevenueByYear(List<Integer> years) throws ApplicationException;
 }

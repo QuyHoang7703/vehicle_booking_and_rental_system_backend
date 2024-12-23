@@ -27,6 +27,7 @@ import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRenta
 
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
     private BusinessPartnerService businessPartnerService;
     private final AccountService accountService;
     private final RedisService<String, String, OrderVehicleRentalRedisDTO> redisService;
-
+    private final NotificationService notificationService;
 
     //create order using redis
     @Override
@@ -262,6 +263,42 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
                         return null;
                     }
                 }).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean cancelVehicleRentalService(String vehicleRentalOrderId) throws ApplicationException {
+        //Get current account
+        String email = SecurityUtil.getCurrentLogin().isPresent()?SecurityUtil.getCurrentLogin().get():null;
+        if(email==null) {
+            throw new ApplicationException("Access token not found or expired");
+        }
+        Account currentAccount = this.accountService.handleGetAccountByUsername(email);
+        //Get Vehicle rental service
+        Optional<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findById(vehicleRentalOrderId);
+        if(carRentalOrders.isPresent()){
+            carRentalOrders.get().setStatus("canceled");
+            //notify to user
+            NotificationDTO notificationDTO = new NotificationDTO();
+            notificationDTO.setMessage(" Bạn đã huỷ đơn thuê xe thành công ");
+            notificationDTO.setTitle("Hủy đơn thành công");
+            notificationDTO.setType(NotificationTypeEnum.BOOKING_COMPLETED);
+            notificationDTO.setCreate_at(Instant.now());
+            notificationDTO.setSeen(false);
+            notificationService.createNotificationToAccount(currentAccount.getId(),  AccountEnum.USER,notificationDTO);
+            //notify to Partner
+            int partnerId = carRentalOrders.get().getCarRentalService().getVehicleRegister().getCarRentalPartner()
+                            .getBusinessPartner().getAccount().getId();
+            NotificationDTO notificationDTO1 = new NotificationDTO();
+            notificationDTO1.setMessage(currentAccount.getName()+" đã huỷ xe ");
+            notificationDTO1.setTitle("Hủy đơn thuê xe");
+            notificationDTO1.setType(NotificationTypeEnum.BOOKING_COMPLETED);
+            notificationDTO1.setCreate_at(Instant.now());
+            notificationDTO1.setSeen(false);
+            notificationService.createNotificationToAccount(partnerId,  AccountEnum.CAR_RENTAL_PARTNER,notificationDTO1);
+            return true;
+        }else{
+            throw new ApplicationException("Vehicle rental order don't exists");
+        }
     }
 
     //tính giá tiền khi startTime và endTime trong cùng 1 ngày

@@ -20,6 +20,7 @@ public class ResVehicleRentalOrderDetailDTO {
     @Data
     @Builder
     public static class CustomerInfo {
+        private int accountId;
         private String email;
         private String name;
         private String phoneNumber;

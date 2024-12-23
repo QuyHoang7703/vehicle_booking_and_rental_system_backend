@@ -25,6 +25,7 @@ import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalOrderRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
 
+import com.pbl6.VehicleBookingRental.user.util.DateUtil;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum;
@@ -53,8 +54,9 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
     private BusinessPartnerService businessPartnerService;
     private final AccountService accountService;
     private final RedisService<String, String, OrderVehicleRentalRedisDTO> redisService;
+    private final RedisService<String, String, Integer> redisService2;
     private final NotificationService notificationService;
-
+    private final DateUtil dateUtil;
     //create order using redis
     @Override
     public OrderVehicleRentalRedisDTO create_order_Rental(VehicleRentalOrdersDTO vehicleRentalOrdersDTO) throws ApplicationException {
@@ -63,9 +65,39 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
             throw new ApplicationException("Email is invalid");
         }
         Account currentAccount = accountService.handleGetAccountByUsername(email);
-        String orderId = UUID.randomUUID().toString().replaceAll("-", "");
         CarRentalService carRentalService = vehicleRentalServiceRepo.findById(vehicleRentalOrdersDTO.getVehicle_rental_service_id())
                 .orElseThrow(() -> new ApplicationException("Vehicle Rental Service not found"));
+        Integer amount =  carRentalService.getVehicleRegister().getAmount();
+        //
+        List<String> timeSlots = dateUtil.generateTimeSlots(vehicleRentalOrdersDTO.getStart_rental_time(),vehicleRentalOrdersDTO.getEnd_rental_time());
+        System.out.println(timeSlots);
+        for (String timeSlot : timeSlots) {
+            String key = "vehicle-rental:" + carRentalService.getId();
+
+            // Lấy số lượng hiện tại từ Redis
+            Integer currentAmount = redisService2.getHashValue(key, timeSlot);
+
+            if (currentAmount == null) {
+                // Trường hợp key chưa tồn tại: thiết lập giá trị ban đầu
+                redisService2.setHashSet(key, timeSlot, amount);
+                // Thiết lập TTL
+                redisService2.setTimeToLive(key, dateUtil.calculateAndSetTTL(timeSlot) / 60);
+            } else if (currentAmount > 0) {
+                // Trường hợp có dữ liệu: kiểm tra số lượng và giảm đi
+                long updatedAmount = redisService2.incrementHashValue(key, timeSlot, -1);
+
+                // Nếu giảm thất bại (hết xe)
+                if (updatedAmount < 0) {
+                    // Tăng lại vì lệnh giảm đã trừ nhầm
+                    redisService2.incrementHashValue(key, timeSlot, 1);
+                    throw new ApplicationException("Không có xe khả dụng trong khung giờ "+ timeSlot );
+                }
+            } else {
+                // Trường hợp hết xe
+                throw new ApplicationException("Không có xe khả dụng trong khung giờ "+ timeSlot );
+            }
+        }
+        String orderId = UUID.randomUUID().toString().replaceAll("-", "");
         //create redis order
         OrderVehicleRentalRedisDTO orderVehicleRentalRedisDTO = new OrderVehicleRentalRedisDTO();
         orderVehicleRentalRedisDTO.setId(orderId);
@@ -92,9 +124,8 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         //
         redisService.setHashSet(redisKeyOrderVehicleRental, "order-detail", orderVehicleRentalRedisDTO);
         redisService.setTimeToLive(redisKeyOrderVehicleRental, 10);
-        //update service amount
-//        carRentalService.getVehicleRegister().setAmount(carRentalService.getVehicleRegister().getAmount() - vehicleRentalOrdersDTO.getAmount());
-//        vehicleRentalServiceRepo.save(carRentalService);
+
+
         return orderVehicleRentalRedisDTO;
     }
 

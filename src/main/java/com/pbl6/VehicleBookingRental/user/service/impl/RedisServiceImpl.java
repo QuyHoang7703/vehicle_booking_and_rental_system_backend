@@ -2,9 +2,12 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 
 import com.pbl6.VehicleBookingRental.user.service.RedisService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 import java.util.List;
 import java.util.Map;
@@ -16,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class RedisServiceImpl<K, F, V> implements RedisService<K, F, V> {
     private final RedisTemplate<K, V> redisTemplate;
     private final HashOperations<K, F, V> hashOperations;
+    private  JedisPool jedisPool;
 
     @Override
     public void setValue(K key, V value) {
@@ -78,6 +82,16 @@ public class RedisServiceImpl<K, F, V> implements RedisService<K, F, V> {
             hashOperations.delete(key, field);
         }
     }
-
+    @Override
+    public long incrementHashValue(K key, F field, long incrementBy) {
+        return hashOperations.increment(key, field, incrementBy);
+    }
+    @Override
+    public Object runLuaScript(String script, List<String> keys, List<String> args) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            // Chạy script và trả kết quả
+            return jedis.eval(script, keys, args);
+        }
+    }
 
 }

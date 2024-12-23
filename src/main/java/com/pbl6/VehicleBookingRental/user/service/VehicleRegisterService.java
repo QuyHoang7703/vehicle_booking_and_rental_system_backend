@@ -8,6 +8,7 @@ import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.VehicleRegister;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalServiceDTO;
+import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.*;
@@ -74,7 +75,52 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 return false;
             }
     }
+    @Override
+    public List<VehicleRentalServiceDTO> getVehicleRentalServiceByVehicleRegister(int id){
+        List<VehicleRentalServiceDTO> vehicleRentalServiceDTOList = new ArrayList<>();
+        Optional<VehicleRegister> vehicleRegisterOptional = vehicleRegisterRepository.findById(id);
+        if(vehicleRegisterOptional.isPresent()){
 
+            List<CarRentalService> carRentalServiceList = vehicleRegisterOptional.get().getTypeOfRentalServiceList();
+            for(CarRentalService i : carRentalServiceList){
+                VehicleRentalServiceDTO vehicleRentalServiceDTO = new VehicleRentalServiceDTO();
+
+                VehicleRegister vehicleRegister = vehicleRegisterOptional.get();
+
+                // Thiết lập các thuộc tính từ VehicleRegister
+                vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
+                vehicleRentalServiceDTO.setManufacturer(vehicleRegister.getManufacturer());
+                vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
+                vehicleRentalServiceDTO.setDescription(vehicleRegister.getDescription());
+                vehicleRentalServiceDTO.setVehicle_type(vehicleRegister.getVehicleType().getName());
+                vehicleRentalServiceDTO.setQuantity(vehicleRegister.getQuantity());
+                vehicleRentalServiceDTO.setStatus(vehicleRegister.getStatus());
+                vehicleRentalServiceDTO.setDate_of_status(vehicleRegister.getDate_of_status());
+                vehicleRentalServiceDTO.setDiscount_percentage(vehicleRegister.getDiscount_percentage());
+                vehicleRentalServiceDTO.setCar_deposit(vehicleRegister.getCar_deposit());
+                vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
+                vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
+                vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
+                vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
+                vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
+                vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
+                vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
+                vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
+                vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
+
+                vehicleRentalServiceDTO.setVehicle_rental_service_id(i.getId());
+                vehicleRentalServiceDTO.setType(i.getType());
+                if(i.getType() == 0){
+                    vehicleRentalServiceDTO.setSelfDriverPrice(i.getPrice());
+                }else if(i.getType() == 2){
+                    vehicleRentalServiceDTO.setDriverPrice(i.getPrice());
+                }
+
+                vehicleRentalServiceDTOList.add(vehicleRentalServiceDTO);
+            }
+        }
+        return vehicleRentalServiceDTOList;
+    }
     @Override
     public VehicleRentalServiceDTO get_vehicle_rental_service_by_vehicle_register_id(int vehicleRegisterId) {
         VehicleRentalServiceDTO vehicleRentalServiceDTO = new VehicleRentalServiceDTO();

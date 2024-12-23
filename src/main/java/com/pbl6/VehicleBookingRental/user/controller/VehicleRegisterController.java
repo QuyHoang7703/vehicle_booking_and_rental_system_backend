@@ -150,4 +150,8 @@ public class VehicleRegisterController {
     public ResponseEntity<?> getExistFilterValue(@RequestParam("properties") String properties){
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.getExistFilterValue(properties));
     }
+    @GetMapping("/get-vehicle-rental-service-by-vehicle-register")
+    public ResponseEntity<?> getVRSByVR(@RequestParam("vehicleRegisterId") int id){
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRegisterInterface.getVehicleRentalServiceByVehicleRegister(id));
+    }
 }

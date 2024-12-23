@@ -144,6 +144,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         CarRentalOrders carRentalOrder = orders.getCarRentalOrders();
 
         ResVehicleRentalOrderDetailDTO.CustomerInfo customerInfo = ResVehicleRentalOrderDetailDTO.CustomerInfo.builder()
+                .accountId(account.getId())
                 .email(account.getEmail())
                 .name(orders.getCustomerName())
                 .phoneNumber(orders.getCustomerPhoneNumber())

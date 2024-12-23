@@ -1,9 +1,11 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.chat.ConversationAccount;
 import com.pbl6.VehicleBookingRental.user.domain.notification.Notification;
 import com.pbl6.VehicleBookingRental.user.domain.notification.NotificationAccount;
 import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
+import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationAccountRepo;
 import com.pbl6.VehicleBookingRental.user.repository.chat.NotificationRepo;
 import com.pbl6.VehicleBookingRental.user.service.NotificationService;
@@ -13,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +24,7 @@ public class NotificationServiceImpl implements NotificationService {
     private final SimpMessagingTemplate messagingTemplate ;
     private final NotificationAccountRepo notificationAccountRepo;
     private final NotificationRepo notificationRepo;
-
+    private final AccountRepository accountRepository;
     @Override
     public void sendNotification(int recipientId, String recipientType, NotificationDTO notificationDTO) {
         messagingTemplate.convertAndSendToUser(
@@ -71,5 +70,38 @@ public class NotificationServiceImpl implements NotificationService {
             System.out.println(exception.getMessage());
             return false;
         }
+    }
+    @Override
+    public void createNotificationToAccount(int accountId,  AccountEnum accountTypeEnum,NotificationDTO notificationDTO) {
+        Notification notification = new Notification();
+        notification.setCreate_at(
+                Optional.ofNullable(notificationDTO.getCreate_at())
+                        .map(instant -> new Date(instant.toEpochMilli()))
+                        .orElse(null)
+        );
+        notification.setType(notificationDTO.getType());
+        notification.setTitle(notificationDTO.getTitle());
+        notification.setMessage(notificationDTO.getMessage());
+        notification.setSeen(notificationDTO.isSeen());
+        notificationRepo.save(notification);
+
+        NotificationAccount notificationAccount = new NotificationAccount();
+        notificationAccount.setNotification(notification);
+        Optional<Account> partnerAccount = accountRepository.findById(accountId);
+        notificationAccount.setAccount(partnerAccount.get());
+        notificationAccount.setPartnerType(accountTypeEnum);
+        notificationAccountRepo.save(notificationAccount);
+
+        sendNotification(accountId
+                        ,String.valueOf(accountTypeEnum)
+                        , NotificationDTO.builder()
+                                .id(notification.getId())
+                                .type(notification.getType())
+                                .title(notification.getTitle())
+                                .message(notification.getMessage())
+                                .create_at(notification.getCreate_at()!=null ? notification.getCreate_at().toInstant():null )
+                                .isSeen(notification.isSeen())
+                                .build());
+
     }
 }

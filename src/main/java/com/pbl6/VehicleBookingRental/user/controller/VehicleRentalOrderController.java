@@ -79,5 +79,15 @@ public class VehicleRentalOrderController {
     {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getOrderByStatus(status));
     }
-
+    @PostMapping("/canceled-vehicle-rental-order")
+    public ResponseEntity<?> cancelVehicleRentalService(@RequestParam("vehicleRentalOrderId") String id)
+    {
+        boolean status = false;
+        try{
+           status =  vehicleRentalOrdersInterface.cancelVehicleRentalService(id);
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("Canceled: "+status);
+    }
 }

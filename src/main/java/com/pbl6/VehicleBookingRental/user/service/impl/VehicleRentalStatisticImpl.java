@@ -187,10 +187,23 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         return this.statisticService.createResultStatisticDTO(statistic);
     }
 
-//    @Override
-//    public Map<Integer, Double> calculateMonthlyRevenue(int year) throws ApplicationException {
-//        return Map.of();
-//    }
+    @Override
+    public Map<Integer, Double> calculateRevenueByYear(List<Integer> years) throws ApplicationException {
+        Map<Integer,Double> result = new HashMap<>();
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
+        List<CarRentalOrders> carRentalOrders = this.vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(businessPartner.getCarRentalPartner().getId());
+        for(Integer year : years){
+            Map<String, Double> statistic = new LinkedHashMap<>();
+            this.getMonthlyRevenue(statistic, carRentalOrders, year);
+            double sum = 0;
+            for (double value : statistic.values()) {
+                sum += value;
+            }
+            result.put(year,sum);
+        }
+        return result;
+    }
+
 
     private void getYearlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders) {
         for(CarRentalOrders order : carRentalOrders){
@@ -207,7 +220,7 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
     private void getMonthlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders, Integer year) {
         // Initialize revenue for each month
         for (int month = 1; month <= 12; month++) {
-            String key = month + "-" + year;
+            String key =  String.valueOf(month);
             statistics.put(key, 0.0);
         }
 
@@ -229,8 +242,7 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
             }
 
             int currentMonth = startDate.getMonthValue();
-            String key = currentMonth + "-" + year;
-            statistics.put(key, statistics.get(key) + order.getTotal());
+            statistics.put(String.valueOf(currentMonth), statistics.get(String.valueOf(currentMonth)) + order.getTotal());
 
         }
     }

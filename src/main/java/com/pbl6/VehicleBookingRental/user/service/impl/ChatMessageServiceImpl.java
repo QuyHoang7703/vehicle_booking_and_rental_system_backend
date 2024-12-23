@@ -207,17 +207,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
         if(message.isPresent()){
             try{
                 message.get().setContent(messageDTO.getContent());
-                message.get().setSendAt(
-                        Optional.ofNullable(messageDTO.getSendAt())
-                                .map(instant -> new Date(instant.toEpochMilli()))
-                                .orElse(null));
-                message.get().setSeen_at(
-                        Optional.ofNullable(messageDTO.getSeen_at())
-                                .map(instant -> new Date(instant.toEpochMilli()))
-                                .orElse(null));
-                message.get().setSeen(messageDTO.isSeen());
-                message.get().setSender_type(messageDTO.getSender_type());
-                message.get().setSenderId(messageDTO.getSenderId());
 
                 Optional<Conversation> conversation = conversationRepo.findById(messageDTO.getConversation_id());
                 if(conversation.isPresent()){
@@ -248,11 +237,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
                 if (messageDTO.isSeen() != message.get().isSeen()) {
                     message.get().setSeen(messageDTO.isSeen());
-                }
-
-                if (messageDTO.getSendAt() != null) {
-                    message.get().setSendAt(
-                            new Date(messageDTO.getSendAt().toEpochMilli()));
                 }
 
                 if (messageDTO.getSeen_at() != null) {

@@ -11,9 +11,11 @@ services:
       redis:
         condition: service_started
     environment:
-      - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+        - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
+        - TZ=Asia/Ho_Chi_Minh
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
+
 
   db1:
     image: mysql:latest

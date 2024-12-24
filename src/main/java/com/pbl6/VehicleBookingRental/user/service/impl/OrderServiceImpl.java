@@ -56,10 +56,6 @@ public class OrderServiceImpl implements OrderService {
     private final BusTripScheduleRepository busTripScheduleRepository;
     private final VehicleRentalServiceRepo vehicleRentalServiceRepo;
 
-    private final NotificationRepo notificationRepo;
-    private final AccountRepository accountRepository;
-    private final NotificationAccountRepo notificationAccountRepo;
-    private final NotificationServiceImpl notificationServiceImpl;
     private final NotificationService notificationService;
     private final AccountVoucherService accountVoucherService;
 
@@ -68,7 +64,7 @@ public class OrderServiceImpl implements OrderService {
 
         String key = request.getParameter("key");
         log.info("Key: " + key);
-        String[] parts = key.split("-");
+        String[] parts = key.split("\\$");
         String typeOfOrder = parts[1];
 
         // Get data from redis
@@ -270,6 +266,7 @@ public class OrderServiceImpl implements OrderService {
         carRentalOrders.setReservation_fee(orderVehicleRentalRedisDTO.getReservation_fee());
         carRentalOrders.setPrice(orderVehicleRentalRedisDTO.getPrice());
         carRentalOrders.setId(orderVehicleRentalRedisDTO.getId());
+        carRentalOrders.setStatus("not_returned");
 
         carRentalOrders.setTotal(orderVehicleRentalRedisDTO.getPriceTotal());
 

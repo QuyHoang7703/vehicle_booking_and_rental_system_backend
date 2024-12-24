@@ -11,7 +11,6 @@ import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRenta
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepository;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
-import com.pbl6.VehicleBookingRental.user.service.VehicleRegisterService;
 import com.pbl6.VehicleBookingRental.user.service.VehicleRentalStatisticService;
 import com.pbl6.VehicleBookingRental.user.service.statistic.StatisticService;
 import com.pbl6.VehicleBookingRental.user.util.DateUtil;
@@ -19,15 +18,12 @@ import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -39,8 +35,6 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
     @Autowired
     private VehicleRegisterInterface vehicleRegisterInterface;
     @Autowired
-    private VehicleRentalServiceRepo vehicleRentalServiceRepo;
-    @Autowired
     private BusinessPartnerService businessPartnerService;
     @Autowired
     private DateUtil dateUtil;
@@ -50,71 +44,116 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
     private StatisticService statisticService;
 
     @Override
-    public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleType(String location, String vehicleType) {
-        List<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findCarRentalOrdersByVehicleRegisterProperties(location,vehicleType);
+    public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleTypeByDate(String location, String vehicleType, String startDate, String endDate)  {
         List<VehicleRentalStatisticDTO> vehicleRentalStatisticDTOS = new ArrayList<>();
         List<String> distinctVehicleType = vehicleTypeRepository.findDistinctNames();
         List<String> distinctLocation = vehicleRegisterInterface.getExistFilterValue("location");
         if(location !=null && vehicleType != null){
-            int vehicleRentalAmount = carRentalOrders.stream().mapToInt(CarRentalOrders::getAmount).sum();
-
-            VehicleRentalStatisticDTO vehicleRentalStatisticDTO = new VehicleRentalStatisticDTO();
-            vehicleRentalStatisticDTO.setLocation(location);
-            vehicleRentalStatisticDTO.setVehicle_type(vehicleType);
-            vehicleRentalStatisticDTO.setVehicleRentalAmount(vehicleRentalAmount);
+            List<VehicleRentalStatisticDTO> statisticDTOS = statisticByDate(location,vehicleType,startDate,endDate);
+            vehicleRentalStatisticDTOS.addAll(statisticDTOS);
             return  vehicleRentalStatisticDTOS;
         }
         if(vehicleType !=null){
             if(vehicleType.equalsIgnoreCase("all")){
                 for(String i : distinctVehicleType){
-                    int vehicleRentalAmount = carRentalOrders.stream().filter(order->{
-                        return order.getCarRentalService().getVehicleRegister()
-                                .getVehicleType().getName().equalsIgnoreCase(i);
-                    }).mapToInt(CarRentalOrders::getAmount).sum();
-
-                    VehicleRentalStatisticDTO vehicleRentalStatisticDTO = new VehicleRentalStatisticDTO();
-                    vehicleRentalStatisticDTO.setVehicle_type(i);
-                    vehicleRentalStatisticDTO.setVehicleRentalAmount(vehicleRentalAmount);
-                    vehicleRentalStatisticDTOS.add(vehicleRentalStatisticDTO);
+                    List<VehicleRentalStatisticDTO> statisticDTOS = statisticByDate(location,i,startDate,endDate);
+                    vehicleRentalStatisticDTOS.addAll(statisticDTOS);
                 }
                 return  vehicleRentalStatisticDTOS;
             }else{
-                int vehicleRentalAmount = carRentalOrders.stream().filter(order->{
-                    return order.getCarRentalService().getVehicleRegister()
-                            .getVehicleType().getName().equalsIgnoreCase(vehicleType);
-                }).mapToInt(CarRentalOrders::getAmount).sum();
-
-                VehicleRentalStatisticDTO vehicleRentalStatisticDTO = new VehicleRentalStatisticDTO();
-                vehicleRentalStatisticDTO.setVehicle_type(vehicleType);
-                vehicleRentalStatisticDTO.setVehicleRentalAmount(vehicleRentalAmount);
-                vehicleRentalStatisticDTOS.add(vehicleRentalStatisticDTO);
+                List<VehicleRentalStatisticDTO> statisticDTOS = statisticByDate(null,vehicleType,startDate,endDate);
+                vehicleRentalStatisticDTOS.addAll(statisticDTOS);
                 return  vehicleRentalStatisticDTOS;
             }
         }
         if( location!=null){
             if(location.equalsIgnoreCase("all")){
                 for(String i : distinctLocation){
-                    int vehicleRentalAmount = carRentalOrders.stream().filter(order->{
-                        return order.getCarRentalService().getVehicleRegister()
-                                .getLocation().equalsIgnoreCase(i);
-                    }).mapToInt(CarRentalOrders::getAmount).sum();
-
-                    VehicleRentalStatisticDTO vehicleRentalStatisticDTO = new VehicleRentalStatisticDTO();
-                    vehicleRentalStatisticDTO.setLocation(i);
-                    vehicleRentalStatisticDTO.setVehicleRentalAmount(vehicleRentalAmount);
-                    vehicleRentalStatisticDTOS.add(vehicleRentalStatisticDTO);
+                    List<VehicleRentalStatisticDTO> statisticDTOS = statisticByDate(i,vehicleType,startDate,endDate);
+                    vehicleRentalStatisticDTOS.addAll(statisticDTOS);
                 }
                 return  vehicleRentalStatisticDTOS;
             }else{
-                int vehicleRentalAmount = carRentalOrders.stream().filter(order->{
-                    return order.getCarRentalService().getVehicleRegister()
-                            .getLocation().equalsIgnoreCase(location);
-                }).mapToInt(CarRentalOrders::getAmount).sum();
+                List<VehicleRentalStatisticDTO> statisticDTOS = statisticByDate(location,null,startDate,endDate);
+                vehicleRentalStatisticDTOS.addAll(statisticDTOS);
+                return  vehicleRentalStatisticDTOS;
+            }
+        }
+        return null;
+    }
+    @Override
+    public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleTypeByMonthAndYear(String location, String vehicleType, int month , int year)  {
+        List<VehicleRentalStatisticDTO> vehicleRentalStatisticDTOS = new ArrayList<>();
+        List<String> distinctVehicleType = vehicleTypeRepository.findDistinctNames();
+        List<String> distinctLocation = vehicleRegisterInterface.getExistFilterValue("location");
+        if(location !=null && vehicleType != null){
+            VehicleRentalStatisticDTO statisticDTOS = statisticByMonthAndYear(location,vehicleType,month,year);
+            vehicleRentalStatisticDTOS.add(statisticDTOS);
+            return  vehicleRentalStatisticDTOS;
+        }
+        if(vehicleType !=null){
+            if(vehicleType.equalsIgnoreCase("all")){
+                for(String i : distinctVehicleType){
+                    VehicleRentalStatisticDTO statisticDTOS = statisticByMonthAndYear(location,i,month,year);
+                    vehicleRentalStatisticDTOS.add(statisticDTOS);
+                }
+                return  vehicleRentalStatisticDTOS;
+            }else{
+                VehicleRentalStatisticDTO statisticDTOS = statisticByMonthAndYear(null,vehicleType,month,year);
+                vehicleRentalStatisticDTOS.add(statisticDTOS);
+                return  vehicleRentalStatisticDTOS;
+            }
+        }
+        if( location!=null){
+            if(location.equalsIgnoreCase("all")){
+                for(String i : distinctLocation){
+                    VehicleRentalStatisticDTO statisticDTOS = statisticByMonthAndYear(i,vehicleType,month,year);
+                    vehicleRentalStatisticDTOS.add(statisticDTOS);
+                }
+                return  vehicleRentalStatisticDTOS;
+            }else{
+                VehicleRentalStatisticDTO statisticDTOS = statisticByMonthAndYear(location,null,month,year);
+                vehicleRentalStatisticDTOS.add(statisticDTOS);
+                return  vehicleRentalStatisticDTOS;
+            }
+        }
+        return null;
+    }
+    @Override
+    public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleTypeByYear(String location, String vehicleType, List<Integer> year) throws ApplicationException {
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
 
-                VehicleRentalStatisticDTO vehicleRentalStatisticDTO = new VehicleRentalStatisticDTO();
-                vehicleRentalStatisticDTO.setLocation(location);
-                vehicleRentalStatisticDTO.setVehicleRentalAmount(vehicleRentalAmount);
-                vehicleRentalStatisticDTOS.add(vehicleRentalStatisticDTO);
+        List<VehicleRentalStatisticDTO> vehicleRentalStatisticDTOS = new ArrayList<>();
+        List<String> distinctVehicleType = vehicleTypeRepository.findDistinctNames();
+        List<String> distinctLocation = vehicleRegisterInterface.getExistFilterValue("location");
+        if(location !=null && vehicleType != null){
+            List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(location,vehicleType,year,businessPartner.getCarRentalPartner().getId());
+            vehicleRentalStatisticDTOS.addAll(statisticDTOS);
+            return  vehicleRentalStatisticDTOS;
+        }
+        if(vehicleType !=null){
+            if(vehicleType.equalsIgnoreCase("all")){
+                for(String i : distinctVehicleType){
+                    List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(location,i,year,businessPartner.getCarRentalPartner().getId());
+                    vehicleRentalStatisticDTOS.addAll(statisticDTOS);
+                }
+                return  vehicleRentalStatisticDTOS;
+            }else{
+                List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(null,vehicleType,year,businessPartner.getCarRentalPartner().getId());
+                vehicleRentalStatisticDTOS.addAll(statisticDTOS);
+                return  vehicleRentalStatisticDTOS;
+            }
+        }
+        if( location!=null){
+            if(location.equalsIgnoreCase("all")){
+                for(String i : distinctLocation){
+                    List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(i,vehicleType,year,businessPartner.getCarRentalPartner().getId());
+                    vehicleRentalStatisticDTOS.addAll(statisticDTOS);
+                }
+                return  vehicleRentalStatisticDTOS;
+            }else{
+                List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(location,null,year,businessPartner.getCarRentalPartner().getId());
+                vehicleRentalStatisticDTOS.addAll(statisticDTOS);
                 return  vehicleRentalStatisticDTOS;
             }
         }
@@ -122,7 +161,8 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
     }
 
     @Override
-    public List<VehicleRentalStatisticDTO> statisticByDate(String startDate, String endDate) {
+    public List<VehicleRentalStatisticDTO> statisticByDate(String location,String vehicleTypeName,String startDate, String endDate) {
+
         try{
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm dd-MM-yyyy").withZone(ZoneId.systemDefault());
             Instant startDateInstant = Instant.from(dateTimeFormatter.parse(startDate));
@@ -131,34 +171,136 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
             List<LocalDate> dates = dateUtil.getDaysBetweenDates(startDateInstant,endDateInstant);
             BusinessPartner currentBusinessPartner = businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
 
-            return getRentalVehicleByDate(dates,currentBusinessPartner.getCarRentalPartner().getId());
+            return getRentalVehicleByDate(location,vehicleTypeName,dates,currentBusinessPartner.getCarRentalPartner().getId());
         }catch (Exception e){
             System.out.println(e.getLocalizedMessage());
             return null;
         }
     }
-    private List<VehicleRentalStatisticDTO> getRentalVehicleByDate(List<LocalDate> dates,int carRentalPartnerId){
-        List<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(carRentalPartnerId);
+    private List<VehicleRentalStatisticDTO> getRentalVehicleByDate(String location,String vehicleTypeName,List<LocalDate> dates,int carRentalPartnerId){
+
+        List<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findCarRentalOrdersByLocationOrType(location,vehicleTypeName,carRentalPartnerId);
+
         List<VehicleRentalStatisticDTO> vehicleRentalStatisticDTOS = new ArrayList<>();
         for(LocalDate date : dates){
-            int totalAmountInDate = carRentalOrders.stream()
-                    .filter(order ->{
-                        LocalDate startDate = order.getStart_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
-                        LocalDate endDate = order.getEnd_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
+            int totalAmountInDate = 0;
+            int totalCancelAmount = 0;
+            for (CarRentalOrders order : carRentalOrders) {
+                LocalDate startDate = order.getStart_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate endDate = order.getEnd_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
 
-                        return date.equals(startDate) || date.equals(endDate) ||
-                                (date.isAfter(startDate) && date.isBefore(endDate));
-                    }).mapToInt(CarRentalOrders::getAmount).sum();
+                if ((date.equals(startDate) || date.equals(endDate) ||
+                        (date.isAfter(startDate) && date.isBefore(endDate))) ) {
+                    if(order.getStatus().equalsIgnoreCase("canceled")){
+                        totalCancelAmount += order.getAmount();
+                    }else{
+                        totalAmountInDate += order.getAmount();
+                    }
+                }
+            }
 
 
             VehicleRentalStatisticDTO vehicleRentalStatisticDTO = new VehicleRentalStatisticDTO();
             vehicleRentalStatisticDTO.setDate(date);
             vehicleRentalStatisticDTO.setVehicleRentalAmount(totalAmountInDate);
+            vehicleRentalStatisticDTO.setCanceledVehicleAmount(totalCancelAmount);
+            vehicleRentalStatisticDTO.setVehicle_type(vehicleTypeName);
+            vehicleRentalStatisticDTO.setLocation(location);
 
             vehicleRentalStatisticDTOS.add(vehicleRentalStatisticDTO);
         }
         return vehicleRentalStatisticDTOS;
     }
+    public VehicleRentalStatisticDTO statisticByMonthAndYear(
+            String location, String vehicleTypeName, int month, int year) {
+        try {
+            YearMonth yearMonth = YearMonth.of(year, month);
+            BusinessPartner currentBusinessPartner = businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
+
+            return getRentalVehicleBySpecificMonth(location, vehicleTypeName, yearMonth, currentBusinessPartner.getCarRentalPartner().getId());
+        } catch (Exception e) {
+            System.out.println(e.getLocalizedMessage());
+            return null;
+        }
+    }
+    public  VehicleRentalStatisticDTO getRentalVehicleBySpecificMonth(
+            String location, String vehicleTypeName, YearMonth yearMonth, int carRentalPartnerId) {
+
+        // Lấy danh sách đơn hàng thuê xe
+        List<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findCarRentalOrdersByLocationOrType(location, vehicleTypeName, carRentalPartnerId);
+
+        int totalAmountInMonth = 0;
+        int totalCancelAmountInMonth = 0;
+
+        LocalDate firstDayOfMonth = yearMonth.atDay(1);
+        LocalDate lastDayOfMonth = yearMonth.atEndOfMonth();
+
+        for (CarRentalOrders order : carRentalOrders) {
+            LocalDate startDate = order.getStart_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate endDate = order.getEnd_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            // Kiểm tra đơn hàng thuộc tháng và năm
+            if ((startDate.isBefore(lastDayOfMonth) && endDate.isAfter(firstDayOfMonth)) ||
+                    (startDate.equals(firstDayOfMonth) || endDate.equals(lastDayOfMonth))) {
+
+                if (order.getStatus().equalsIgnoreCase("canceled")) {
+                    totalCancelAmountInMonth += order.getAmount();
+                } else {
+                    totalAmountInMonth += order.getAmount();
+                }
+            }
+        }
+
+        // Tạo và trả về kết quả thống kê cho tháng
+        VehicleRentalStatisticDTO vehicleRentalStatisticDTO = new VehicleRentalStatisticDTO();
+        vehicleRentalStatisticDTO.setDate(firstDayOfMonth); // Gán ngày đầu tiên của tháng
+        vehicleRentalStatisticDTO.setVehicleRentalAmount(totalAmountInMonth);
+        vehicleRentalStatisticDTO.setCanceledVehicleAmount(totalCancelAmountInMonth);
+
+        return vehicleRentalStatisticDTO;
+    }
+
+    public List<VehicleRentalStatisticDTO> getRentalVehicleByYear(String location, String vehicleTypeName, List<Integer> years, int carRentalPartnerId) {
+
+        // Lấy tất cả các đơn hàng thuê xe liên quan
+        List<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findCarRentalOrdersByLocationOrType(location, vehicleTypeName, carRentalPartnerId);
+
+        List<VehicleRentalStatisticDTO> vehicleRentalStatisticDTOS = new ArrayList<>();
+
+        // Duyệt qua từng năm để thống kê
+        for (Integer year : years) {
+            int totalAmountInYear = 0;
+            int totalCancelAmountInYear = 0;
+
+            for (CarRentalOrders order : carRentalOrders) {
+                // Lấy ngày bắt đầu và kết thúc của đơn hàng
+                LocalDate startDate = order.getStart_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalDate endDate = order.getEnd_rental_time().atZone(ZoneId.systemDefault()).toLocalDate();
+
+                // Kiểm tra nếu đơn hàng thuộc trong năm
+                if ((startDate.getYear() == year || endDate.getYear() == year) ||
+                        (startDate.isBefore(LocalDate.of(year, 12, 31)) && endDate.isAfter(LocalDate.of(year, 1, 1)))) {
+
+                    if (order.getStatus().equalsIgnoreCase("canceled")) {
+                        totalCancelAmountInYear += order.getAmount();
+                    } else {
+                        totalAmountInYear += order.getAmount();
+                    }
+                }
+            }
+
+            // Tạo DTO kết quả
+            VehicleRentalStatisticDTO vehicleRentalStatisticDTO = new VehicleRentalStatisticDTO();
+            vehicleRentalStatisticDTO.setDate(LocalDate.of(year, 1, 1)); // Gán ngày đại diện là ngày đầu tiên của năm
+            vehicleRentalStatisticDTO.setVehicleRentalAmount(totalAmountInYear);
+            vehicleRentalStatisticDTO.setCanceledVehicleAmount(totalCancelAmountInYear);
+
+            vehicleRentalStatisticDTOS.add(vehicleRentalStatisticDTO);
+        }
+
+        return vehicleRentalStatisticDTOS;
+    }
+
     @Override
     public ResultStatisticDTO calculateMonthlyRevenue(Integer year) throws ApplicationException {
         Map<String, Double> statistic = new LinkedHashMap<>();
@@ -186,7 +328,6 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         }
         return this.statisticService.createResultStatisticDTO(statistic);
     }
-
     @Override
     public Map<Integer, Double> calculateRevenueByYear(List<Integer> years) throws ApplicationException {
         Map<Integer,Double> result = new HashMap<>();
@@ -204,12 +345,11 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         return result;
     }
 
-
     private void getYearlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders) {
         for(CarRentalOrders order : carRentalOrders){
             LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
             LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
-            double revenue = order.getTotal();
+            double revenue = order.getTotal() - order.getReservation_fee() - order.getCar_deposit();
             // Tạo key theo năm của endDate
             String key = String.valueOf(endDate.getYear());
             double currentRevenue = statistics.getOrDefault(key, 0.0);
@@ -242,7 +382,7 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
             }
 
             int currentMonth = startDate.getMonthValue();
-            statistics.put(String.valueOf(currentMonth), statistics.get(String.valueOf(currentMonth)) + order.getTotal());
+            statistics.put(String.valueOf(currentMonth), statistics.get(String.valueOf(currentMonth)) + order.getTotal() - order.getReservation_fee() - order.getCar_deposit());
 
         }
     }

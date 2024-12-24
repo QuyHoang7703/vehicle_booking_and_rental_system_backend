@@ -34,13 +34,17 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -54,91 +58,216 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     private final BusService busService;
     private final DropOffLocationRepository dropOffLocationRepository;
     private final VoucherRepository voucherRepository;
+    private final RedisService<String, String, Integer> redisControlNumberOrderService;
+    private final RedissonClient redissonClient;
 
+    //    @Override
+//    public OrderBusTripRedisDTO createOrderBusTrip(ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException{
+//        String scheduleKey = "Bus trip schedule id: " + reqOrderBusTripDTO.getBusTripScheduleId();
+//
+//        if(!redisCheckValidOrderService.isHashFieldExists(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()))){
+//            redisCheckValidOrderService.setHashSet(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), 0);
+//        }
+//
+//        Integer numberOfSoldTicket = redisCheckValidOrderService.getHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()));
+//        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(reqOrderBusTripDTO.getBusTripScheduleId())
+//                .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
+//        // Check numberOfSoldTicket is larger than available seat of bus type ?
+//        if(numberOfSoldTicket >= busTripSchedule.getBus().getBusType().getNumberOfSeat()){
+//            log.error("Trường hợp hết vé - số vé đã bán: " + numberOfSoldTicket);
+////            redisCheckValidOrderService.incrementHashField(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), reqOrderBusTripDTO.getNumberOfTicket());
+//            return null;
+//        }
+//
+//        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
+//        if(email==null){
+//            throw new ApplicationException("Email is invalid");
+//        }
+//        Account currentAccount = accountService.handleGetAccountByUsername(email);
+//
+//        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(reqOrderBusTripDTO.getProvince(), reqOrderBusTripDTO.getBusTripScheduleId())
+//                .orElseThrow(() -> new ApplicationException("Drop off location not found"));
+//
+//        String orderId = UUID.randomUUID().toString().replaceAll("-", "");
+//
+//
+//
+//        OrderBusTripRedisDTO orderBusTripRedis = new OrderBusTripRedisDTO();
+//
+//        orderBusTripRedis.setId(orderId);
+//        orderBusTripRedis.setCustomerName(reqOrderBusTripDTO.getCustomerName());
+//        orderBusTripRedis.setCustomerPhoneNumber(reqOrderBusTripDTO.getCustomerPhoneNumber());
+//        orderBusTripRedis.setAccount_Id(currentAccount.getId());
+//
+//        orderBusTripRedis.setNumberOfTicket(reqOrderBusTripDTO.getNumberOfTicket());
+//        orderBusTripRedis.setPricePerTicket(dropOffLocation.getPriceTicket());
+//        orderBusTripRedis.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
+//        double originTotal = reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket();
+//
+//        double priceTotal = originTotal;
+//        if(orderBusTripRedis.getDiscountPercentage() != 0.0) {
+//            double busPartnerDiscount = originTotal * orderBusTripRedis.getDiscountPercentage()/100;
+//            priceTotal = priceTotal  - busPartnerDiscount;
+//        }
+//        // Check order has voucher ?
+//        if(reqOrderBusTripDTO.getVoucherId() != null) {
+//            orderBusTripRedis.setVoucherId(reqOrderBusTripDTO.getVoucherId());
+//            Voucher voucher = this.voucherRepository.findById(reqOrderBusTripDTO.getVoucherId())
+//                    .orElseThrow(() -> new ApplicationException("Voucher not found"));
+//
+//            double voucherDiscount = originTotal * voucher.getVoucherPercentage()/100;
+//            if(voucherDiscount > voucher.getMaxDiscountValue()) {
+//                voucherDiscount = voucher.getMaxDiscountValue();
+//            }
+//            priceTotal = priceTotal - voucherDiscount;
+//            orderBusTripRedis.setVoucherDiscount(voucherDiscount);
+//        }
+//
+//        orderBusTripRedis.setPriceTotal(priceTotal);
+//
+//        orderBusTripRedis.setDepartureLocation(busTripSchedule.getBusTrip().getDepartureLocation());
+//        orderBusTripRedis.setArrivalLocation(dropOffLocation.getProvince());
+//        orderBusTripRedis.setDepartureTime(busTripSchedule.getDepartureTime());
+//        orderBusTripRedis.setDepartureDate(reqOrderBusTripDTO.getDepartureDate());
+//        orderBusTripRedis.setJourneyDuration(dropOffLocation.getJourneyDuration());
+//
+//        orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
+//        orderBusTripRedis.setOrderDate(Instant.now());
+//
+//        // Calculate arrival instant
+//        LocalDate departureDate = reqOrderBusTripDTO.getDepartureDate();
+//        LocalDateTime departureDateTime = departureDate.atTime(busTripSchedule.getDepartureTime());
+//        LocalDateTime arrivalTime = departureDateTime.plus(dropOffLocation.getJourneyDuration());
+//        Instant arrivalTimeInstant = arrivalTime.atZone(ZoneId.systemDefault()).toInstant();
+//        orderBusTripRedis.setArrivalTime(arrivalTimeInstant);
+//
+//        String redisKeyOrderBusTrip = "order:" + currentAccount.getEmail()
+//                + "-" + "BUS_TRIP"
+//                + "-" + orderId
+//                + "-" + busTripSchedule.getId()
+//                + "-" + reqOrderBusTripDTO.getNumberOfTicket();
+//        orderBusTripRedis.setKey(redisKeyOrderBusTrip);
+//
+//        redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
+//        redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
+//        log.warn("Trường hợp bán được vé + số vé bán được: " + numberOfSoldTicket);
+//        redisCheckValidOrderService.incrementHashField(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), reqOrderBusTripDTO.getNumberOfTicket());
+//
+//        return orderBusTripRedis;
+//    }
     @Override
-    public OrderBusTripRedisDTO createOrderBusTrip(ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException{
-        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
-        if(email==null){
-            throw new ApplicationException("Email is invalid");
-        }
-        Account currentAccount = accountService.handleGetAccountByUsername(email);
+    public OrderBusTripRedisDTO createOrderBusTrip(ReqOrderBusTripDTO reqOrderBusTripDTO) throws ApplicationException {
+        String scheduleKey = "Bus trip schedule id: " + reqOrderBusTripDTO.getBusTripScheduleId();
+        String lockKey = "lock:" + scheduleKey;
 
-        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(reqOrderBusTripDTO.getProvince(), reqOrderBusTripDTO.getBusTripScheduleId())
-                .orElseThrow(() -> new ApplicationException("Drop off location not found"));
+        // Khởi tạo Redisson lock
+        RLock lock = redissonClient.getLock(lockKey);
 
-        String orderId = UUID.randomUUID().toString().replaceAll("-", "");
+        try {
+            // Thử acquire lock trong thời gian 10 giây, tự động giải phóng sau 30 giây
+            if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
+                // Kiểm tra và khởi tạo trường dữ liệu Redis nếu cần
+                if (!redisControlNumberOrderService.isHashFieldExists(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()))) {
+                    redisControlNumberOrderService.setHashSet(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), 0);
+                }
 
-        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(reqOrderBusTripDTO.getBusTripScheduleId())
-                .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
+                Integer numberOfSoldTicket = redisControlNumberOrderService.getHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()));
+                BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(reqOrderBusTripDTO.getBusTripScheduleId())
+                        .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
 
-        OrderBusTripRedisDTO orderBusTripRedis = new OrderBusTripRedisDTO();
+                // Kiểm tra số vé đã bán so với số ghế trống
+                if (numberOfSoldTicket + reqOrderBusTripDTO.getNumberOfTicket() > busTripSchedule.getBus().getBusType().getNumberOfSeat()) {
+                    log.error("Trường hợp hết vé - số vé đã bán: " + numberOfSoldTicket + reqOrderBusTripDTO.getNumberOfTicket());
+                    return null;
+                }
 
-        orderBusTripRedis.setId(orderId);
-        orderBusTripRedis.setCustomerName(reqOrderBusTripDTO.getCustomerName());
-        orderBusTripRedis.setCustomerPhoneNumber(reqOrderBusTripDTO.getCustomerPhoneNumber());
-        orderBusTripRedis.setAccount_Id(currentAccount.getId());
+                // Xử lý thông tin người dùng
+                String email = SecurityUtil.getCurrentLogin().orElseThrow(() -> new ApplicationException("Email is invalid"));
+                Account currentAccount = accountService.handleGetAccountByUsername(email);
 
-        orderBusTripRedis.setNumberOfTicket(reqOrderBusTripDTO.getNumberOfTicket());
-        orderBusTripRedis.setPricePerTicket(dropOffLocation.getPriceTicket());
-        orderBusTripRedis.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
-        double originTotal = reqOrderBusTripDTO.getNumberOfTicket()*dropOffLocation.getPriceTicket();
+                DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(reqOrderBusTripDTO.getProvince(), reqOrderBusTripDTO.getBusTripScheduleId())
+                        .orElseThrow(() -> new ApplicationException("Drop off location not found"));
 
-        double priceTotal = originTotal;
-        if(orderBusTripRedis.getDiscountPercentage() != 0.0) {
-            double busPartnerDiscount = originTotal * orderBusTripRedis.getDiscountPercentage()/100;
-            priceTotal = priceTotal  - busPartnerDiscount;
-        }
-        // Check order has voucher ?
-        if(reqOrderBusTripDTO.getVoucherId() != null) {
-            orderBusTripRedis.setVoucherId(reqOrderBusTripDTO.getVoucherId());
-            Voucher voucher = this.voucherRepository.findById(reqOrderBusTripDTO.getVoucherId())
-                    .orElseThrow(() -> new ApplicationException("Voucher not found"));
+                String orderId = UUID.randomUUID().toString().replaceAll("-", "");
+                OrderBusTripRedisDTO orderBusTripRedis = new OrderBusTripRedisDTO();
+                orderBusTripRedis.setId(orderId);
+                orderBusTripRedis.setCustomerName(reqOrderBusTripDTO.getCustomerName());
+                orderBusTripRedis.setCustomerPhoneNumber(reqOrderBusTripDTO.getCustomerPhoneNumber());
+                orderBusTripRedis.setAccount_Id(currentAccount.getId());
+                orderBusTripRedis.setNumberOfTicket(reqOrderBusTripDTO.getNumberOfTicket());
+                orderBusTripRedis.setPricePerTicket(dropOffLocation.getPriceTicket());
+                orderBusTripRedis.setDiscountPercentage(busTripSchedule.getDiscountPercentage());
 
-            double voucherDiscount = originTotal * voucher.getVoucherPercentage()/100;
-            if(voucherDiscount > voucher.getMaxDiscountValue()) {
-                voucherDiscount = voucher.getMaxDiscountValue();
+                double originTotal = reqOrderBusTripDTO.getNumberOfTicket() * dropOffLocation.getPriceTicket();
+                double priceTotal = originTotal;
+
+                if (orderBusTripRedis.getDiscountPercentage() != 0.0) {
+                    double busPartnerDiscount = originTotal * orderBusTripRedis.getDiscountPercentage() / 100;
+                    priceTotal -= busPartnerDiscount;
+                }
+
+                if (reqOrderBusTripDTO.getVoucherId() != null) {
+                    Voucher voucher = this.voucherRepository.findById(reqOrderBusTripDTO.getVoucherId())
+                            .orElseThrow(() -> new ApplicationException("Voucher not found"));
+
+                    double voucherDiscount = originTotal * voucher.getVoucherPercentage() / 100;
+                    if (voucherDiscount > voucher.getMaxDiscountValue()) {
+                        voucherDiscount = voucher.getMaxDiscountValue();
+                    }
+                    priceTotal -= voucherDiscount;
+                    orderBusTripRedis.setVoucherDiscount(voucherDiscount);
+                    orderBusTripRedis.setVoucherId(reqOrderBusTripDTO.getVoucherId());
+                }
+
+                orderBusTripRedis.setPriceTotal(priceTotal);
+                orderBusTripRedis.setDepartureLocation(busTripSchedule.getBusTrip().getDepartureLocation());
+                orderBusTripRedis.setArrivalLocation(dropOffLocation.getProvince());
+                orderBusTripRedis.setDepartureTime(busTripSchedule.getDepartureTime());
+                orderBusTripRedis.setDepartureDate(reqOrderBusTripDTO.getDepartureDate());
+                orderBusTripRedis.setJourneyDuration(dropOffLocation.getJourneyDuration());
+
+                orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
+                orderBusTripRedis.setOrderDate(Instant.now());
+
+                LocalDateTime departureDateTime = reqOrderBusTripDTO.getDepartureDate().atTime(busTripSchedule.getDepartureTime());
+                LocalDateTime arrivalTime = departureDateTime.plus(dropOffLocation.getJourneyDuration());
+                Instant arrivalTimeInstant = arrivalTime.atZone(ZoneId.systemDefault()).toInstant();
+                orderBusTripRedis.setArrivalTime(arrivalTimeInstant);
+
+                String redisKeyOrderBusTrip = "order:" + currentAccount.getEmail()
+                        + "$" + "BUS_TRIP"
+                        + "$" + orderId
+                        + "$" + busTripSchedule.getId()
+                        + "$" + reqOrderBusTripDTO.getNumberOfTicket()
+                        + "$" + reqOrderBusTripDTO.getDepartureDate();
+                orderBusTripRedis.setKey(redisKeyOrderBusTrip);
+
+                redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
+                redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
+
+                log.warn("Trường hợp bán được vé + số vé bán được: " + numberOfSoldTicket);
+                redisControlNumberOrderService.incrementHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), reqOrderBusTripDTO.getNumberOfTicket());
+
+                return orderBusTripRedis;
+            } else {
+                throw new ApplicationException("Could not acquire lock, please try again later");
             }
-            priceTotal = priceTotal - voucherDiscount;
-            orderBusTripRedis.setVoucherDiscount(voucherDiscount);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ApplicationException("Thread was interrupted while waiting for lock");
+        } finally {
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
-
-        orderBusTripRedis.setPriceTotal(priceTotal);
-
-        orderBusTripRedis.setDepartureLocation(busTripSchedule.getBusTrip().getDepartureLocation());
-        orderBusTripRedis.setArrivalLocation(dropOffLocation.getProvince());
-        orderBusTripRedis.setDepartureTime(busTripSchedule.getDepartureTime());
-        orderBusTripRedis.setDepartureDate(reqOrderBusTripDTO.getDepartureDate());
-        orderBusTripRedis.setJourneyDuration(dropOffLocation.getJourneyDuration());
-
-        orderBusTripRedis.setBusTripScheduleId(reqOrderBusTripDTO.getBusTripScheduleId());
-        orderBusTripRedis.setOrderDate(Instant.now());
-
-        // Calculate arrival instant
-        LocalDate departureDate = reqOrderBusTripDTO.getDepartureDate();
-        LocalDateTime departureDateTime = departureDate.atTime(busTripSchedule.getDepartureTime());
-        LocalDateTime arrivalTime = departureDateTime.plus(dropOffLocation.getJourneyDuration());
-        Instant arrivalTimeInstant = arrivalTime.atZone(ZoneId.systemDefault()).toInstant();
-        orderBusTripRedis.setArrivalTime(arrivalTimeInstant);
-
-        String redisKeyOrderBusTrip = "order:" + currentAccount.getEmail()
-                + "$" + "BUS_TRIP"
-                + "$" + orderId
-                + "$" + busTripSchedule.getId()
-                + "$" + reqOrderBusTripDTO.getNumberOfTicket();
-        orderBusTripRedis.setKey(redisKeyOrderBusTrip);
-
-        redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
-        redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
-
-        // Number of available tickets minus number of ticket
-//        busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() - reqOrderBusTripDTO.getNumberOfTicket());
-//        this.busTripScheduleRepository.save(busTripSchedule);
-
-        return orderBusTripRedis;
     }
+
 
     @Override
     public ResOrderKey getKeyOfOrderBusTripRedisDTO(OrderBusTripRedisDTO orderBusTripRedisDTO) throws ApplicationException {
+        if(orderBusTripRedisDTO == null) {
+            return null;
+        }
         return ResOrderKey.builder()
                 .keyOrder(orderBusTripRedisDTO.getKey())
                 .build();

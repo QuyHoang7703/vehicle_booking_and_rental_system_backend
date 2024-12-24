@@ -80,7 +80,7 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         String[] whiteList = {
-                "/",
+//                "/hello",
                 "/api/v1/auth/**",
                 "/identity/auth/outbound/authentication",
                 "/ws/**",
@@ -152,7 +152,7 @@ public class SecurityConfiguration {
 //                // Bạn có thể thêm logic ở đây để xử lý role nếu cần thiết
 //                System.out.println(">>> Role from JWT: " + role);
                 // In ra toàn bộ claims để kiểm tra
-                System.out.println(">>> Decoded JWT claims: " + claims);
+//                System.out.println(">>> Decoded JWT claims: " + claims);
 
                 return decodedJwt; // Trả về token đã decode
             } catch (Exception e) {
@@ -182,7 +182,7 @@ public class SecurityConfiguration {
             Map<String, Object> userClaims = jwt.getClaimAsMap("user"); // Lấy claims của "user" dưới dạng Map
             List<String> roleNamesFromJWT = userClaims != null && userClaims.containsKey("roles") ?
                     (List<String>) userClaims.get("roles") : Collections.emptyList();
-            log.info("ROLE FROM JWT: " + roleNamesFromJWT);
+//            log.info("ROLE FROM JWT: " + roleNamesFromJWT);
             // Lấy username từ JWT
 //            String username = jwt.getClaimAsString("sub"); // Hoặc claim bạn đã sử dụng để lưu username
 //            log.info("USERNAME: " + username);
@@ -196,7 +196,7 @@ public class SecurityConfiguration {
 
             }
 
-            log.info("AUTHORITIES: " + authorities);
+//            log.info("AUTHORITIES: " + authorities);
             return authorities;
         });
         return jwtAuthenticationConverter;

@@ -33,6 +33,7 @@ public class RedisMessageListener implements MessageListener {
     private final DateUtil dateUtil;
     private final RedisService<String, String, OrderVehicleRentalRedisDTO> redisOrderVehicleRental;
     private final RedisService<String,String,Integer> redisServiceVehicleRental;
+    private final RedisService<String, String, Integer> redisControlNumberOrderService;
     @Override
     public void onMessage(Message message, byte[] pattern) {
         String key  = new String(message.getBody());
@@ -52,13 +53,19 @@ public class RedisMessageListener implements MessageListener {
         String typeOfOrder = parts[1];
         String busTripScheduleId = parts[3];
         String numberOfTicket = parts[4];
+        String departureDate = parts[5];
 
         log.info("Type of order {}, busTripScheduleId {}, numberOfTicket {}", typeOfOrder, busTripScheduleId, numberOfTicket);
 
-        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(Integer.parseInt(busTripScheduleId))
-                .orElseThrow(() -> new RuntimeException("BusTripSchedule not found"));
+//        BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(Integer.parseInt(busTripScheduleId))
+//                .orElseThrow(() -> new RuntimeException("BusTripSchedule not found"));
 //        busTripSchedule.setAvailableSeats(busTripSchedule.getAvailableSeats() + Integer.parseInt(numberOfTicket));
-        this.busTripScheduleRepository.save(busTripSchedule);
+//        this.busTripScheduleRepository.save(busTripSchedule);
+        String atomicRedisKey = "Bus trip schedule id: " + busTripScheduleId;
+        Integer currentNumberOrderBusTripInRedis = this.redisControlNumberOrderService.getHashValue(atomicRedisKey, departureDate);
+        if(currentNumberOrderBusTripInRedis > Integer.parseInt(numberOfTicket)){
+            redisControlNumberOrderService.incrementHashValue(atomicRedisKey, departureDate, - Integer.parseInt(numberOfTicket));
+        }
         log.info("BusTripSchedule updated number of seats");
     }
     private void handleVehicleRentalOrder(String key) {

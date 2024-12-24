@@ -4,6 +4,7 @@ import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -13,6 +14,8 @@ import java.util.List;
 public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,String> {
     @Query("SELECT o FROM CarRentalOrders o WHERE o.carRentalService.id = :carRentalServiceId AND o.start_rental_time >= :currentDate AND o.status = :status")
     List<CarRentalOrders> findFutureOrdersByCarRentalServiceId(@Param("carRentalServiceId") int carRentalServiceId, @Param("currentDate") Instant currentDate,@Param("status")String status);
+    @Query("SELECT o FROM CarRentalOrders o WHERE  o.start_rental_time >= :currentDate AND  o.carRentalService.vehicleRegister.carRentalPartner.id = :partnerId")
+    List<CarRentalOrders> findFutureOrdersByCarRentalPartner(@Param("currentDate") Instant currentDate,  @Param("partnerId") int id);
     List<CarRentalOrders> findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(int carRentalPartnerId);
     List<CarRentalOrders> findCarRentalOrdersByCarRentalServiceId(int carRentalServiceId);
 

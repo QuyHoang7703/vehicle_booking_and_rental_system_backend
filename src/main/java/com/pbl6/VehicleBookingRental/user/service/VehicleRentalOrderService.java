@@ -238,7 +238,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
     public List<ResVehicleRentalOrderDetailDTO> getAllOrder(){
         try{
             BusinessPartner currenBP = businessPartnerService.getCurrentBusinessPartner(CAR_RENTAL_PARTNER);
-            List<CarRentalOrders> orders = vehicleRentalOrderRepo.findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(currenBP.getCarRentalPartner().getId());
+            List<CarRentalOrders> orders = vehicleRentalOrderRepo.findFutureOrdersByCarRentalPartner(Instant.now(),currenBP.getCarRentalPartner().getId());
             return Optional.ofNullable(orders)
                     .orElse(Collections.emptyList())
                     .stream().map(order->{

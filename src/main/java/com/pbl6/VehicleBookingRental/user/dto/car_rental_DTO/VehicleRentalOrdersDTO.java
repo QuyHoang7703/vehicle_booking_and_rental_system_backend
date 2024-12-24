@@ -24,5 +24,6 @@ public class VehicleRentalOrdersDTO {
 
     private int vehicle_rental_service_id;
     private int account_id;
+    private Integer voucherId;
 
 }

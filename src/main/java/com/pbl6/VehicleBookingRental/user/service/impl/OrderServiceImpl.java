@@ -237,7 +237,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    private void handleVehicleRentalOrder(String key, String transactionCode) throws IdInvalidException{
+    private void handleVehicleRentalOrder(String key, String transactionCode) throws IdInvalidException, ApplicationException {
         // Get data from redis
         Object rawJson = redisService.getHashValue(key, "order-detail");
         // Convert json to orderBusTrip object
@@ -281,6 +281,11 @@ public class OrderServiceImpl implements OrderService {
 
         // Save all order and orderBusTrip, cascade = CascadeType.ALL => orderBusTrip is also saved
         this.ordersRepo.save(order);
+
+        // Update account voucher if order has applied voucher
+        if(orderVehicleRentalRedisDTO.getVoucherId() != null) {
+            this.accountVoucherService.updateVoucherStatus(orderVehicleRentalRedisDTO.getAccount_Id(), orderVehicleRentalRedisDTO.getVoucherId());
+        }
 
 
         int accountIdOfVehicleRentalPartner = carRentalOrders.getCarRentalService().getVehicleRegister().getCarRentalPartner()

@@ -121,10 +121,10 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         orderBusTripRedis.setArrivalTime(arrivalTimeInstant);
 
         String redisKeyOrderBusTrip = "order:" + currentAccount.getEmail()
-                + "-" + "BUS_TRIP"
-                + "-" + orderId
-                + "-" + busTripSchedule.getId()
-                + "-" + reqOrderBusTripDTO.getNumberOfTicket();
+                + "$" + "BUS_TRIP"
+                + "$" + orderId
+                + "$" + busTripSchedule.getId()
+                + "$" + reqOrderBusTripDTO.getNumberOfTicket();
         orderBusTripRedis.setKey(redisKeyOrderBusTrip);
 
         redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);

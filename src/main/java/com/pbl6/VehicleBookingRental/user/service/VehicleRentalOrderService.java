@@ -68,28 +68,28 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         CarRentalService carRentalService = vehicleRentalServiceRepo.findById(vehicleRentalOrdersDTO.getVehicle_rental_service_id())
                 .orElseThrow(() -> new ApplicationException("Vehicle Rental Service not found"));
         Integer amount =  carRentalService.getVehicleRegister().getAmount();
+        Integer rentalAmount = vehicleRentalOrdersDTO.getAmount();
         //
         List<String> timeSlots = dateUtil.generateTimeSlots(vehicleRentalOrdersDTO.getStart_rental_time(),vehicleRentalOrdersDTO.getEnd_rental_time());
         System.out.println(timeSlots);
         for (String timeSlot : timeSlots) {
             String key = "vehicle-rental:" + carRentalService.getId();
-
-            // Lấy số lượng hiện tại từ Redis
-            Integer currentAmount = redisService2.getHashValue(key, timeSlot);
-
-            if (currentAmount == null) {
+            if(!redisService2.isHashFieldExists(key,timeSlot)){
                 // Trường hợp key chưa tồn tại: thiết lập giá trị ban đầu
                 redisService2.setHashSet(key, timeSlot, amount);
                 // Thiết lập TTL
                 redisService2.setTimeToLive(key, dateUtil.calculateAndSetTTL(timeSlot) / 60);
-            } else if (currentAmount > 0) {
+            }
+            // Lấy số lượng hiện tại từ Redis
+            Integer currentAmount = redisService2.getHashValue(key, timeSlot);
+            if (currentAmount > 0) {
                 // Trường hợp có dữ liệu: kiểm tra số lượng và giảm đi
-                long updatedAmount = redisService2.incrementHashValue(key, timeSlot, -1);
+                long updatedAmount = redisService2.incrementHashValue(key, timeSlot, -rentalAmount);
 
                 // Nếu giảm thất bại (hết xe)
                 if (updatedAmount < 0) {
                     // Tăng lại vì lệnh giảm đã trừ nhầm
-                    redisService2.incrementHashValue(key, timeSlot, 1);
+                    redisService2.incrementHashValue(key, timeSlot, rentalAmount);
                     throw new ApplicationException("Không có xe khả dụng trong khung giờ "+ timeSlot );
                 }
             } else {
@@ -115,15 +115,17 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         //Create key in redis
         // Save orderBusTrip trong redis
         String redisKeyOrderVehicleRental = "order:" + currentAccount.getEmail()
-                + "-" + "VEHICLE_RENTAL"
-                + "-" + orderId
-                + "-" + carRentalService.getId()
-                + "-" + vehicleRentalOrdersDTO.getAmount();
+                + "$" + "VEHICLE_RENTAL"
+                + "$" + orderId
+                + "$" + carRentalService.getId()
+                + "$" + vehicleRentalOrdersDTO.getAmount()
+                + "$" + vehicleRentalOrdersDTO.getStart_rental_time()
+                + "$" + vehicleRentalOrdersDTO.getEnd_rental_time();
         orderVehicleRentalRedisDTO.setKey(redisKeyOrderVehicleRental);
 
         //
         redisService.setHashSet(redisKeyOrderVehicleRental, "order-detail", orderVehicleRentalRedisDTO);
-        redisService.setTimeToLive(redisKeyOrderVehicleRental, 10);
+        redisService.setTimeToLive(redisKeyOrderVehicleRental, 5);
 
 
         return orderVehicleRentalRedisDTO;
@@ -307,8 +309,33 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         Account currentAccount = this.accountService.handleGetAccountByUsername(email);
         //Get Vehicle rental service
         Optional<CarRentalOrders> carRentalOrders = vehicleRentalOrderRepo.findById(vehicleRentalOrderId);
+
         if(carRentalOrders.isPresent()){
+            CarRentalService carRentalService = carRentalOrders.get().getCarRentalService();
             carRentalOrders.get().setStatus("canceled");
+            //update amount vehicle register
+            List<String> timeSlots = dateUtil.generateTimeSlots(carRentalOrders.get().getStart_rental_time(),carRentalOrders.get().getEnd_rental_time());
+            for (String timeSlot : timeSlots) {
+                String key = "vehicle-rental:" + carRentalService.getId();
+                int rentalAmount = carRentalOrders.get().getAmount();
+                int vehicleRegisterAmount = carRentalService.getVehicleRegister().getAmount();
+                // Lấy số lượng hiện tại từ Redis
+                Integer currentAmount = redisService2.getHashValue(key, timeSlot);
+                if (currentAmount != null) {
+                    // Trường hợp có dữ liệu: kiểm tra số lượng và tăng lại
+                    long updatedAmount = redisService2.incrementHashValue(key, timeSlot, rentalAmount);
+
+                    // Nếu tăng vượt quá số xe gốc
+                    if (updatedAmount > vehicleRegisterAmount ) {
+                        // Giảm lại vì tăng đã cộng  nhầm
+                        redisService2.incrementHashValue(key, timeSlot, -rentalAmount);
+                    }
+                } else {
+                    // Trường hợp hết xe
+                    throw new ApplicationException("Khung giờ không khả dụng "+ timeSlot );
+                }
+            }
+
             //notify to user
             NotificationDTO notificationDTO = new NotificationDTO();
             notificationDTO.setMessage(" Bạn đã huỷ đơn thuê xe thành công ");
@@ -327,9 +354,10 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
             notificationDTO1.setCreate_at(Instant.now());
             notificationDTO1.setSeen(false);
             notificationService.createNotificationToAccount(partnerId,  AccountEnum.CAR_RENTAL_PARTNER,notificationDTO1);
+
             return true;
         }else{
-            throw new ApplicationException("Vehicle rental order don't exists");
+            throw new ApplicationException("Đơn thuê xe không tồn tại");
         }
     }
 

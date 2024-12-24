@@ -12,5 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 public class ReqBreakDayDTO {
     private int busTripScheduleId;
+    private double discountPercentage;
     private List<BreakDay> breakDays;
 }

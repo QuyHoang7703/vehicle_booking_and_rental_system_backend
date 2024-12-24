@@ -160,11 +160,12 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         String scheduleKey = "Bus trip schedule id: " + reqOrderBusTripDTO.getBusTripScheduleId();
         String lockKey = "lock:" + scheduleKey;
 
-        // Khởi tạo Redisson lock
+        // Khởi tạo Redisson lock - đăng ký khóa với Redission lock -> tạo đối tượng RLock để quản lý khóa (lockKey)
         RLock lock = redissonClient.getLock(lockKey);
 
         try {
-            // Thử acquire lock trong thời gian 10 giây, tự động giải phóng sau 30 giây
+            // Thử acquire lock trong thời gian 10 giây (thời gian tối đa mà thread cố gắng lấy khóa -> nếu không lấy được thì đợi),
+            // tự động giải phóng sau 30 giây (thời gian tối đa mà thread giữ khóa, nó sẽ tự động giải phóng khóa sau khi hết thời gian)
             if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
                 // Kiểm tra và khởi tạo trường dữ liệu Redis nếu cần
                 if (!redisControlNumberOrderService.isHashFieldExists(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()))) {

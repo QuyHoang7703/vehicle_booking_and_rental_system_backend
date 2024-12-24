@@ -68,7 +68,7 @@ public class OrderServiceImpl implements OrderService {
 
         String key = request.getParameter("key");
         log.info("Key: " + key);
-        String[] parts = key.split("-");
+        String[] parts = key.split("\\$");
         String typeOfOrder = parts[1];
 
         // Get data from redis

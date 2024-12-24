@@ -79,5 +79,10 @@ public class RedisServiceImpl<K, F, V> implements RedisService<K, F, V> {
         }
     }
 
+    @Override
+    public void incrementHashField(K key, F field, int increment) {
+        hashOperations.increment(key, field, increment);
+    }
+
 
 }

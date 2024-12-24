@@ -3,6 +3,9 @@ package com.pbl6.VehicleBookingRental.user.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pbl6.VehicleBookingRental.user.util.RedisMessageListener;
 import lombok.RequiredArgsConstructor;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -90,6 +93,15 @@ public class RedisConfig {
         // Register listener for channel "__keyevent@0__:expired"
         container.addMessageListener(messageListenerAdapter, topic());
         return container;
+    }
+
+
+    @Bean
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        // Cấu hình kết nối Redis (single server, cluster, hoặc sentinel)
+        config.useSingleServer().setAddress("redis://127.0.0.1:6379");
+        return Redisson.create(config);
     }
 
 

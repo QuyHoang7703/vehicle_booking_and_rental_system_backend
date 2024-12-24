@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface VehicleRentalStatisticService {
-    public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleType(String location,String vehicleType);
-    public List<VehicleRentalStatisticDTO> statisticByDate(String startDate,String endDate);
+    public List<VehicleRentalStatisticDTO> statisticByDate(String location,String vehicleType,String startDate,String endDate);
     public ResultStatisticDTO calculateMonthlyRevenue(Integer year) throws ApplicationException;
-    public Map<Integer,Double> calculateRevenueByYear(List<Integer> years) throws ApplicationException;
+    public Map<Integer,Double> calculateRevenueByYear(List<Integer> years)throws ApplicationException;
+    public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleTypeByDate(String location, String vehicleType, String startDate, String endDate) ;
+    public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleTypeByMonthAndYear(String location, String vehicleType, int month , int year) ;
+    public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleTypeByYear(String location, String vehicleType, List<Integer> year) throws ApplicationException ;
+
 }

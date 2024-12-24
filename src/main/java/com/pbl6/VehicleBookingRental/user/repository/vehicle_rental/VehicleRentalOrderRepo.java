@@ -13,13 +13,15 @@ import java.util.List;
 public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,String> {
     @Query("SELECT o FROM CarRentalOrders o WHERE o.carRentalService.id = :carRentalServiceId AND o.start_rental_time >= :currentDate AND o.status = :status")
     List<CarRentalOrders> findFutureOrdersByCarRentalServiceId(@Param("carRentalServiceId") int carRentalServiceId, @Param("currentDate") Instant currentDate,@Param("status")String status);
-    @Query("select o from CarRentalOrders o where (:location is null or o.carRentalService.vehicleRegister.location = :location)" +
-                                            "and (:vehicle_type is null or o.carRentalService.vehicleRegister.vehicleType.name = :vehicle_type)   ")
-    List<CarRentalOrders> findCarRentalOrdersByVehicleRegisterProperties(@Param("location") String location,@Param("vehicle_type")String vehicle_type);
     List<CarRentalOrders> findCarRentalOrdersByCarRentalService_VehicleRegister_CarRentalPartner_Id(int carRentalPartnerId);
     List<CarRentalOrders> findCarRentalOrdersByCarRentalServiceId(int carRentalServiceId);
 
 
     List<CarRentalOrders> findCarRentalOrdersByStatus(String status);
     List<CarRentalOrders> findCarRentalOrdersByAccountId(int accountId);
+
+    @Query("SELECT  o from CarRentalOrders  o where (:location is null or o.carRentalService.vehicleRegister.location = :location)" +
+            "and (:vehicleTypeName is null  or o.carRentalService.vehicleRegister.vehicleType.name = :vehicleTypeName)" +
+            "and o.carRentalService.vehicleRegister.carRentalPartner.id = :partnerId ")
+    List<CarRentalOrders> findCarRentalOrdersByLocationOrType(@Param("location") String location,@Param("vehicleTypeName") String vehicleTypeName,@Param("partnerId") int partnerId);
 }

@@ -577,7 +577,18 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                notAvailableBreakDays.add(breakDay);
            }
        }
-        this.breakDayRepository.saveAll(notAvailableBreakDays);
+       this.breakDayRepository.saveAll(notAvailableBreakDays);
+
+       // Update discount percentage for bus trip schedule
+        busTripSchedule.setDiscountPercentage(reqBreakDayDTO.getDiscountPercentage());
+        this.busTripScheduleRepository.save(busTripSchedule);
+    }
+
+    @Override
+    public void deleteBreakDay(int breakDayId) throws IdInvalidException {
+//        BusinessPartner businessPartner = this.businessPartnerService
+        BreakDay breakDay = this.breakDayRepository.findById(breakDayId)
+                .orElseThrow(() -> new IdInvalidException("Break day not found"));
 
     }
 

@@ -100,7 +100,9 @@ public class RedisConfig {
     public RedissonClient redissonClient() {
         Config config = new Config();
         // Cấu hình kết nối Redis (single server, cluster, hoặc sentinel)
-        config.useSingleServer().setAddress("redis://127.0.0.1:6379");
+        String redisAddress = "redis://" + redisHost + ":" + redisPort;
+        config.useSingleServer().setAddress(redisAddress);
+//        config.useSingleServer().setAddress("redis://127.0.0.1:6379");
         return Redisson.create(config);
     }
 

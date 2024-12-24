@@ -111,6 +111,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         orderVehicleRentalRedisDTO.setVehicle_rental_service_id(carRentalService.getId());
         orderVehicleRentalRedisDTO.setCustomerName(vehicleRentalOrdersDTO.getCustomerName());
         orderVehicleRentalRedisDTO.setCustomerPhoneNumber(vehicleRentalOrdersDTO.getCustomerPhoneNumber());
+        orderVehicleRentalRedisDTO.setVoucherId(vehicleRentalOrdersDTO.getVoucherId());
 
         //Create key in redis
         // Save orderBusTrip trong redis

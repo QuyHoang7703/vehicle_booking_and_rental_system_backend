@@ -31,5 +31,6 @@ public class OrderVehicleRentalRedisDTO {
 
     private int account_Id;
     private int vehicle_rental_service_id;
+    private Integer voucherId;
     private String key;
 }

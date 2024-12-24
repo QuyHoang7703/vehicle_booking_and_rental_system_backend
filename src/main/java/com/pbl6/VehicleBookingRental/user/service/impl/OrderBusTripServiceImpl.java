@@ -58,7 +58,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
     private final BusService busService;
     private final DropOffLocationRepository dropOffLocationRepository;
     private final VoucherRepository voucherRepository;
-    private final RedisService<String, String, Integer> redisCheckValidOrderService;
+    private final RedisService<String, String, Integer> redisControlNumberOrderService;
     private final RedissonClient redissonClient;
 
     //    @Override
@@ -167,11 +167,11 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
             // Thử acquire lock trong thời gian 10 giây, tự động giải phóng sau 30 giây
             if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
                 // Kiểm tra và khởi tạo trường dữ liệu Redis nếu cần
-                if (!redisCheckValidOrderService.isHashFieldExists(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()))) {
-                    redisCheckValidOrderService.setHashSet(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), 0);
+                if (!redisControlNumberOrderService.isHashFieldExists(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()))) {
+                    redisControlNumberOrderService.setHashSet(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), 0);
                 }
 
-                Integer numberOfSoldTicket = redisCheckValidOrderService.getHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()));
+                Integer numberOfSoldTicket = redisControlNumberOrderService.getHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()));
                 BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(reqOrderBusTripDTO.getBusTripScheduleId())
                         .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));
 
@@ -238,14 +238,15 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                         + "$" + "BUS_TRIP"
                         + "$" + orderId
                         + "$" + busTripSchedule.getId()
-                        + "$" + reqOrderBusTripDTO.getNumberOfTicket();
+                        + "$" + reqOrderBusTripDTO.getNumberOfTicket()
+                        + "$" + reqOrderBusTripDTO.getDepartureDate();
                 orderBusTripRedis.setKey(redisKeyOrderBusTrip);
 
                 redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
                 redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
 
                 log.warn("Trường hợp bán được vé + số vé bán được: " + numberOfSoldTicket);
-                redisCheckValidOrderService.incrementHashField(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), reqOrderBusTripDTO.getNumberOfTicket());
+                redisControlNumberOrderService.incrementHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), reqOrderBusTripDTO.getNumberOfTicket());
 
                 return orderBusTripRedis;
             } else {

@@ -41,7 +41,6 @@ public interface RedisService<K, F, V> {
 
     // Xóa nhiều field trong Hash
     void deleteHashFields(K key, List<F> fields);
-
-    void incrementHashField(K key, F field, int increment);
-
+    public long incrementHashValue(K key, F field, long incrementBy);
+    public Object runLuaScript(String script, List<String> keys, List<String> args);
 }

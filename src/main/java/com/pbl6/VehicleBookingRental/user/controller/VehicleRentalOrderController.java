@@ -42,8 +42,6 @@ public class VehicleRentalOrderController {
         }
         LocationDTO source = locationDTOS.get(0);
         LocationDTO destination = locationDTOS.get(1);
-        System.out.println(source);
-        System.out.println(destination);
         try{
             OpenRouteServiceDTO openRouteServiceDTO = osrService.getDistanceAndDuration(source,destination);
             return ResponseEntity.status(HttpStatus.OK).body(openRouteServiceDTO);

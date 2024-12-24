@@ -2,10 +2,8 @@ package com.pbl6.VehicleBookingRental.user.util;
 
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,6 +52,39 @@ public class DateUtil {
 
         return result;
     }
+    public List<String> generateTimeSlots(Instant startTime, Instant endTime){
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd:HH:mm");
 
+        //Lam tron startTime va endTime voi moc gio gan nhat
+        ZonedDateTime startZonedDateTime = startTime.atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.HOURS);
+        ZonedDateTime endZonedDateTime =  endTime.atZone(ZoneId.systemDefault()).plusMinutes(59).truncatedTo(ChronoUnit.HOURS);
+
+        List<String> timeSlots = new ArrayList<>();
+
+        ZonedDateTime current = startZonedDateTime;
+        while(current.isBefore(endZonedDateTime)){
+            ZonedDateTime next = current.plusHours(1);
+            timeSlots.add(current.format(dateTimeFormatter) + "_" + next.format(dateTimeFormatter));
+            current = next;
+        }
+        return timeSlots;
+    }
+    public long calculateAndSetTTL(String timeSlot) {
+        // Bước 1: Parse ngày từ timeSlot
+        String dateString = timeSlot.split(":")[0]; // Lấy phần "2024-12-22"
+        LocalDate date = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+
+        // Tạo thời gian kết thúc trong ngày (23:59:59)
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX).plusDays(1); // 2025-12-22T23:59:59
+
+        // Bước 2: Tính khoảng cách từ bây giờ tới cuối ngày
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault()); // Thời gian hiện tại
+        ZonedDateTime endOfDayZoned = endOfDay.atZone(ZoneId.systemDefault());
+
+        Duration duration = Duration.between(now, endOfDayZoned);
+        long ttlInSeconds = Math.max(duration.getSeconds(), 0); // Tránh TTL âm
+
+        return ttlInSeconds;
+    }
 
 }

@@ -101,17 +101,23 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         //create redis order
         OrderVehicleRentalRedisDTO orderVehicleRentalRedisDTO = new OrderVehicleRentalRedisDTO();
         orderVehicleRentalRedisDTO.setId(orderId);
-        orderVehicleRentalRedisDTO.setPickup_location(vehicleRentalOrdersDTO.getPickup_location());
+        orderVehicleRentalRedisDTO.setCustomerName(vehicleRentalOrdersDTO.getCustomerName());
+        orderVehicleRentalRedisDTO.setCustomerPhoneNumber(vehicleRentalOrdersDTO.getCustomerPhoneNumber());
         orderVehicleRentalRedisDTO.setNumberOfVehicles(vehicleRentalOrdersDTO.getAmount());
         orderVehicleRentalRedisDTO.setStart_rental_time(vehicleRentalOrdersDTO.getStart_rental_time());
         orderVehicleRentalRedisDTO.setEnd_rental_time(vehicleRentalOrdersDTO.getEnd_rental_time());
-        orderVehicleRentalRedisDTO.setAccount_Id(currentAccount.getId());
-        orderVehicleRentalRedisDTO.setPriceTotal(vehicleRentalOrdersDTO.getTotal());
+        orderVehicleRentalRedisDTO.setPickup_location(vehicleRentalOrdersDTO.getPickup_location());
         orderVehicleRentalRedisDTO.setCreated_at(Instant.now());
         orderVehicleRentalRedisDTO.setVehicle_rental_service_id(carRentalService.getId());
-        orderVehicleRentalRedisDTO.setCustomerName(vehicleRentalOrdersDTO.getCustomerName());
-        orderVehicleRentalRedisDTO.setCustomerPhoneNumber(vehicleRentalOrdersDTO.getCustomerPhoneNumber());
         orderVehicleRentalRedisDTO.setVoucherId(vehicleRentalOrdersDTO.getVoucherId());
+        orderVehicleRentalRedisDTO.setAccount_Id(currentAccount.getId());
+
+        orderVehicleRentalRedisDTO.setPriceTotal(vehicleRentalOrdersDTO.getTotal());
+        orderVehicleRentalRedisDTO.setVoucher_percentage(vehicleRentalOrdersDTO.getVoucher_percentage());
+        orderVehicleRentalRedisDTO.setVoucher_value(vehicleRentalOrdersDTO.getVoucher_value());
+        orderVehicleRentalRedisDTO.setReservation_fee(vehicleRentalOrdersDTO.getReservation_fee());
+        orderVehicleRentalRedisDTO.setPrice(vehicleRentalOrdersDTO.getPrice());
+        orderVehicleRentalRedisDTO.setCar_deposit(vehicleRentalOrdersDTO.getCar_deposit());
 
         //Create key in redis
         // Save orderBusTrip trong redis

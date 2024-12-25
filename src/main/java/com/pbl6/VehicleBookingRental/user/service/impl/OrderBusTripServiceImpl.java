@@ -171,10 +171,10 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 if (!redisControlNumberOrderService.isHashFieldExists(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()))) {
                     redisControlNumberOrderService.setHashSet(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), 0);
                     // Tạo TTL cho key tới ngày khởi hành chuyến xe
-                        long timeToLive = Duration.between(LocalDateTime.now(), reqOrderBusTripDTO.getDepartureDate().plusDays(1).atStartOfDay()).toMinutes();
-                    redisControlNumberOrderService.setTimeToLive(scheduleKey, timeToLive);
+//                    long timeToLive = Duration.between(LocalDateTime.now(), reqOrderBusTripDTO.getDepartureDate().plusDays(1).atStartOfDay()).toMinutes();
+//                    redisControlNumberOrderService.setTimeToLive(scheduleKey, timeToLive);
                 }
-
+                log.info(String.valueOf(reqOrderBusTripDTO.getDepartureDate()));
                 Integer numberOfSoldTicket = redisControlNumberOrderService.getHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()));
                 BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(reqOrderBusTripDTO.getBusTripScheduleId())
                         .orElseThrow(() -> new ApplicationException("BusTripSchedule not found"));

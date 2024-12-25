@@ -68,7 +68,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         busTripSchedule.setBusTrip(busTrip);
         DropOffLocation dropOffLocationForBusTripRequest = this.dropOffLocationRepository.findArrivalLocationOfBusTrip(busTrip.getId(), busTrip.getArrivalLocation())
-                .orElseThrow(() -> new ApplicationException("DropOffLocation not found"));
+                .orElseThrow(() -> new ApplicationException("DropOffLocation not found 1"));
 
         // Get the bus
         Bus bus = this.busService.findBusById(reqBusTripScheduleDTO.getBusId());
@@ -77,7 +77,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         for(BusTripSchedule schedule : busTripSchedules) {
             // Tính toán thời gian đến của mỗi lịch trình của xe
             DropOffLocation dropOffLocation = this.dropOffLocationRepository.findByProvinceAndBusTripScheduleId(schedule.getBusTrip().getArrivalLocation(), schedule.getId())
-                    .orElseThrow(()-> new ApplicationException("DropOffLocation not found"));
+                    .orElseThrow(()-> new ApplicationException("DropOffLocation not found 2"));
 
             LocalDateTime departureDateTime = LocalDateTime.of(LocalDate.now(), schedule.getDepartureTime());
             log.info("departureDateTime : " + departureDateTime);

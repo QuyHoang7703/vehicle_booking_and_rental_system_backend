@@ -6,18 +6,15 @@ services:
       - 8080:8080
       - 8000:8000
     depends_on:
-      db1:
+      db:
         condition: service_healthy
       redis:
         condition: service_started
     environment:
-        - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
-        - TZ=Asia/Ho_Chi_Minh
-        - REDIS_HOST=redis
-        - REDIS_PORT=6379
+      - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
+      - TZ=Asia/Ho_Chi_Minh
 
-
-  db1:
+  db:
     image: mysql:latest
     restart: always
     volumes:

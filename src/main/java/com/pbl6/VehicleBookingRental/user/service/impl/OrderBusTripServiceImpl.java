@@ -170,6 +170,9 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 // Kiểm tra và khởi tạo trường dữ liệu Redis nếu cần
                 if (!redisControlNumberOrderService.isHashFieldExists(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()))) {
                     redisControlNumberOrderService.setHashSet(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), 0);
+                    // Tạo TTL cho key tới ngày khởi hành chuyến xe
+                        long timeToLive = Duration.between(LocalDateTime.now(), reqOrderBusTripDTO.getDepartureDate().plusDays(1).atStartOfDay()).toMinutes();
+                    redisControlNumberOrderService.setTimeToLive(scheduleKey, timeToLive);
                 }
 
                 Integer numberOfSoldTicket = redisControlNumberOrderService.getHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()));
@@ -245,8 +248,8 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
 
                 redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
                 redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
-
-                log.warn("Trường hợp bán được vé + số vé bán được: " + numberOfSoldTicket);
+                int currentNumberOfTicketInRedis = numberOfSoldTicket+reqOrderBusTripDTO.getNumberOfTicket();
+                log.warn("Trường hợp bán được vé + số vé bán được: " + currentNumberOfTicketInRedis);
                 redisControlNumberOrderService.incrementHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), reqOrderBusTripDTO.getNumberOfTicket());
 
                 return orderBusTripRedis;

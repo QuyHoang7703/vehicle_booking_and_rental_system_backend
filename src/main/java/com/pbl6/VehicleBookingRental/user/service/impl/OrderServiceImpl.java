@@ -269,9 +269,9 @@ public class OrderServiceImpl implements OrderService {
         carRentalOrders.setStatus("not_returned");
 
         carRentalOrders.setTotal(orderVehicleRentalRedisDTO.getPriceTotal());
-        carRentalOrders.setVoucher_percentage(orderVehicleRentalRedisDTO.getVoucher_percentage());
-        carRentalOrders.setVoucher_value(orderVehicleRentalRedisDTO.getVoucher_value());
-        carRentalOrders.setReservation_fee(orderVehicleRentalRedisDTO.getReservation_fee());
+//        carRentalOrders.setVoucher_percentage(orderVehicleRentalRedisDTO.getVoucher_percentage());
+//        carRentalOrders.setVoucher_value(orderVehicleRentalRedisDTO.getVoucher_value());
+//        carRentalOrders.setReservation_fee(orderVehicleRentalRedisDTO.getReservation_fee());
 
 
         carRentalOrders.setAccount(currentAccount);

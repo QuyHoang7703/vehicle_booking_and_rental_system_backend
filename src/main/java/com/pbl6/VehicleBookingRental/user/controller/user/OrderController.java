@@ -18,6 +18,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("api/v1")
 @RequiredArgsConstructor
@@ -35,6 +37,20 @@ public class OrderController {
     @GetMapping("/vn-pay-callback")
     @Transactional
     public ResponseEntity<ResponseInfo<String>> payCallbackHandler(HttpServletRequest request) throws ApplicationException, IdInvalidException {
+        // Lấy URL đầy đủ từ request
+        String fullUrl = request.getRequestURL().toString();
+        String queryString = request.getQueryString();
+        String fullUrlWithQuery = fullUrl + (queryString != null ? "?" + queryString : "");
+
+        log.info("Full request URL: " + fullUrlWithQuery); // In ra URL đầy đủ
+
+        // Lấy và log toàn bộ tham số trả về
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        parameterMap.forEach((key, value) -> {
+            log.info("Param: " + key + " = " + String.join(",", value));
+        });
+
+
         String status = request.getParameter("vnp_ResponseCode");
         String transactionCode = request.getParameter("vnp_TxnRef");
         log.info("Transaction code: " + transactionCode);

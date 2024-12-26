@@ -354,13 +354,14 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
     private void getMonthlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders, Integer year) {
         // Initialize revenue for each month
         for (int month = 1; month <= 12; month++) {
-            String key =  String.valueOf(month);
+            String key = month + "-" + year;
+//            String key =  String.valueOf(month);
             statistics.put(key, 0.0);
         }
 
         for (CarRentalOrders order : carRentalOrders) {
             LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
-            LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
+            LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());    
 
             //Số tiền dư ra của các tháng hoặc năm khác nhau
 
@@ -376,7 +377,8 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
             }
 
             int currentMonth = startDate.getMonthValue();
-            statistics.put(String.valueOf(currentMonth), statistics.get(String.valueOf(currentMonth)) + order.getTotal() - order.getReservation_fee() - order.getCar_deposit());
+            String key = currentMonth + "-" +year;
+            statistics.put(key, statistics.get(key) + order.getTotal() - order.getReservation_fee() - order.getCar_deposit());
 
         }
     }

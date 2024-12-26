@@ -212,39 +212,20 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
     public List<VehicleRentalStatisticDTO> statisticFromLocationOrVehicleTypeByYear(String location, String vehicleType, List<Integer> year) throws ApplicationException {
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.CAR_RENTAL_PARTNER);
 
-        List<VehicleRentalStatisticDTO> vehicleRentalStatisticDTOS = new ArrayList<>();
+        List<VehicleRentalStatisticDTO> vehicleRentalStatistics = new ArrayList<>();
         List<String> distinctVehicleType = vehicleTypeRepository.findDistinctNames();
         List<String> distinctLocation = vehicleRegisterInterface.getExistFilterValue("location");
-        if(location !=null && vehicleType != null){
-            List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(location,vehicleType,year,businessPartner.getCarRentalPartner().getId());
-            vehicleRentalStatisticDTOS.addAll(statisticDTOS);
-            return  vehicleRentalStatisticDTOS;
-        }
-        if(vehicleType !=null){
-            if(vehicleType.equalsIgnoreCase("all")){
-                for(String i : distinctVehicleType){
-                    List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(location,i,year,businessPartner.getCarRentalPartner().getId());
-                    vehicleRentalStatisticDTOS.addAll(statisticDTOS);
+        // Nếu cả location và vehicleType đều là "all", lặp qua cả hai danh sách
+        if ("all".equalsIgnoreCase(location) || "all".equalsIgnoreCase(vehicleType)) {
+            List<String> selectedLocations = "all".equalsIgnoreCase(location) ? distinctLocation : List.of(location);
+            List<String> selectedVehicleTypes = "all".equalsIgnoreCase(vehicleType) ? distinctVehicleType : List.of(vehicleType);
+
+            for (String loc : selectedLocations) {
+                for (String type : selectedVehicleTypes) {
+                    vehicleRentalStatistics.addAll(getRentalVehicleByYear(loc, type, year,businessPartner.getCarRentalPartner().getId()));
                 }
-                return  vehicleRentalStatisticDTOS;
-            }else{
-                List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(null,vehicleType,year,businessPartner.getCarRentalPartner().getId());
-                vehicleRentalStatisticDTOS.addAll(statisticDTOS);
-                return  vehicleRentalStatisticDTOS;
             }
-        }
-        if( location!=null){
-            if(location.equalsIgnoreCase("all")){
-                for(String i : distinctLocation){
-                    List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(i,vehicleType,year,businessPartner.getCarRentalPartner().getId());
-                    vehicleRentalStatisticDTOS.addAll(statisticDTOS);
-                }
-                return  vehicleRentalStatisticDTOS;
-            }else{
-                List<VehicleRentalStatisticDTO> statisticDTOS = getRentalVehicleByYear(location,null,year,businessPartner.getCarRentalPartner().getId());
-                vehicleRentalStatisticDTOS.addAll(statisticDTOS);
-                return  vehicleRentalStatisticDTOS;
-            }
+            return vehicleRentalStatistics;
         }
         return getRentalVehicleByYear(location,vehicleType,year,businessPartner.getCarRentalPartner().getId());
     }

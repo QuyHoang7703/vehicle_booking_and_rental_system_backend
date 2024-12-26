@@ -138,7 +138,6 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         List<String> distinctVehicleTypes = vehicleTypeRepository.findDistinctNames();
         List<String> distinctLocations = vehicleRegisterInterface.getExistFilterValue("location");
 
-        YearMonth yearMonth = YearMonth.of(year, month);
 
         // Nếu cả location và vehicleType đều là "all", lặp qua cả hai danh sách
         if ("all".equalsIgnoreCase(location) || "all".equalsIgnoreCase(vehicleType)) {

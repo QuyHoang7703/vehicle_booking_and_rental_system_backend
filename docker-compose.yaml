@@ -1,7 +1,6 @@
 services:
   server:
-    build:
-      context: .
+    image: minhquang3010/server_backend_pbl6:latest
     ports:
       - 8080:8080
       - 8000:8000
@@ -12,7 +11,6 @@ services:
         condition: service_started
     environment:
       - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
-      - TZ=Asia/Ho_Chi_Minh
 
   db:
     image: mysql:latest

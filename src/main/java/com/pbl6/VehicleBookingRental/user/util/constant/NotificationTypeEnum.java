@@ -3,6 +3,10 @@ package com.pbl6.VehicleBookingRental.user.util.constant;
 public enum NotificationTypeEnum {
     NEW_BOOKING,
     CANCELED,
-    BOOKING_COMPLETED;
+    BOOKING_COMPLETED,
+    RECEIVED_REGISTER_PARTNER_FORM,
+    APPROVAL_REGISTER_PARTNER_FORM,
+    CANCELED_REGISTER_PARTNER_FORM,
+    REFUSED_REGISTER_PARTNER_FORM,
 
 }

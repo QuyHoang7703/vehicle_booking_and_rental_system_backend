@@ -91,9 +91,9 @@ public class BusinessPartnerController {
         List<String> authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).toList();
         String email = authentication.getName();
+
         if(!authorities.contains("ROLE_ADMIN") && !businessPartner.getAccount().getEmail().equals(email)){
             throw new ApplicationException("You don't have permission to see this form register");
-
         }
 
         PartnerTypeEnum partnerType = businessPartner.getPartnerType();

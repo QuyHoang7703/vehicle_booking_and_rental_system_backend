@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "notification")
@@ -29,6 +30,8 @@ public class Notification {
     private NotificationTypeEnum type;
     @Column(columnDefinition = "TEXT")
     private String message;
+
+    private String metadata;
 
     @Column(name = "create_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Date create_at;

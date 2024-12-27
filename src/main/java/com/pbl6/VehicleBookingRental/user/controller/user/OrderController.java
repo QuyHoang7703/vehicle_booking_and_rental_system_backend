@@ -36,7 +36,7 @@ public class OrderController {
 
     @GetMapping("/vn-pay-callback")
     @Transactional
-    public ResponseEntity<ResponseInfo<String>> payCallbackHandler(HttpServletRequest request) throws ApplicationException, IdInvalidException {
+    public ResponseEntity<ResponseInfo<String>> payCallbackHandler(HttpServletRequest request) throws Exception {
         // Lấy URL đầy đủ từ request
         String fullUrl = request.getRequestURL().toString();
         String queryString = request.getQueryString();

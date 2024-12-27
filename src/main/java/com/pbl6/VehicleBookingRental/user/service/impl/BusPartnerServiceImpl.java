@@ -1,9 +1,11 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
+import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqBusPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusPartnerDTO;
@@ -13,9 +15,7 @@ import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPar
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
-import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
-import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
-import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.*;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,6 +41,8 @@ public class BusPartnerServiceImpl implements BusPartnerService {
     private final ImageService imageService;
     private final BankAccountService bankAccountService;
     private final BusinessPartnerService businessPartnerService;
+    private final NotificationService notificationService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public ResBusinessPartnerDTO registerBusPartner(ReqBusPartnerDTO reqBusPartnerDTO,
@@ -89,6 +92,16 @@ public class BusPartnerServiceImpl implements BusPartnerService {
         // Add business license images for bus partner
         this.imageService.uploadAndSaveImages(licenses, String.valueOf(ImageOfObjectEnum.BUSINESS_LICENSE), savedBusPartner.getBusinessPartner().getId(), String.valueOf(PartnerTypeEnum.BUS_PARTNER));
         this.imageService.uploadAndSaveImages(images, String.valueOf(ImageOfObjectEnum.BUS_PARTNER), savedBusPartner.getBusinessPartner().getId(), String.valueOf(PartnerTypeEnum.BUS_PARTNER));
+
+        // Create notification for admin about register
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setMessage("Nhà xe " + businessPartner.getBusinessName() + " muốn đăng ký trở thành đối tác");
+        notificationDTO.setTitle("Đơn đăng ký đối tác nhà xe");
+        notificationDTO.setType(NotificationTypeEnum.RECEIVED_REGISTER_PARTNER_FORM);
+        notificationDTO.setCreate_at(Instant.now());
+        notificationDTO.setSeen(false);
+        notificationDTO.setMetadata("formRegisterId: " + businessPartner.getId());
+        notificationService.createNotificationToAccount(1, AccountEnum.ADMIN, notificationDTO);
 
         return this.businessPartnerService.convertToResBusinessPartnerDTO(savedBusinessPartner);
     }
@@ -168,6 +181,8 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 
         return busPartnerInfo;
     }
+
+
 
 
 }

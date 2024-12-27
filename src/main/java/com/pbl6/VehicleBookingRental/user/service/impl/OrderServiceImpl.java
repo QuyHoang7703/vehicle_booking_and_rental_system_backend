@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pbl6.VehicleBookingRental.user.config.VnPayConfig;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -97,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public String handlePaymentSuccess(String transactionCode) throws IdInvalidException, ApplicationException {
+    public String handlePaymentSuccess(String transactionCode) throws IdInvalidException, ApplicationException, JsonProcessingException {
         String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
         String orderType = "";
         if(keyOrder.contains("BUS_TRIP")) {
@@ -163,7 +165,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    private void handleBusTripScheduleOrder(String keyOrderBusTrip, String transactionCode) throws IdInvalidException, ApplicationException {
+    private void handleBusTripScheduleOrder(String keyOrderBusTrip, String transactionCode) throws IdInvalidException, ApplicationException, JsonProcessingException {
         // Get data from redis
         Object rawJson = redisService.getHashValue(keyOrderBusTrip, "order-detail");
         // Convert json to orderBusTrip object
@@ -224,20 +226,29 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setType(NotificationTypeEnum.NEW_BOOKING);
         notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
+        notificationDTO.setMetadata(null);
+        // Add metadata in for notification
+        Map<String, String> valueOfParams = new LinkedHashMap<>();
+        valueOfParams.put("transactionCode", transactionCode);
+        valueOfParams.put("orderType", "BUS_TRIP_ORDER");
+        log.info("JSON" + objectMapper.writeValueAsString(valueOfParams));
+        notificationDTO.setMetadata(objectMapper.writeValueAsString(valueOfParams));
         notificationService.createNotificationToAccount(accountIdOfBusPartner, AccountEnum.BUS_PARTNER,notificationDTO);
+
         // to user
         NotificationDTO notificationDTO2 = new NotificationDTO();
-        notificationDTO2.setMessage(" Chúc mừng bạn đã đặt vé thành công ");
+        notificationDTO2.setMessage(" Bạn đã đặt vé thành công ");
         notificationDTO2.setTitle("Đặt vé thành công");
         notificationDTO2.setType(NotificationTypeEnum.BOOKING_COMPLETED);
         notificationDTO2.setCreate_at(Instant.now());
         notificationDTO2.setSeen(false);
+
         notificationService.createNotificationToAccount(currentAccount.getId(), AccountEnum.USER,notificationDTO2);
 
     }
 
 
-    private void handleVehicleRentalOrder(String key, String transactionCode) throws IdInvalidException, ApplicationException {
+    private void handleVehicleRentalOrder(String key, String transactionCode) throws IdInvalidException, ApplicationException, JsonProcessingException {
         // Get data from redis
         Object rawJson = redisService.getHashValue(key, "order-detail");
         // Convert json to orderBusTrip object
@@ -269,10 +280,6 @@ public class OrderServiceImpl implements OrderService {
         carRentalOrders.setStatus("not_returned");
 
         carRentalOrders.setTotal(orderVehicleRentalRedisDTO.getPriceTotal());
-//        carRentalOrders.setVoucher_percentage(orderVehicleRentalRedisDTO.getVoucher_percentage());
-//        carRentalOrders.setVoucher_value(orderVehicleRentalRedisDTO.getVoucher_value());
-//        carRentalOrders.setReservation_fee(orderVehicleRentalRedisDTO.getReservation_fee());
-
 
         carRentalOrders.setAccount(currentAccount);
 
@@ -301,14 +308,21 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setType(NotificationTypeEnum.NEW_BOOKING);
         notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
+        // Add metadata in for notification
+        Map<String, String> valueOfParams = new LinkedHashMap<>();
+        valueOfParams.put("transactionCode", transactionCode);
+        valueOfParams.put("orderType", "VEHICLE_RENTAL_ORDER");
+        log.info("JSON" + objectMapper.writeValueAsString(valueOfParams));
+        notificationDTO.setMetadata(objectMapper.writeValueAsString(valueOfParams));
         notificationService.createNotificationToAccount(accountIdOfVehicleRentalPartner,  AccountEnum.CAR_RENTAL_PARTNER,notificationDTO);
         // to user
         NotificationDTO notificationDTO2 = new NotificationDTO();
-        notificationDTO2.setMessage(" Chúc mừng bạn đã đặt xe thành công ");
+        notificationDTO2.setMessage(" Bạn đã đặt xe thành công ");
         notificationDTO2.setTitle("Đặt xe thành công");
         notificationDTO2.setType(NotificationTypeEnum.BOOKING_COMPLETED);
         notificationDTO2.setCreate_at(Instant.now());
         notificationDTO2.setSeen(false);
+
         notificationService.createNotificationToAccount(currentAccount.getId(), AccountEnum.USER,notificationDTO2);
     }
 

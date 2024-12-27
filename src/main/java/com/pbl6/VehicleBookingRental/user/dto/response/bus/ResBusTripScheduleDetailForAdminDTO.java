@@ -28,6 +28,7 @@ public class ResBusTripScheduleDetailForAdminDTO {
     private int availableSeats;
     private List<BreakDay> breakDays;
     private boolean isOperation;
+    private boolean isSuspended;
 
 //    @Data
 //    @Builder

@@ -159,6 +159,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 .startOperationDay(busTripSchedule.getStartOperationDay())
                 .availableSeats(this.getAvailableNumberOfSeatsByDepartureDate(busTripSchedule, departureDate)) // Có thể thay thế sau này khi order
                 .breakDays(busTripSchedule.getBreakDays())
+                .isSuspended(busTripSchedule.isSuspended())
                 .build();
 
         LocalDate finalDepartureDate = departureDate;
@@ -240,8 +241,10 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         LocalDate finalDepartureDate1 = departureDate;
         Specification<BusTripSchedule> newSpec = (root, query, criteriaBuilder) -> {
             Predicate predicateOperationDay = criteriaBuilder.lessThanOrEqualTo(root.get("startOperationDay"), LocalDate.now());
-            Predicate predicateStatusOperation = criteriaBuilder.equal(root.get("isOperation"), true);
+            Predicate predicateIsOperation = criteriaBuilder.equal(root.get("isOperation"), true);
             Predicate predicateValidIds = root.get("id").in(validIds); // Chỉ lấy các ID hợp lệ từ truy vấn
+
+            Predicate predicateSuspended = criteriaBuilder.equal(root.get("suspended"), false);// Lấy các bus trip schedule có suspended là false
 
             Join<BusTripSchedule, BusTrip> joinBusTrip = root.join("busTrip");
             Predicate pre1 = criteriaBuilder.equal(joinBusTrip.get("departureLocation"), departureLocation);
@@ -250,7 +253,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
 
             if(finalDepartureDate1.isAfter(LocalDate.now())){
-                return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds, pre1, pre2);
+                return criteriaBuilder.and(predicateOperationDay, predicateIsOperation, predicateSuspended, predicateValidIds, pre1, pre2);
             }else{
                 // Giờ khởi hành lớn hơn giờ hiện tại là 1 tiếng
                 LocalDate currentDate = LocalDate.now();
@@ -266,7 +269,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 // So sánh với LocalDateTime hiện tại + 1 giờ
                 LocalDateTime validTime = LocalDateTime.now().plusHours(0);
                 Predicate predicateValidTime = criteriaBuilder.greaterThan(departureDateTime, validTime);
-                return criteriaBuilder.and(predicateOperationDay, predicateStatusOperation, predicateValidIds, predicateValidTime, pre1, pre2);
+                return criteriaBuilder.and(predicateOperationDay, predicateIsOperation, predicateSuspended, predicateValidIds, predicateValidTime, pre1, pre2);
             }
         };
         Specification<BusTripSchedule> finalSpec = spec.and(newSpec);
@@ -326,6 +329,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
     }
 
     @Override
+    @Transactional
     public void cancelBusTripSchedule(int busTripScheduleId, LocalDate cancelDate) throws IdInvalidException, ApplicationException {
         BusTripSchedule busTripSchedule = this.busTripScheduleRepository.findById(busTripScheduleId)
                 .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
@@ -342,23 +346,29 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
             throw new ApplicationException("The schedule can only be cancelled at least 3 minutes before the departure time.");
         }
 
-        List<OrderBusTrip> orderBusTrips = busTripSchedule.getOrderBusTrips();
+        this.updateStatusOfOrderOfBusTripSchedule(busTripSchedule.getId(), businessPartner.getAccount().getId());
+
+
+    }
+
+    private void updateStatusOfOrderOfBusTripSchedule(int busTripScheduleId, int businessPartnerId) throws ApplicationException {
+        List<OrderBusTrip> orderBusTrips = this.orderBusTripRepository.findOrderBusTripNotStart(busTripScheduleId);
         if (orderBusTrips.isEmpty()) {
             throw new ApplicationException("No orders associated with this bus trip schedule");
         }
-
+        List<Orders> ordersToUpdate  = new ArrayList<>();
+        // Update status of order into CANCELLED
         for(OrderBusTrip orderBusTrip : orderBusTrips){
             orderBusTrip.setStatus(OrderStatusEnum.CANCELLED);
 
             Orders order = orderBusTrip.getOrder();
-
-            //Update order
             order.setCancelTime(Instant.now());
-            order.setCancelUserId(businessPartner.getId());
+            order.setCancelUserId(businessPartnerId);
 
-            this.ordersRepo.save(order);
+            ordersToUpdate.add(order);
+//            this.ordersRepo.save(order);
         }
-
+        this.ordersRepo.saveAll(ordersToUpdate);
     }
 
     @Override
@@ -372,9 +382,11 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
             throw new ApplicationException("You don't have permission to delete the bus trip schedule");
         }
 
-        if(busTripSchedule.getOrderBusTrips()!=null && !busTripSchedule.getOrderBusTrips().isEmpty()){
+        List<OrderBusTrip> orderBusTrips = this.orderBusTripRepository.findOrderBusTripNotStart(busTripScheduleId);
+        if(orderBusTrips!=null && !orderBusTrips.isEmpty()){
             return true;
         }
+
         return false;
     }
 
@@ -388,20 +400,30 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         List<BusTripSchedule> busTripSchedules = busTripScheduleRepository.findSchedulesBeforeToday(today);
         List<BusTripSchedule> updatedBusTripSchedules = new ArrayList<>();
         for (BusTripSchedule busTripSchedule : busTripSchedules) {
-            boolean isOperation = busTripSchedule.isOperation();
-            // Check today is break day ?
-            boolean isBreakDay = busTripSchedule.getBreakDays().stream()
-                    .anyMatch(breakDay -> !today.isBefore(breakDay.getStartDay()) && !today.isAfter(breakDay.getEndDay()));
-
-            if(isOperation == isBreakDay) {
-                busTripSchedule.setOperation(!isBreakDay);
-                updatedBusTripSchedules.add(busTripSchedule);
-                log.info("Change status operation: " + busTripSchedule.getId());
+            if(busTripSchedule.isSuspended()){
+                continue;
             }
-        }
+            if(this.updateOperationInDayOfBusTripSchedule(busTripSchedule, today) != null){
+                updatedBusTripSchedules.add(busTripSchedule);
+            }
 
+        }
         busTripScheduleRepository.saveAll(updatedBusTripSchedules);
         log.info("Updated status operation for all schedules");
+    }
+
+    private BusTripSchedule updateOperationInDayOfBusTripSchedule(BusTripSchedule busTripSchedule, LocalDate today) {
+        boolean isOperation = busTripSchedule.isOperation();
+        // Check today is break day ?
+        boolean isBreakDay = busTripSchedule.getBreakDays().stream()
+                .anyMatch(breakDay -> !today.isBefore(breakDay.getStartDay()) && !today.isAfter(breakDay.getEndDay()));
+
+        if(isOperation == isBreakDay) {
+            busTripSchedule.setOperation(!isBreakDay);
+            log.info("Change status operation: " + busTripSchedule.getId());
+            return busTripSchedule;
+        }
+        return null;
     }
 
     private int getAvailableNumberOfSeatsByDepartureDate(BusTripSchedule busTripSchedule, LocalDate departureDate) {
@@ -590,6 +612,27 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         BreakDay breakDay = this.breakDayRepository.findById(breakDayId)
                 .orElseThrow(() -> new IdInvalidException("Break day not found"));
 
+    }
+
+    @Override
+    public void updateStatusOfBusTripSchedule(int busTripScheduleId, boolean suspended) throws IdInvalidException, ApplicationException {
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+        BusTripSchedule busTripScheduleDb = this.busTripScheduleRepository.findById(busTripScheduleId)
+                .orElseThrow(() -> new IdInvalidException("Bus trip schedule not found"));
+        if(busTripScheduleDb.getBusTrip().getBusPartner() != businessPartner.getBusPartner()){
+            throw new ApplicationException("You don't have permission to update status of this bus trip schedule");
+        }
+        LocalDate today = LocalDate.now();
+        // In case bus trip schedule is suspend -> need check status 'operation' in this day before changing
+        if(busTripScheduleDb.isSuspended()){
+            this.updateOperationInDayOfBusTripSchedule(busTripScheduleDb, today);
+        }
+        // In case bus trip schedule is active -> need change status of orders of bus trip schedule before updating
+        else {
+            this.updateStatusOfOrderOfBusTripSchedule(busTripScheduleDb.getId(), businessPartner.getAccount().getId());
+        }
+        busTripScheduleDb.setSuspended(suspended);
+        this.busTripScheduleRepository.save(busTripScheduleDb);
     }
 
     public ResBusTripScheduleForAdminDTO2 convertToResBusTripScheduleForAdminDTO2(BusTripSchedule busTripSchedule) throws ApplicationException {

@@ -224,7 +224,7 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO.setType(NotificationTypeEnum.NEW_BOOKING);
         notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
-        notificationService.createNotificationToAccount(accountIdOfBusPartner,  AccountEnum.BUS_PARTNER,notificationDTO);
+        notificationService.createNotificationToAccount(accountIdOfBusPartner, AccountEnum.BUS_PARTNER,notificationDTO);
         // to user
         NotificationDTO notificationDTO2 = new NotificationDTO();
         notificationDTO2.setMessage(" Chúc mừng bạn đã đặt vé thành công ");
@@ -232,7 +232,7 @@ public class OrderServiceImpl implements OrderService {
         notificationDTO2.setType(NotificationTypeEnum.BOOKING_COMPLETED);
         notificationDTO2.setCreate_at(Instant.now());
         notificationDTO2.setSeen(false);
-        notificationService.createNotificationToAccount(currentAccount.getId(),  AccountEnum.USER,notificationDTO2);
+        notificationService.createNotificationToAccount(currentAccount.getId(), AccountEnum.USER,notificationDTO2);
 
     }
 

@@ -8,6 +8,7 @@ import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBreakDayDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.bus.ReqBusTripScheduleDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bus.ResBusTripScheduleDetailForAdminDTO;
 import com.pbl6.VehicleBookingRental.user.service.BusTripScheduleService;
+import com.pbl6.VehicleBookingRental.user.util.annotation.ApiMessage;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import com.turkraft.springfilter.boot.Filter;
@@ -65,12 +66,21 @@ public class BusTripScheduleController {
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 
+    @PatchMapping("busTripSchedules/{busTripScheduleId}/status")
+    @PreAuthorize("hasRole('BUS_PARTNER')")
+    @ApiMessage("Updated status of this bus trip schedule")
+    public ResponseEntity<Void> updateStatusOfBusTripSchedule(@PathVariable("busTripScheduleId") int busTripScheduleId,
+                                                      @RequestParam("suspended") boolean suspended) throws Exception {
+        this.busTripScheduleService.updateStatusOfBusTripSchedule(busTripScheduleId, suspended);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
     @GetMapping("busTripSchedules/{busTripScheduleId}/hasOrders")
     @PreAuthorize("hasRole('BUS_PARTNER')")
     public ResponseEntity<ResponseInfo<String>> checkBusTripScheduleHasOrders(@PathVariable("busTripScheduleId") int busTripScheduleId) throws Exception {
         boolean check = this.busTripScheduleService.checkBusTripScheduleHasOrder(busTripScheduleId);
         if(check) {
-            return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("This Bus Trip Schedule has orders !"));
+            return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("This Bus Trip Schedule has orders in the next days !"));
         }
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseInfo<>("This Bus Trip Schedule hasn't orders !"));
     }

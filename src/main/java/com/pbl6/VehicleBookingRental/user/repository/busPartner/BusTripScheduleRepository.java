@@ -33,4 +33,6 @@ public interface BusTripScheduleRepository extends JpaRepository<BusTripSchedule
     Page<BusTripSchedule> findByBus_Id(int busId, Pageable pageable);
 
     List<BusTripSchedule> findByBusTrip_IdIn(List<Integer> busTripIds);
+
+
 }

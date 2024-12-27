@@ -24,7 +24,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -64,8 +69,6 @@ public class BusinessPartnerController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResponseInfo<String>> cancelPartnership(@RequestBody ReqPartnerAction reqPartnerAction) throws Exception {
         int formRegisterId = reqPartnerAction.getFormRegisterId();
-//        PartnerTypeEnum partnerType = reqPartnerAction.getPartnerType();
-//        BusinessPartner businessPartner = this.businessPartnerService.fetchByIdAndPartnerType(formRegisterId, partnerType);
         BusinessPartner businessPartner = this.businessPartnerService.getBusinessPartnerById(formRegisterId);
         PartnerTypeEnum partnerType = businessPartner.getPartnerType();
         if (businessPartner == null) {
@@ -79,9 +82,20 @@ public class BusinessPartnerController {
     }
 
     @GetMapping("business-partner/detail")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Object> getBusPartnerById(@RequestParam("formRegisterId") int id) throws Exception {
         BusinessPartner businessPartner = this.businessPartnerService.getBusinessPartnerById(id);
+
+        // Check user have the permission to see form register (Must be admin or owner's form register)
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        List<String> authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).toList();
+        String email = authentication.getName();
+        if(!authorities.contains("ROLE_ADMIN") && !businessPartner.getAccount().getEmail().equals(email)){
+            throw new ApplicationException("You don't have permission to see this form register");
+
+        }
+
         PartnerTypeEnum partnerType = businessPartner.getPartnerType();
         if(partnerType == PartnerTypeEnum.BUS_PARTNER){
             BusPartner busPartner = this.busPartnerService.getBusPartnerByBusinessPartnerId(id);

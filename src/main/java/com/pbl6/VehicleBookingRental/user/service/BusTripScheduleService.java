@@ -30,5 +30,6 @@ public interface BusTripScheduleService {
 
     void addBreakDay(ReqBreakDayDTO reqBreakDayDTO) throws IdInvalidException, ApplicationException;
     void deleteBreakDay(int breakDayId) throws IdInvalidException;
+    void updateStatusOfBusTripSchedule(int busTripScheduleId, boolean status) throws IdInvalidException, ApplicationException;
 
 }

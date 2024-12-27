@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
@@ -26,7 +27,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +46,7 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     private final ImageRepository imageRepository;
     private final AccountRoleService accountRoleService;
     private final NotificationService notificationService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public ResBusinessPartnerDTO registerCarRentalPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
@@ -95,11 +99,14 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
 
         // Create notification for admin about register
         NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setMessage("Đối tác cho thuê xe" + businessPartner.getBusinessName() + " muốn đăng ký trở thành đối tác");
+        notificationDTO.setMessage("Đơn đăng ký đối tác cho thuê xe của" + businessPartner.getBusinessName() + " đang chờ xét duyệt");
         notificationDTO.setTitle("Đơn đăng ký đối tác cho thuê xe");
         notificationDTO.setType(NotificationTypeEnum.RECEIVED_REGISTER_PARTNER_FORM);
         notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
+        Map<String, String> valueParams = new LinkedHashMap<>();
+        valueParams.put("formRegisterId", String.valueOf(businessPartner.getId()));
+        notificationDTO.setMetadata(objectMapper.writeValueAsString(valueParams));
         notificationService.createNotificationToAccount(1, AccountEnum.ADMIN, notificationDTO);
 
         return resBusinessPartnerDTO;

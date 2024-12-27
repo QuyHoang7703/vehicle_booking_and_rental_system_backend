@@ -26,7 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -95,12 +97,14 @@ public class BusPartnerServiceImpl implements BusPartnerService {
 
         // Create notification for admin about register
         NotificationDTO notificationDTO = new NotificationDTO();
-        notificationDTO.setMessage("Nhà xe " + businessPartner.getBusinessName() + " muốn đăng ký trở thành đối tác");
+        notificationDTO.setMessage("Đơn đăng ký đối tác nhà xe " + businessPartner.getBusinessName() + " đang chờ xét duyệt");
         notificationDTO.setTitle("Đơn đăng ký đối tác nhà xe");
         notificationDTO.setType(NotificationTypeEnum.RECEIVED_REGISTER_PARTNER_FORM);
         notificationDTO.setCreate_at(Instant.now());
         notificationDTO.setSeen(false);
-        notificationDTO.setMetadata("formRegisterId: " + businessPartner.getId());
+        Map<String, String> valueParams = new LinkedHashMap<>();
+        valueParams.put("formRegisterId", String.valueOf(businessPartner.getId()));
+        notificationDTO.setMetadata(objectMapper.writeValueAsString(valueParams));
         notificationService.createNotificationToAccount(1, AccountEnum.ADMIN, notificationDTO);
 
         return this.businessPartnerService.convertToResBusinessPartnerDTO(savedBusinessPartner);

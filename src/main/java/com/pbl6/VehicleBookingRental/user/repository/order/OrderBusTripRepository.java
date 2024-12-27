@@ -38,6 +38,12 @@ public interface OrderBusTripRepository extends JpaRepository<OrderBusTrip, Stri
                                                     @Param("startDate") LocalDate startDate,
                                                     @Param("endDate") LocalDate endDate);
 
+    @Query("SELECT obt FROM OrderBusTrip obt " +
+            "JOIN obt.busTripSchedule bts " +
+            "WHERE bts.id = :busTripScheduleId " +
+            "AND obt.departureDate >= CURRENT_DATE ")
+    List<OrderBusTrip> findOrderBusTripNotStart(@Param("busTripScheduleId") int busTripScheduleId);
+
 
 
 

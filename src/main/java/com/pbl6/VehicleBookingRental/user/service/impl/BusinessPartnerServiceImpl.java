@@ -8,6 +8,7 @@ import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.dto.AccountInfo;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
+import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqPartnerAction;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
@@ -15,7 +16,9 @@ import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.constant.AccountEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -29,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,7 +49,7 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
     private final AccountService accountService;
     private final ImageService imageService;
     private final BankAccountService bankAccountService;
-
+    private final NotificationService notificationService;
     @Override
     public boolean isRegistered(int accountId, PartnerTypeEnum partnerType) {
         return this.businessPartnerRepository.existsByAccount_IdAndPartnerType(accountId, partnerType);
@@ -73,7 +77,7 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
             resBusinessPartnerDTO.setTimeUpdate(accountRole.getTimeUpdate());
 
         }
-        log.info("reason: " + resBusinessPartnerDTO.getCancelReason());
+//        log.info("reason: " + resBusinessPartnerDTO.getCancelReason());
 
         AccountInfo accountInfo = new AccountInfo();
         accountInfo.setId(businessPartner.getAccount().getId());
@@ -118,6 +122,16 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         context.setVariable("partner", partner);
         this.emailService.sendEmail(email, "Xác nhận trở thành đối tác", "verify_partner", context);
         log.info("Sent email verification");
+
+        // Create notification for user
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setMessage("Bạn đã được duyệt trở thành đối tác " + partner);
+        notificationDTO.setTitle("Trở thành đối tác " + partner);
+        notificationDTO.setType(NotificationTypeEnum.APPROVAL_REGISTER_PARTNER_FORM);
+        notificationDTO.setCreate_at(Instant.now());
+        notificationDTO.setSeen(false);
+        notificationDTO.setMetadata(null);
+        notificationService.createNotificationToAccount(businessPartner.getAccount().getId(), AccountEnum.USER,notificationDTO);
     }
 
     @Override
@@ -142,8 +156,15 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
         context.setVariable("reasonCancel", reqPartnerAction.getReason());
         this.emailService.sendEmail(email, "Thông báo dừng việc hợp tác đối tác", "cancel_partner", context);
 
-//        this.accountRoleRepository.deleteAccountRolesByAccountAndRole(account, role);
-//        this.accountRoleRepository.deleteAccountRolesByAccount_IdAndRole_Id(account.getId(), role.getId());
+        // Create notification for user about result's register
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setMessage("Bạn đã bị hủy đối tác " + partner);
+        notificationDTO.setTitle("Hủy đối tác " + partner);
+        notificationDTO.setType(NotificationTypeEnum.CANCELED_REGISTER_PARTNER_FORM);
+        notificationDTO.setCreate_at(Instant.now());
+        notificationDTO.setSeen(false);
+        notificationDTO.setMetadata(null);
+        notificationService.createNotificationToAccount(account.getId(), AccountEnum.USER, notificationDTO);
     }
 
     @Override
@@ -191,13 +212,7 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
                 .orElseThrow(() -> new IdInvalidException("Business partner not found"));
 
 //        PartnerTypeEnum partnerType = reqPartnerAction.getPartnerType();
-            PartnerTypeEnum partnerType = businessPartner.getPartnerType();
-//        if(partnerType.equals(PartnerTypeEnum.BUS_PARTNER)){
-//            this.imageService.deleteImages(businessPartner.getBusPartner().getId(), String.valueOf(partnerType));
-//        }
-//        else{
-//            this.imageService.deleteImages(businessPartner.getCarRentalPartner().getId(), String.valueOf(partnerType));
-//        }
+        PartnerTypeEnum partnerType = businessPartner.getPartnerType();
         this.bankAccountService.deleteBankAccount(businessPartner.getAccount().getId(), businessPartner.getPartnerType());
         this.imageService.deleteImages(businessPartner.getId(), String.valueOf(partnerType));
         this.businessPartnerRepository.delete(businessPartner);
@@ -215,6 +230,16 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
             context.setVariable("partner", partner);
             context.setVariable("reasonCancel", reqPartnerAction.getReason());
             this.emailService.sendEmail(email, "Thông báo từ chối hợp tác", "refuse_partner", context);
+
+            // Create notification for user about result's register
+            NotificationDTO notificationDTO = new NotificationDTO();
+            notificationDTO.setMessage("Đơn đăng ký đối tác " + partner + "không được duyệt");
+            notificationDTO.setTitle("Từ chối trở thành đối tác " + partner);
+            notificationDTO.setType(NotificationTypeEnum.CANCELED_REGISTER_PARTNER_FORM);
+            notificationDTO.setCreate_at(Instant.now());
+            notificationDTO.setSeen(false);
+            notificationDTO.setMetadata(null);
+            notificationService.createNotificationToAccount(businessPartner.getAccount().getId(), AccountEnum.USER, notificationDTO);
         }
 
     }

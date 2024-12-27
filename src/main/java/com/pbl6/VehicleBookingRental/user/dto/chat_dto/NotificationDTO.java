@@ -16,5 +16,6 @@ public class NotificationDTO {
     private String message;
     private boolean isSeen;
     private Instant create_at;
+    private String metadata;
     private NotificationTypeEnum type;
 }

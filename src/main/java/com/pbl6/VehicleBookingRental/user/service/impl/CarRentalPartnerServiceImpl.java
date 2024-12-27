@@ -5,6 +5,7 @@ import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalPartner;
+import com.pbl6.VehicleBookingRental.user.dto.chat_dto.NotificationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.businessPartner.ReqCarRentalPartnerDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.dto.response.businessPartner.ResBusinessPartnerDTO;
@@ -14,9 +15,7 @@ import com.pbl6.VehicleBookingRental.user.repository.businessPartner.CarRentalPa
 import com.pbl6.VehicleBookingRental.user.repository.image.ImageRepository;
 import com.pbl6.VehicleBookingRental.user.service.*;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
-import com.pbl6.VehicleBookingRental.user.util.constant.ApprovalStatusEnum;
-import com.pbl6.VehicleBookingRental.user.util.constant.ImageOfObjectEnum;
-import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
+import com.pbl6.VehicleBookingRental.user.util.constant.*;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +42,8 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
     private final BankAccountService bankAccountService;
     private final ImageRepository imageRepository;
     private final AccountRoleService accountRoleService;
+    private final NotificationService notificationService;
+
     @Override
     public ResBusinessPartnerDTO registerCarRentalPartner(ReqCarRentalPartnerDTO reqCarRentalPartnerDTO,
                                                     MultipartFile avatar,
@@ -91,6 +93,14 @@ public class CarRentalPartnerServiceImpl implements CarRentalPartnerService {
 
         ResBusinessPartnerDTO resBusinessPartnerDTO = this.businessPartnerService.convertToResBusinessPartnerDTO(savedBusinessPartner);
 
+        // Create notification for admin about register
+        NotificationDTO notificationDTO = new NotificationDTO();
+        notificationDTO.setMessage("Đối tác cho thuê xe" + businessPartner.getBusinessName() + " muốn đăng ký trở thành đối tác");
+        notificationDTO.setTitle("Đơn đăng ký đối tác cho thuê xe");
+        notificationDTO.setType(NotificationTypeEnum.RECEIVED_REGISTER_PARTNER_FORM);
+        notificationDTO.setCreate_at(Instant.now());
+        notificationDTO.setSeen(false);
+        notificationService.createNotificationToAccount(1, AccountEnum.ADMIN, notificationDTO);
 
         return resBusinessPartnerDTO;
 

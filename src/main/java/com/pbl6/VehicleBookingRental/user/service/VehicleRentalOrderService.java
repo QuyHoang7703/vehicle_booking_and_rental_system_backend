@@ -350,6 +350,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
             notificationDTO.setType(NotificationTypeEnum.BOOKING_COMPLETED);
             notificationDTO.setCreate_at(Instant.now());
             notificationDTO.setSeen(false);
+            notificationDTO.setMetadata(null);
             notificationService.createNotificationToAccount(currentAccount.getId(),  AccountEnum.USER,notificationDTO);
             //notify to Partner
             int partnerId = carRentalOrders.get().getCarRentalService().getVehicleRegister().getCarRentalPartner()
@@ -360,6 +361,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
             notificationDTO1.setType(NotificationTypeEnum.BOOKING_COMPLETED);
             notificationDTO1.setCreate_at(Instant.now());
             notificationDTO1.setSeen(false);
+            notificationDTO.setMetadata(null);
             notificationService.createNotificationToAccount(partnerId,  AccountEnum.CAR_RENTAL_PARTNER,notificationDTO1);
 
             return true;

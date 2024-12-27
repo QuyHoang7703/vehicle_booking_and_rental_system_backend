@@ -3,10 +3,12 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 import com.pbl6.VehicleBookingRental.user.domain.BankAccount;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.dto.request.bankAccount.ReqBankAccount;
+import com.pbl6.VehicleBookingRental.user.dto.request.bankAccount.ReqUpdateBankAccount;
 import com.pbl6.VehicleBookingRental.user.dto.response.bankAccount.ResBankAccountDTO;
 import com.pbl6.VehicleBookingRental.user.repository.BankAccountRepository;
 import com.pbl6.VehicleBookingRental.user.service.BankAccountService;
 import com.pbl6.VehicleBookingRental.user.util.EncryptionUtil;
+import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
@@ -60,6 +62,7 @@ public class BankAccountServiceImpl implements BankAccountService {
         PrivateKey privateKeyRSE = this.encryptionUtil.getPrivateKeyFromString(privateKeyString);
         SecretKey secretKeyAES = this.encryptionUtil.decryptAESKey(bankAccount.getAesKey(), privateKeyRSE);
         String decryptedAccountNumber = this.encryptionUtil.decrypt(bankAccount.getAccountNumber(), secretKeyAES);
+        resBankAccount.setBankAccountId(bankAccount.getId());
         resBankAccount.setAccountNumber(decryptedAccountNumber);
         resBankAccount.setAccountHolderName(bankAccount.getAccountHolderName());
         resBankAccount.setBankName(bankAccount.getBankName());
@@ -74,5 +77,32 @@ public class BankAccountServiceImpl implements BankAccountService {
         BankAccount bankAccount = this.bankAccountRepository.findByAccount_IdAndPartnerType(accountId, partnerType)
                 .orElseThrow(() -> new IdInvalidException("Bank account not found"));
         this.bankAccountRepository.delete(bankAccount);
+    }
+
+    @Override
+    public void updateBankAccount(ReqUpdateBankAccount req) throws Exception {
+        String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : "";
+        if(email.isEmpty()){
+            throw new ApplicationException("Access token is invalid or expired");
+        }
+        BankAccount bankAccountDb = this.bankAccountRepository.findById(req.getBankAccountId())
+                .orElseThrow(() -> new ApplicationException("Bank account not found"));
+
+        if(!bankAccountDb.getAccount().getEmail().equals(email)){
+            throw new ApplicationException("You don't have permission to update this account");
+        }
+
+        SecretKey secretKeyAES = this.encryptionUtil.generateAESKey();
+        String encryptedAccountNumber = this.encryptionUtil.encrypt(req.getAccountNumber(), secretKeyAES);
+        PublicKey publicKeyRSE = this.encryptionUtil.getPublicKeyFromString(publicKeyString);
+        String encryptedAESKey = this.encryptionUtil.encryptAESKey(secretKeyAES, publicKeyRSE);
+
+        bankAccountDb.setAccountNumber(encryptedAccountNumber);
+        bankAccountDb.setAccountHolderName(req.getAccountHolderName());
+        bankAccountDb.setBankName(req.getBankName());
+        bankAccountDb.setAesKey(encryptedAESKey);
+
+        this.bankAccountRepository.save(bankAccountDb);
+        log.info("Bank account updated");
     }
 }

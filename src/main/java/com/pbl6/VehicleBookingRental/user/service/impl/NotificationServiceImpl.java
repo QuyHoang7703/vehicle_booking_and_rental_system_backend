@@ -50,6 +50,7 @@ public class NotificationServiceImpl implements NotificationService {
                     notificationDTO.setTitle(notification.getTitle());
                     notificationDTO.setSeen(notification.isSeen());
                     notificationDTO.setMessage(notification.getMessage());
+                    notificationDTO.setMetadata(notification.getMetadata());
                     notificationDTO.setCreate_at(notification.getCreate_at() !=null ? notification.getCreate_at().toInstant():null);
                     return notificationDTO;
                 }).collect(Collectors.toList());
@@ -72,7 +73,7 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
     @Override
-    public void createNotificationToAccount(int accountId,  AccountEnum accountTypeEnum,NotificationDTO notificationDTO) {
+    public void createNotificationToAccount(int accountId, AccountEnum accountTypeEnum,NotificationDTO notificationDTO) {
         Notification notification = new Notification();
         notification.setCreate_at(
                 Optional.ofNullable(notificationDTO.getCreate_at())
@@ -83,6 +84,7 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setTitle(notificationDTO.getTitle());
         notification.setMessage(notificationDTO.getMessage());
         notification.setSeen(notificationDTO.isSeen());
+        notification.setMetadata(notificationDTO.getMetadata());
         notificationRepo.save(notification);
 
         NotificationAccount notificationAccount = new NotificationAccount();
@@ -101,6 +103,7 @@ public class NotificationServiceImpl implements NotificationService {
                                 .message(notification.getMessage())
                                 .create_at(notification.getCreate_at()!=null ? notification.getCreate_at().toInstant():null )
                                 .isSeen(notification.isSeen())
+                                .metadata(notification.getMetadata())
                                 .build());
 
     }

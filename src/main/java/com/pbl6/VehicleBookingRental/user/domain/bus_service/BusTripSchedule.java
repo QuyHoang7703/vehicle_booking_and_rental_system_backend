@@ -18,13 +18,13 @@ public class BusTripSchedule {
     private int id;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm")
     private LocalTime departureTime;
-//    private double priceTicket;
     private double discountPercentage;
     private int availableSeats;
     private double ratingTotal;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate startOperationDay;
     private boolean isOperation;
+    private boolean suspended;
 
     @ManyToOne
     @JoinColumn(name="bus_trip_id")

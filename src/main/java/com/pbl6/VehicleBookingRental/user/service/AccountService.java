@@ -116,7 +116,7 @@ public class AccountService {
         BusinessPartner formRegisterBusPartner = this.businessPartnerRepository.findByAccount_IdAndPartnerType(account.getId(), PartnerTypeEnum.BUS_PARTNER)
                         .orElse(null);
         if(formRegisterBusPartner!=null){
-            accountInfoDTO.setFormRegisterCarRentalPartnerId(formRegisterBusPartner.getId());
+            accountInfoDTO.setFormRegisterBusPartnerId(formRegisterBusPartner.getId());
         }
 
         BusinessPartner formRegisterCarRentalPartner = this.businessPartnerRepository.findByAccount_IdAndPartnerType(account.getId(), PartnerTypeEnum.CAR_RENTAL_PARTNER)

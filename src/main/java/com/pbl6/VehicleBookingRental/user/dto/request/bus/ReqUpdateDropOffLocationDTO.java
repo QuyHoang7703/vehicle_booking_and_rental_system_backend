@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
 import java.util.List;
 
 @Data
@@ -12,5 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 public class ReqUpdateDropOffLocationDTO {
     private int id;
+    private String province;
+    private Double priceTicket;
+    private Duration journeyDuration;
     private List<String> dropOffLocations;
 }

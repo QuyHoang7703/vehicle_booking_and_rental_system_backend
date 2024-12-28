@@ -493,6 +493,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
         Account account = orderBusTrip.getAccount();
 
         ResCustomerInfoForOrderBusTrip res = ResCustomerInfoForOrderBusTrip.builder()
+                .accountId(account.getId())
                 .name(account.getName())
                 .email(account.getEmail())
                 .phoneNumber(account.getPhoneNumber())

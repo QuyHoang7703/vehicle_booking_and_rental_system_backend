@@ -24,7 +24,7 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping("api/v1/user/vehicle-register")
+@RequestMapping("api/user/vehicle-register")
 public class VehicleRegisterController {
     @Autowired
     private VehicleRegisterInterface vehicleRegisterInterface;

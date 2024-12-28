@@ -13,6 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -87,5 +88,10 @@ public class VehicleRentalOrderController {
             System.out.println(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body("Canceled: "+status);
+    }
+    @PreAuthorize("hasRole('CAR_RENTAL_PARTNER') or hasRole('ADMIN')")
+    @PostMapping("update-status-rental-order")
+    public ResponseEntity<?> updateStatusOrder(@RequestParam("rentalOrderId") String id,@RequestParam("status") String status){
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.updateStatusRentalOrder(id,status));
     }
 }

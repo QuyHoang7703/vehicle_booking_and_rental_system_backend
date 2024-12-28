@@ -34,6 +34,7 @@ public class ResVehicleRentalOrderDetailDTO {
         private Instant startRentalTime;
         private Instant endRentalTime;
         private String pickupLocation;
+        private String statusOrder;
         private Instant cancelAt;
     }
 

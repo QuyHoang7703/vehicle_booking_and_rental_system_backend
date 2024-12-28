@@ -14,6 +14,7 @@ import java.time.Instant;
 @Data
 //@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResCustomerInfoForOrderBusTrip {
+    private int accountId;
     private String name;
     private String email;
     private String phoneNumber;

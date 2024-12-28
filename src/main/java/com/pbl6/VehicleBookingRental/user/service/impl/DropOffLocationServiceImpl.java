@@ -69,9 +69,9 @@ public class DropOffLocationServiceImpl implements DropOffLocationService {
 
     @Override
     public ResDropOffLocationDTO updateDropOffLocation(ReqUpdateDropOffLocationDTO req) throws ApplicationException, IdInvalidException {
-        if(req.getDropOffLocations() == null || req.getDropOffLocations().isEmpty()) {
-            throw new ApplicationException("Can't left blank drop off location");
-        }
+//        if(req.getDropOffLocations() == null || req.getDropOffLocations().isEmpty()) {
+//            throw new ApplicationException("Can't left blank drop off location");
+//        }
         BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
 
         DropOffLocation dropOffLocationDb = this.dropOffLocationRepository.findById(req.getId())
@@ -81,8 +81,22 @@ public class DropOffLocationServiceImpl implements DropOffLocationService {
             throw new ApplicationException("You don't have permission to update drop off location");
         }
 
-        String dropOffLocation = String.join("!", req.getDropOffLocations());
-        dropOffLocationDb.setDropOffLocation(dropOffLocation);
+        if(req.getProvince() != null && !req.getProvince().isEmpty()) {
+            dropOffLocationDb.setProvince(req.getProvince());
+        }
+
+        if(req.getPriceTicket() != null) {
+            dropOffLocationDb.setPriceTicket(req.getPriceTicket());
+        }
+
+        if (req.getJourneyDuration() != null) {
+            dropOffLocationDb.setJourneyDuration(req.getJourneyDuration());
+        }
+
+        if(req.getDropOffLocations() != null && !req.getDropOffLocations().isEmpty()) {
+            String dropOffLocation = String.join("!", req.getDropOffLocations());
+            dropOffLocationDb.setDropOffLocation(dropOffLocation);
+        }
 
         return this.convertToResDropOffLocationDTO(this.dropOffLocationRepository.save(dropOffLocationDb));
     }

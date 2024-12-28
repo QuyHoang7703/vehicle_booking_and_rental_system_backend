@@ -182,6 +182,7 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
                 .startRentalTime(carRentalOrder.getStart_rental_time())
                 .endRentalTime(carRentalOrder.getEnd_rental_time())
                 .pickupLocation(carRentalOrder.getPickup_location())
+                .statusOrder(carRentalOrder.getStatus())
                 .cancelAt(carRentalOrder.getOrder().getCancelTime())
                 .build();
 
@@ -368,6 +369,17 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         }else{
             throw new ApplicationException("Đơn thuê xe không tồn tại");
         }
+    }
+
+    @Override
+    public boolean updateStatusRentalOrder(String orderId, String status) {
+        Optional<CarRentalOrders> order = vehicleRentalOrderRepo.findById(orderId);
+        if(order.isPresent()){
+            order.get().setStatus(status);
+            vehicleRentalOrderRepo.save(order.get());
+            return true;
+        }
+        return false;
     }
 
     //tính giá tiền khi startTime và endTime trong cùng 1 ngày

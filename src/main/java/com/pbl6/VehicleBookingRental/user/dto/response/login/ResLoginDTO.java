@@ -1,13 +1,10 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.login;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.util.constant.GenderEnum;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -29,7 +26,7 @@ public class ResLoginDTO {
         private String phoneNumber;
 
 //        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-//        private LocalDate birthDay;
+//        private String birthDay;
 
         private GenderEnum gender;
 

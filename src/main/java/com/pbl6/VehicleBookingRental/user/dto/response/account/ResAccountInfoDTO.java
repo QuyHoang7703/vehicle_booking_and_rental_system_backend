@@ -1,6 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.dto.response.account;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
 import com.pbl6.VehicleBookingRental.user.util.constant.GenderEnum;
 
@@ -20,6 +21,7 @@ public class ResAccountInfoDTO {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class AccountInfo{
         private long id;
 
@@ -39,6 +41,9 @@ public class ResAccountInfoDTO {
         private boolean active;
 
         private List<String> roles;
+
+        private Integer formRegisterBusPartnerId;
+        private Integer formRegisterCarRentalPartnerId;
 
         // private String lockReason;
     }

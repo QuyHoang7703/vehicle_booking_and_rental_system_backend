@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
+import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
@@ -16,7 +17,9 @@ import com.pbl6.VehicleBookingRental.user.dto.response.login.ResLoginDTO;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.AccountRoleRepository;
 import com.pbl6.VehicleBookingRental.user.repository.account.RoleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.businessPartner.BusinessPartnerRepository;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
+import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +60,7 @@ public class AccountService {
 //    private final CloudinaryService cloudinaryService;
     private final AccountRoleService accountRoleService;
     private final CloudinaryService cloudinaryService;
+    private final BusinessPartnerRepository businessPartnerRepository;
 
 
     public Account handleRegisterUser(ReqRegisterDTO registerDTO) throws IdInvalidException, IOException {
@@ -108,6 +112,18 @@ public class AccountService {
 //        }
         List<String> roles = this.roleSerivice.getNameRolesByAccountID(account.getId());
         accountInfoDTO.setRoles(roles);
+
+        BusinessPartner formRegisterBusPartner = this.businessPartnerRepository.findByAccount_IdAndPartnerType(account.getId(), PartnerTypeEnum.BUS_PARTNER)
+                        .orElse(null);
+        if(formRegisterBusPartner!=null){
+            accountInfoDTO.setFormRegisterCarRentalPartnerId(formRegisterBusPartner.getId());
+        }
+
+        BusinessPartner formRegisterCarRentalPartner = this.businessPartnerRepository.findByAccount_IdAndPartnerType(account.getId(), PartnerTypeEnum.CAR_RENTAL_PARTNER)
+                .orElse(null);
+        if(formRegisterCarRentalPartner!=null){
+            accountInfoDTO.setFormRegisterCarRentalPartnerId(formRegisterCarRentalPartner.getId());
+        }
 
         resAccountDTO.setAccountInfo(accountInfoDTO);
 

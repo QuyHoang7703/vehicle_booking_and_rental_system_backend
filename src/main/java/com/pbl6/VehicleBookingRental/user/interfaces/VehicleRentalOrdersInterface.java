@@ -17,7 +17,7 @@ public interface VehicleRentalOrdersInterface {
     public double calculatePriceOrderByStartAndEndDate(Instant startRentalTime, Instant endRentalTime, double priceOneDay);
     public List<ResVehicleRentalOrderDetailDTO> getOrderByServiceId(int id);
     public List<ResVehicleRentalOrderDetailDTO> getAllOrder();
-    public List<ResVehicleRentalOrderDetailDTO> getAllOrderUser();
+    public List<ResVehicleRentalOrderDetailDTO> getAllOrderUser(String status);
 
     public List<ResVehicleRentalOrderDetailDTO> getOrderByStatus(String status);
     public boolean cancelVehicleRentalService(String vehicleRentalOrderId) throws ApplicationException;

@@ -107,6 +107,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
                 vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
                 vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
+                vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
 
                 vehicleRentalServiceDTO.setVehicle_rental_service_id(i.getId());
                 vehicleRentalServiceDTO.setType(i.getType());
@@ -149,6 +150,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
             vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
             vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
+            vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
 
             // Thiết lập thông tin từ CarRentalService nếu tồn tại
             List<CarRentalService> serviceList = vehicleRegister.getTypeOfRentalServiceList();
@@ -212,6 +214,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
             vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
             vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
+            vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
 
             // Thiết lập thông tin từ CarRentalService nếu tồn tại
             vehicleRentalServiceDTO.setVehicle_rental_service_id(carRentalService.get().getId());
@@ -262,7 +265,6 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             register.setReservation_fees(vehicleRentalServiceDTO.getReservation_fees());
             register.setUlties(vehicleRentalServiceDTO.getUlties());
             register.setPolicy(vehicleRentalServiceDTO.getPolicy());
-            register.setRating_total(vehicleRentalServiceDTO.getRating_total());
             register.setAmount(vehicleRentalServiceDTO.getAmount());
             register.setLocation(vehicleRentalServiceDTO.getLocation());
 
@@ -388,6 +390,10 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                     vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                     vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
                     vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
+                    vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
+                    vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
+                    vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
+
                     List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
                     List<String> imagePaths = Optional.ofNullable(images)
                             .orElse(Collections.emptyList())
@@ -470,6 +476,11 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
                 vehicleRentalServiceDTO.setVehicleLife(vehicleRegister.getVehicle_life());
 
+                vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
+                vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
+                vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
+
+
                 // Lấy danh sách hình ảnh
                 List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(
                         String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
@@ -510,7 +521,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
     }
 
     private Map<LocalDate, Integer> getCarAmountsByDay(List<Map<LocalDateTime, LocalDateTime>> dayTimes, int carRentalServiceId) {
-        // Giả sử bạn đã có danh sách các đơn đặt xe từ DB >= currentDate
+        // Giả sử bạn đã có danh sách các đơn đặt xe từ DB
         List<CarRentalOrders> orders = vehicleRentalOrderRepo.findFutureOrdersByCarRentalServiceId(carRentalServiceId, Instant.now(),"not_returned");
 
         // Tạo một Map để lưu số lượng xe theo từng ngày

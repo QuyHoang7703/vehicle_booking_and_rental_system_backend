@@ -19,6 +19,10 @@ public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,St
             @Param("carRentalServiceId") int carRentalServiceId,
             @Param("currentDate") Instant currentDate,
             @Param("status") String status);
+//    @Query("SELECT o FROM CarRentalOrders o WHERE o.carRentalService.id = :carRentalServiceId AND  o.status = :status")
+//    List<CarRentalOrders> findOrdersByCarRentalServiceId(
+//            @Param("carRentalServiceId") int carRentalServiceId,
+//            @Param("status") String status);
     @Query("SELECT o FROM CarRentalOrders o WHERE DATE(o.start_rental_time) >= DATE(:currentDate) AND o.carRentalService.vehicleRegister.carRentalPartner.id = :partnerId")
     List<CarRentalOrders> findFutureOrdersByCarRentalPartner(
             @Param("currentDate") Instant currentDate,
@@ -30,6 +34,8 @@ public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,St
 
 
     List<CarRentalOrders> findCarRentalOrdersByStatus(String status);
+
+    List<CarRentalOrders> findCarRentalOrdersByAccountIdAndStatus(int accountId,String status);
     List<CarRentalOrders> findCarRentalOrdersByAccountId(int accountId);
 
     @Query("SELECT  o from CarRentalOrders  o where (:location is null or o.carRentalService.vehicleRegister.location = :location)" +

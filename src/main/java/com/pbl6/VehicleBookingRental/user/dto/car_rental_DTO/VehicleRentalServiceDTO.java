@@ -30,6 +30,7 @@ public class VehicleRentalServiceDTO {
     private List<String> imagesVehicleRegister;
     private String partnerName;
     private String partnerPhoneNumber;
+    private int partnerId;
 
     private int vehicle_type_id;
 }

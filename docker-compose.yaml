@@ -15,6 +15,7 @@ services:
       - MYSQL_URL=jdbc:mysql://db:3306/vehicle_booking_rental
 
 
+
   db:
     image: mysql:latest
     restart: always

@@ -108,6 +108,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
                 vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
                 vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
+                vehicleRentalServiceDTO.setPartnerAccountId(vehicleRegister.getCarRentalPartner().getBusinessPartner().getAccount().getId());
 
                 vehicleRentalServiceDTO.setVehicle_rental_service_id(i.getId());
                 vehicleRentalServiceDTO.setType(i.getType());
@@ -151,6 +152,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
             vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
             vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
+            vehicleRentalServiceDTO.setPartnerAccountId(vehicleRegister.getCarRentalPartner().getBusinessPartner().getAccount().getId());
 
             // Thiết lập thông tin từ CarRentalService nếu tồn tại
             List<CarRentalService> serviceList = vehicleRegister.getTypeOfRentalServiceList();
@@ -215,6 +217,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
             vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
             vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
+            vehicleRentalServiceDTO.setPartnerAccountId(vehicleRegister.getCarRentalPartner().getBusinessPartner().getAccount().getId());
 
             // Thiết lập thông tin từ CarRentalService nếu tồn tại
             vehicleRentalServiceDTO.setVehicle_rental_service_id(carRentalService.get().getId());
@@ -393,6 +396,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                     vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
                     vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
                     vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
+                    vehicleRentalServiceDTO.setPartnerAccountId(vehicleRegister.getCarRentalPartner().getBusinessPartner().getAccount().getId());
 
                     List<Images> images = imageRepository.findByOwnerTypeAndOwnerId(String.valueOf(ImageOfObjectEnum.VEHICLE_REGISTER), vehicleRegister.getId());
                     List<String> imagePaths = Optional.ofNullable(images)
@@ -479,6 +483,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setPartnerName(vehicleRegister.getCarRentalPartner().getBusinessPartner().getBusinessName());
                 vehicleRentalServiceDTO.setPartnerPhoneNumber(vehicleRegister.getCarRentalPartner().getBusinessPartner().getPhoneOfRepresentative());
                 vehicleRentalServiceDTO.setPartnerId(vehicleRegister.getCarRentalPartner().getId());
+                vehicleRentalServiceDTO.setPartnerAccountId(vehicleRegister.getCarRentalPartner().getBusinessPartner().getAccount().getId());
 
 
                 // Lấy danh sách hình ảnh

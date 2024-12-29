@@ -14,6 +14,7 @@ import com.pbl6.VehicleBookingRental.user.dto.response.rating.ResRatingOrderDTO;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.RatingRepository;
 import com.pbl6.VehicleBookingRental.user.repository.busPartner.BusTripScheduleRepository;
+import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
 import com.pbl6.VehicleBookingRental.user.service.AccountService;
 import com.pbl6.VehicleBookingRental.user.service.RatingService;
 import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
@@ -35,6 +36,7 @@ public class RatingServiceImpl implements RatingService {
     private final AccountService accountService;
     private final OrdersRepo ordersRepo;
     private final BusTripScheduleRepository busTripScheduleRepository;
+    private final VehicleRentalServiceRepo vehicleRentalServiceRepo;
     @Override
     public void createRatingForOrder(ReqCreateRatingDTO reqCreateRatingDTO) throws ApplicationException, IdInvalidException {
         String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
@@ -175,6 +177,7 @@ public class RatingServiceImpl implements RatingService {
         }else if(orderType.equals("VEHICLE_RENTAL_ORDER")){
             CarRentalService carRentalService = order.getCarRentalOrders().getCarRentalService();
             carRentalService.setRatingTotal(this.calculateRatingTotal(ratings));
+            this.vehicleRentalServiceRepo.save(carRentalService);
         }
 
     }

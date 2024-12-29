@@ -31,6 +31,6 @@ public class VehicleRentalServiceDTO {
     private String partnerName;
     private String partnerPhoneNumber;
     private int partnerId;
-
+    private int partnerAccountId;
     private int vehicle_type_id;
 }

@@ -4,6 +4,7 @@ import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.Rating;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTripSchedule;
+import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalService;
 import com.pbl6.VehicleBookingRental.user.dto.Meta;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
 import com.pbl6.VehicleBookingRental.user.dto.request.rating.ReqCreateRatingDTO;
@@ -142,6 +143,8 @@ public class RatingServiceImpl implements RatingService {
         Orders order = ratingPage.getContent().get(0).getOrder();
         if(order.getOrder_type().equals(String.valueOf(OrderTypeEnum.BUS_TRIP_ORDER))){
             resRatingInfoDTO.setAverageRating(ratingPage.getContent().get(0).getOrder().getOrderBusTrip().getBusTripSchedule().getRatingTotal());
+        }else{
+            resRatingInfoDTO.setAverageRating(ratingPage.getContent().get(0).getOrder().getCarRentalOrders().getCarRentalService().getRatingTotal());
         }
         return resRatingInfoDTO;
     }
@@ -163,12 +166,15 @@ public class RatingServiceImpl implements RatingService {
     }
     @Override
     public void updateRatingTotal(Orders order) {
-        String oderType = order.getOrder_type();
+        String orderType = order.getOrder_type();
         List<Rating> ratings = order.getRatings();
-        if(oderType.equals("BUS_TRIP_ORDER")){
+        if(orderType.equals("BUS_TRIP_ORDER")){
             BusTripSchedule busTripSchedule = order.getOrderBusTrip().getBusTripSchedule();
             busTripSchedule.setRatingTotal(this.calculateRatingTotal(ratings));
             this.busTripScheduleRepository.save(busTripSchedule);
+        }else if(orderType.equals("VEHICLE_RENTAL_ORDER")){
+            CarRentalService carRentalService = order.getCarRentalOrders().getCarRentalService();
+            carRentalService.setRatingTotal(this.calculateRatingTotal(ratings));
         }
 
     }

@@ -233,9 +233,9 @@ public class BusinessPartnerServiceImpl implements BusinessPartnerService {
 
             // Create notification for user about result's register
             NotificationDTO notificationDTO = new NotificationDTO();
-            notificationDTO.setMessage("Đơn đăng ký đối tác " + partner + "không được duyệt");
+            notificationDTO.setMessage("Đơn đăng ký đối tác " + partner + " không được duyệt");
             notificationDTO.setTitle("Từ chối trở thành đối tác " + partner);
-            notificationDTO.setType(NotificationTypeEnum.CANCELED_REGISTER_PARTNER_FORM);
+            notificationDTO.setType(NotificationTypeEnum.REFUSED_REGISTER_PARTNER_FORM);
             notificationDTO.setCreate_at(Instant.now());
             notificationDTO.setSeen(false);
             notificationDTO.setMetadata(null);

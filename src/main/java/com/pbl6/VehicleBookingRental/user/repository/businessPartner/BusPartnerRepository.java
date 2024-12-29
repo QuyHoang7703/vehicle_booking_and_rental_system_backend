@@ -17,4 +17,6 @@ public interface BusPartnerRepository extends JpaRepository<BusPartner, Integer>
             "JOIN BusPartner bpn ON bsn.busPartner.id = bpn.id")
     List<String> getNamesBusPartner();
     Optional<BusPartner> findBusPartnerByBusinessPartner_AccountId(int accountId);
+
+
 }

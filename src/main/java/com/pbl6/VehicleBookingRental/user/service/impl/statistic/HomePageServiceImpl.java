@@ -35,7 +35,6 @@ public class HomePageServiceImpl implements HomePageService {
     @Override
     public Map<String, Integer> getHighLightNumber() {
         Map<String, Integer> map = new LinkedHashMap<>();
-        List<BusPartner> busPartners = this.busPartnerRepository.findAll();
         map.put("Nhà xe chất lượng cao", this.busPartnerRepository.findAll().size());
         map.put("Tuyến đường", this.busTripRepository.findAll().size());
         map.put("Hợp tác phát triển", this.businessPartnerRepository.findAll().size());

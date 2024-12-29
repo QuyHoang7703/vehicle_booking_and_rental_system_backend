@@ -3,12 +3,11 @@ package com.pbl6.VehicleBookingRental.user.service.impl;
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
-import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.statistic.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.dto.car_rental_DTO.VehicleRentalStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.interfaces.VehicleRegisterInterface;
 import com.pbl6.VehicleBookingRental.user.repository.OrdersRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalOrderRepo;
-import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleRentalServiceRepo;
 import com.pbl6.VehicleBookingRental.user.repository.vehicle_rental.VehicleTypeRepository;
 import com.pbl6.VehicleBookingRental.user.service.BusinessPartnerService;
 import com.pbl6.VehicleBookingRental.user.service.VehicleRentalStatisticService;
@@ -321,15 +320,14 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
 
     private void getYearlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders) {
         for(CarRentalOrders order : carRentalOrders){
-            LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
-            LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
             double revenue = order.getTotal() - order.getReservation_fee() - order.getCar_deposit();
-            // Tạo key theo năm của endDate
-            String key = String.valueOf(endDate.getYear());
+            // Tạo key theo năm của order
+            String key = String.valueOf(order.getCreated_at().atZone(ZoneId.systemDefault()).toLocalDateTime().getYear());
             double currentRevenue = statistics.getOrDefault(key, 0.0);
             statistics.put(key, revenue+currentRevenue);
         }
     }
+
 
     private void getMonthlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders, Integer year) {
         // Initialize revenue for each month
@@ -339,29 +337,48 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
             statistics.put(key, 0.0);
         }
 
-        for (CarRentalOrders order : carRentalOrders) {
-            LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
-            LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());    
+        for (CarRentalOrders carRentalOrder : carRentalOrders) {
+            LocalDateTime orderDateTime = carRentalOrder.getOrder().getCreate_at().atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-            //Số tiền dư ra của các tháng hoặc năm khác nhau
-
-            if (startDate.getYear() != year && endDate.getYear() != year) {
-                continue; // Skip orders that don't overlap the target year
-            }
-            // Ensure the start and end dates are within the same year
-            if(startDate.getYear() < year){
-                startDate = LocalDate.of(year, 1, 1);
-            }
-            if(endDate.getYear() > year){
-                endDate = LocalDate.of(year, 12, 31);
-            }
-
-            int currentMonth = startDate.getMonthValue();
+            int currentMonth = orderDateTime.getMonthValue();
             String key = currentMonth + "-" +year;
-            statistics.put(key, statistics.get(key) + order.getTotal() - order.getReservation_fee() - order.getCar_deposit());
+            statistics.put(key, statistics.get(key) + carRentalOrder.getTotal() - carRentalOrder.getReservation_fee() - carRentalOrder.getCar_deposit());
 
         }
     }
+
+
+//    private void getMonthlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders, Integer year) {
+//        // Initialize revenue for each month
+//        for (int month = 1; month <= 12; month++) {
+//            String key = month + "-" + year;
+////            String key =  String.valueOf(month);
+//            statistics.put(key, 0.0);
+//        }
+//
+//        for (CarRentalOrders order : carRentalOrders) {
+//            LocalDate startDate = LocalDate.ofInstant(order.getStart_rental_time(), ZoneId.systemDefault());
+//            LocalDate endDate = LocalDate.ofInstant(order.getEnd_rental_time(), ZoneId.systemDefault());
+//
+//            //Số tiền dư ra của các tháng hoặc năm khác nhau
+//
+//            if (startDate.getYear() != year && endDate.getYear() != year) {
+//                continue; // Skip orders that don't overlap the target year
+//            }
+//            // Ensure the start and end dates are within the same year
+//            if(startDate.getYear() < year){
+//                startDate = LocalDate.of(year, 1, 1);
+//            }
+//            if(endDate.getYear() > year){
+//                endDate = LocalDate.of(year, 12, 31);
+//            }
+//
+//            int currentMonth = startDate.getMonthValue();
+//            String key = currentMonth + "-" +year;
+//            statistics.put(key, statistics.get(key) + order.getTotal() - order.getReservation_fee() - order.getCar_deposit());
+//
+//        }
+//    }
 
 
 }

@@ -72,6 +72,8 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     }
 
+
+
     @Override
     public void deleteBankAccount(int accountId, PartnerTypeEnum partnerType) throws IdInvalidException {
         BankAccount bankAccount = this.bankAccountRepository.findByAccount_IdAndPartnerType(accountId, partnerType)

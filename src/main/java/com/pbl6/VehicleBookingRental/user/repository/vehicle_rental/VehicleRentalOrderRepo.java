@@ -1,6 +1,8 @@
 package com.pbl6.VehicleBookingRental.user.repository.vehicle_rental;
 
 import com.pbl6.VehicleBookingRental.user.domain.car_rental.CarRentalOrders;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,4 +36,14 @@ public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,St
             "and (:vehicleTypeName is null  or o.carRentalService.vehicleRegister.vehicleType.name = :vehicleTypeName)" +
             "and o.carRentalService.vehicleRegister.carRentalPartner.id = :partnerId ")
     List<CarRentalOrders> findCarRentalOrdersByLocationOrType(@Param("location") String location,@Param("vehicleTypeName") String vehicleTypeName,@Param("partnerId") int partnerId);
+
+    @Query("SELECT cro FROM CarRentalOrders cro " +
+            "JOIN cro.carRentalService crs " +
+            "JOIN crs.vehicleRegister vhr " +
+            "JOIN vhr.carRentalPartner crp " +
+            "JOIN cro.order o " +
+            "WHERE crp.id = :carRentalPartnerId " +
+            "AND (:month IS NULL OR MONTH(o.create_at) = :month) " +
+            "AND YEAR(o.create_at) = :year")
+    Page<CarRentalOrders> findCarRentalOrderByCarRentalPartner(@Param("carRentalPartnerId") int carRentalPartnerId, @Param("month") Integer month, @Param("year") Integer year, Pageable pageable);
 }

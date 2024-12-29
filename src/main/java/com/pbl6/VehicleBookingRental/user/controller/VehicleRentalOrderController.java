@@ -69,9 +69,9 @@ public class VehicleRentalOrderController {
         return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getAllOrder());
     }
     @GetMapping("/get-all-orders-user")
-    public ResponseEntity<?> getAllOrderUser()
+    public ResponseEntity<?> getAllOrderUser(@RequestParam(value = "status",required = false)String status)
     {
-        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getAllOrderUser());
+        return ResponseEntity.status(HttpStatus.OK).body(vehicleRentalOrdersInterface.getAllOrderUser(status));
     }
     @GetMapping("/get-orders-by-status")
     public ResponseEntity<?> getAllOrder(@RequestParam("status") String status)

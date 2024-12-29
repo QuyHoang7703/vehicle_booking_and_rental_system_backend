@@ -39,7 +39,7 @@ public class StatisticController {
         return ResponseEntity.status(HttpStatus.OK).body(this.statisticService.getRevenueOfBusinessPartner(month, year, partnerType, pageable));
     }
 
-    @GetMapping("statistic/customer-statistic")
+    @GetMapping("statistic/customer-of-partner")
     public ResponseEntity<ResultPaginationDTO> getCustomerOfBusinessPartner(@RequestParam(value = "month", required = false) Integer month,
                                                                            @RequestParam("year") Integer year,
                                                                            @RequestParam("businessPartnerId") int businessPartnerId,

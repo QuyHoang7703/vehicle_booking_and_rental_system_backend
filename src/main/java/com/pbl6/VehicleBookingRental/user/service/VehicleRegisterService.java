@@ -262,7 +262,6 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             register.setReservation_fees(vehicleRentalServiceDTO.getReservation_fees());
             register.setUlties(vehicleRentalServiceDTO.getUlties());
             register.setPolicy(vehicleRentalServiceDTO.getPolicy());
-            register.setRating_total(vehicleRentalServiceDTO.getRating_total());
             register.setAmount(vehicleRentalServiceDTO.getAmount());
             register.setLocation(vehicleRentalServiceDTO.getLocation());
 

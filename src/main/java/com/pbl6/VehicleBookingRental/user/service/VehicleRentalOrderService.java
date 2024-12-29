@@ -264,14 +264,16 @@ public class VehicleRentalOrderService implements VehicleRentalOrdersInterface {
         }
     }
     @Override
-    public List<ResVehicleRentalOrderDetailDTO> getAllOrderUser(){
+    public List<ResVehicleRentalOrderDetailDTO> getAllOrderUser(String status){
         try{
             String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
             if(email==null){
                 throw new ApplicationException("Email is invalid");
             }
             Account currentAccount = accountService.handleGetAccountByUsername(email);
-            List<CarRentalOrders> orders = vehicleRentalOrderRepo.findCarRentalOrdersByAccountId(currentAccount.getId());
+            List<CarRentalOrders> orders = new ArrayList<>();
+            orders = status != null ? vehicleRentalOrderRepo.findCarRentalOrdersByAccountIdAndStatus(currentAccount.getId(),status)
+                                :vehicleRentalOrderRepo.findCarRentalOrdersByAccountId(currentAccount.getId());
             return Optional.ofNullable(orders)
                     .orElse(Collections.emptyList())
                     .stream().map(order->{

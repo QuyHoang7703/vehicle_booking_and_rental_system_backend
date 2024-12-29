@@ -40,17 +40,17 @@ public class OrderController {
     @Transactional
     public ResponseEntity<ResponseInfo<String>> payCallbackHandler(HttpServletRequest request) throws Exception {
         // Lấy URL đầy đủ từ request
-        String fullUrl = request.getRequestURL().toString();
-        String queryString = request.getQueryString();
-        String fullUrlWithQuery = fullUrl + (queryString != null ? "?" + queryString : "");
-
-        log.info("Full request URL: " + fullUrlWithQuery); // In ra URL đầy đủ
-
-        // Lấy và log toàn bộ tham số trả về
-        Map<String, String[]> parameterMap = request.getParameterMap();
-        parameterMap.forEach((key, value) -> {
-            log.info("Param: " + key + " = " + String.join(",", value));
-        });
+//        String fullUrl = request.getRequestURL().toString();
+//        String queryString = request.getQueryString();
+//        String fullUrlWithQuery = fullUrl + (queryString != null ? "?" + queryString : "");
+//
+//        log.info("Full request URL: " + fullUrlWithQuery); // In ra URL đầy đủ
+//
+//        // Lấy và log toàn bộ tham số trả về
+//        Map<String, String[]> parameterMap = request.getParameterMap();
+//        parameterMap.forEach((key, value) -> {
+//            log.info("Param: " + key + " = " + String.join(",", value));
+//        });
 
 
         String status = request.getParameter("vnp_ResponseCode");

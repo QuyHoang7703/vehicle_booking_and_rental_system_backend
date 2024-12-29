@@ -18,6 +18,6 @@ public interface RatingService {
     void deleteRatingForOrder(int ratingId) throws ApplicationException;
     ResRatingInfoDTO getAllRatingOfOrder(Specification<Rating> specification, Pageable pageable) throws ApplicationException;
     ResRatingOrderDTO convertToResRatingOrderDTO(Rating rating) throws ApplicationException;
-    public void updateRatingTotal(Orders order);
+//    public void updateRatingTotal(Orders order);
 
 }

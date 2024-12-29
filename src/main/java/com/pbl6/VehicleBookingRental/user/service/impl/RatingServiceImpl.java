@@ -21,7 +21,9 @@ import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -31,6 +33,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RatingServiceImpl implements RatingService {
     private final RatingRepository ratingRepository;
     private final AccountService accountService;
@@ -60,11 +63,40 @@ public class RatingServiceImpl implements RatingService {
 
         this.ratingRepository.save(rating);
 
+        order.setRating(rating);
+        this.ordersRepo.save(order);
+
         // Update rating total for order
-        this.updateRatingTotal(order);
+        this.updateRatingTotalWhenCreateRating(order);
     }
 
+    private void updateRatingTotalWhenCreateRating(Orders order) {
+        String orderType = order.getOrder_type();
+        if(orderType.equals("BUS_TRIP_ORDER")){
+            BusTripSchedule busTripSchedule = order.getOrderBusTrip().getBusTripSchedule();
+            double currentRatingTotal = busTripSchedule.getRatingTotal();
+
+            int numberOfOrders = ratingRepository.getNumberRatingsOfBusTripSchedule(busTripSchedule.getId());
+            log.info("Number order of bus trip schedule in current: " + numberOfOrders);
+
+            double newValueRating = ((numberOfOrders - 1) * currentRatingTotal + order.getRating().getRatingValue()) / numberOfOrders;
+            busTripSchedule.setRatingTotal(Double.parseDouble(String.format("%.6f", newValueRating)));
+            this.busTripScheduleRepository.save(busTripSchedule);
+        }
+        else if(orderType.equals("VEHICLE_RENTAL_ORDER")){
+            CarRentalService carRentalService = order.getCarRentalOrders().getCarRentalService();
+            double currentRatingTotal = carRentalService.getRatingTotal();
+            int numberOfRating = ratingRepository.getNumberRatingOfCarRentalService(carRentalService.getId());
+            double newRatingValue = ((numberOfRating - 1) * currentRatingTotal + order.getRating().getRatingValue()) / numberOfRating;
+            carRentalService.setRatingTotal(Double.parseDouble(String.format("%.6f", newRatingValue)));
+            this.vehicleRentalServiceRepo.save(carRentalService);
+        }
+
+    }
+
+
     @Override
+    @Transactional
     public void updateRatingForOrder(ReqUpdateRatingDTO reqUpdateRatingDTO) throws ApplicationException, IdInvalidException {
         String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
         if(email == null) {
@@ -79,6 +111,7 @@ public class RatingServiceImpl implements RatingService {
         if(!rating.getAccount().equals(currentAccount)) {
             throw new ApplicationException("You don't have permission to update this rating");
         }
+        double oldRatingValue = rating.getRatingValue();
 
         rating.setRatingValue(reqUpdateRatingDTO.getRatingValue());
         rating.setComment(reqUpdateRatingDTO.getComment());
@@ -86,10 +119,33 @@ public class RatingServiceImpl implements RatingService {
         this.ratingRepository.save(rating);
 
         // Update rating total for order
-        this.updateRatingTotal(rating.getOrder());
+        this.updateRatingTotalWhenUpdateRating(rating.getOrder(), oldRatingValue);
     }
 
+    private void updateRatingTotalWhenUpdateRating(Orders order, double oldRatingValue){
+        String orderType = order.getOrder_type();
+        if(orderType.equals("BUS_TRIP_ORDER")){
+            BusTripSchedule busTripSchedule = order.getOrderBusTrip().getBusTripSchedule();
+            double currentRatingTotal = busTripSchedule.getRatingTotal();
+            int numberOfOrder = this.ratingRepository.getNumberRatingsOfBusTripSchedule(busTripSchedule.getId());
+            log.info("Number order of bus trip schedule in current: " + numberOfOrder);
+            double updateValueRating = (currentRatingTotal * numberOfOrder - oldRatingValue + order.getRating().getRatingValue()) / numberOfOrder;
+            log.info("Updated rating value " + updateValueRating);
+            busTripSchedule.setRatingTotal(Double.parseDouble(String.format("%.6f", updateValueRating)));
+            this.busTripScheduleRepository.save(busTripSchedule);
+        }else if(orderType.equals("VEHICLE_RENTAL_ORDER")){
+            CarRentalService carRentalService = order.getCarRentalOrders().getCarRentalService();
+            double currentRatingTotal = carRentalService.getRatingTotal();
+            int numberOfOrders = ratingRepository.getNumberRatingOfCarRentalService(carRentalService.getId());
+            double updateValueRating = (currentRatingTotal * numberOfOrders - oldRatingValue + order.getRating().getRatingValue()) / numberOfOrders;
+            carRentalService.setRatingTotal(Double.parseDouble(String.format("%.6f", updateValueRating)));
+            this.vehicleRentalServiceRepo.save(carRentalService);
+        }
+    }
+
+
     @Override
+    @Transactional
     public void deleteRatingForOrder(int ratingId) throws ApplicationException {
         String email = SecurityUtil.getCurrentLogin().isPresent() ? SecurityUtil.getCurrentLogin().get() : null;
         if(email == null) {
@@ -105,11 +161,28 @@ public class RatingServiceImpl implements RatingService {
             throw new ApplicationException("You don't have permission to update this rating");
         }
 
+        this.updateRatingValueWhenDeleteRating(rating.getOrder(), rating.getRatingValue());
         this.ratingRepository.delete(rating);
 
-        // Update rating total for order
-        this.updateRatingTotal(rating.getOrder());
+    }
 
+    private void updateRatingValueWhenDeleteRating(Orders order, double oldRatingValue){
+        String orderType = order.getOrder_type();
+        if(orderType.equals("BUS_TRIP_ORDER")){
+            BusTripSchedule busTripSchedule = order.getOrderBusTrip().getBusTripSchedule();
+            double currentRatingTotal = busTripSchedule.getRatingTotal();
+            int numberOfOrders = ratingRepository.getNumberRatingsOfBusTripSchedule(busTripSchedule.getId());
+            double updateValueRating = (currentRatingTotal * numberOfOrders - oldRatingValue) / (numberOfOrders - 1);
+            busTripSchedule.setRatingTotal(Double.parseDouble(String.format("%.6f", updateValueRating)));
+            this.busTripScheduleRepository.save(busTripSchedule);
+        }else if(orderType.equals("VEHICLE_RENTAL_ORDER")){
+            CarRentalService carRentalService = order.getCarRentalOrders().getCarRentalService();
+            double currentRatingTotal = carRentalService.getRatingTotal();
+            int numberOfOrders = ratingRepository.getNumberRatingOfCarRentalService(carRentalService.getId());
+            double updateValueRating = (currentRatingTotal * numberOfOrders - oldRatingValue) / (numberOfOrders - 1);
+            carRentalService.setRatingTotal(Double.parseDouble(String.format("%.6f", updateValueRating)));
+            this.vehicleRentalServiceRepo.save(carRentalService);
+        }
     }
 
     @Override
@@ -166,28 +239,12 @@ public class RatingServiceImpl implements RatingService {
 
         return res;
     }
-    @Override
-    public void updateRatingTotal(Orders order) {
-        String orderType = order.getOrder_type();
-        List<Rating> ratings = order.getRatings();
-        if(orderType.equals("BUS_TRIP_ORDER")){
-            BusTripSchedule busTripSchedule = order.getOrderBusTrip().getBusTripSchedule();
-            busTripSchedule.setRatingTotal(this.calculateRatingTotal(ratings));
-            this.busTripScheduleRepository.save(busTripSchedule);
-        }else if(orderType.equals("VEHICLE_RENTAL_ORDER")){
-            CarRentalService carRentalService = order.getCarRentalOrders().getCarRentalService();
-            carRentalService.setRatingTotal(this.calculateRatingTotal(ratings));
-            this.vehicleRentalServiceRepo.save(carRentalService);
-        }
 
-    }
 
-    private double calculateRatingTotal(List<Rating> ratings) {
-        int numberOfRating = ratings.size();
-        double ratingValue = 0;
-        for(Rating rating : ratings){
-            ratingValue +=  rating.getRatingValue();
-        }
-        return ratingValue / numberOfRating;
-    }
+
+
+
+
+
+
 }

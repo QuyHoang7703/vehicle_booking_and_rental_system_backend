@@ -43,8 +43,8 @@ public class Orders {
     private Payment payment;
 
     // Mối quan hệ 1-nhiều với Rating
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    private List<Rating> ratings;
+    @OneToOne(mappedBy = "order")
+    private Rating rating;
 
     @PrePersist
     public void prePersist(){

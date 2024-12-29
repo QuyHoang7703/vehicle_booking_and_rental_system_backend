@@ -26,24 +26,46 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     private final Cloudinary cloudinary;
     private final String folderName = "Vehicle_Rental_Booking";
 
+//    @Override
+//    public String uploadFile(MultipartFile file) throws IOException {
+//        assert file.getOriginalFilename() != null;
+//        String publicValue = generatePublicValue(file.getOriginalFilename());
+//        log.info("publicValue is: {}", publicValue);
+//        String extension = getFileName(file.getOriginalFilename())[1];
+//        log.info("extension is: {}", extension);
+//        byte[] fileBytes = file.getBytes();
+//        cloudinary.uploader().upload(
+//                fileBytes,
+//                ObjectUtils.asMap(
+//                        "folder", folderName, // Chỉ định thư mục rõ ràng
+//                        "public_id", publicValue, // ID của file trong thư mục
+//                        "resource_type", "auto"
+//                )
+//        );
+//        log.info("url: " + cloudinary.url().secure(true).generate(StringUtils.join(folderName, "/", publicValue, ".", extension)));
+//        return cloudinary.url().secure(true).generate(StringUtils.join(folderName, "/", publicValue, ".", extension));
+//    }
     @Override
     public String uploadFile(MultipartFile file) throws IOException {
         assert file.getOriginalFilename() != null;
         String publicValue = generatePublicValue(file.getOriginalFilename());
         log.info("publicValue is: {}", publicValue);
-        String extension = getFileName(file.getOriginalFilename())[1];
-        log.info("extension is: {}", extension);
-        byte[] fileBytes = file.getBytes();
-        cloudinary.uploader().upload(
-                fileBytes,
+
+        // Upload file lên Cloudinary
+        Map uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
                 ObjectUtils.asMap(
-                        "folder", folderName, // Chỉ định thư mục rõ ràng
-                        "public_id", publicValue, // ID của file trong thư mục
-                        "resource_type", "auto"
+                        "folder", folderName,
+                        "public_id", publicValue,
+                        "resource_type", "auto",
+                        "invalidate", true // Đảm bảo CDN làm mới cache
                 )
         );
-        log.info("url: " + cloudinary.url().secure(true).generate(StringUtils.join(folderName, "/", publicValue, ".", extension)));
-        return cloudinary.url().secure(true).generate(StringUtils.join(folderName, "/", publicValue, ".", extension));
+
+        // Lấy URL tối ưu
+        String secureUrl = (String) uploadResult.get("secure_url");
+        log.info("Secure URL: {}", secureUrl);
+        return secureUrl;
     }
 
 

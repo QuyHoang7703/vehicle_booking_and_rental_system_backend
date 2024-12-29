@@ -36,7 +36,7 @@ public class Rating {
         this.updateAt = Instant.now();
     }
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "order_id")
     private Orders order; // Giả sử bạn đã có lớp Order
 

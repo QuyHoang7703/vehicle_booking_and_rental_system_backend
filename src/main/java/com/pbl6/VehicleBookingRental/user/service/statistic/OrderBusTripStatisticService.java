@@ -1,7 +1,7 @@
 package com.pbl6.VehicleBookingRental.user.service.statistic;
 
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.statistic.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDate;

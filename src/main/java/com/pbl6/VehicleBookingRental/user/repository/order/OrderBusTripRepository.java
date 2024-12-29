@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.repository.order;
 
+import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusPartner;
 import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.util.constant.OrderStatusEnum;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,16 @@ public interface OrderBusTripRepository extends JpaRepository<OrderBusTrip, Stri
             "JOIN bt.busPartner bp " +
             "WHERE bp.id = :busPartnerId")
     List<OrderBusTrip> findOrderBusTripsOfBusPartner(@Param("busPartnerId") int busPartnerId);
+
+    @Query("SELECT obt FROM OrderBusTrip obt " +
+            "JOIN obt.busTripSchedule bts " +
+            "JOIN bts.busTrip bt " +
+            "JOIN bt.busPartner bp " +
+            "JOIN obt.order o " +
+            "WHERE bp.id = :busPartnerId " +
+            "AND (:month IS NULL OR MONTH(o.create_at) = :month) " +
+            "AND YEAR(o.create_at) = :year")
+    Page<OrderBusTrip> findOrderBusTripsOfBusPartner(@Param("busPartnerId") int busPartnerId, Integer month, Integer year, Pageable pageable);
 
 
     @Query("SELECT obt FROM OrderBusTrip obt " +

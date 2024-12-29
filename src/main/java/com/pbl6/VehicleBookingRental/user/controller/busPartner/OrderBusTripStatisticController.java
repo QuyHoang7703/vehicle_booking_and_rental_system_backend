@@ -1,15 +1,11 @@
 package com.pbl6.VehicleBookingRental.user.controller.busPartner;
 
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.BusTrip;
-import com.pbl6.VehicleBookingRental.user.domain.bus_service.OrderBusTrip;
 import com.pbl6.VehicleBookingRental.user.dto.ResultPaginationDTO;
-import com.pbl6.VehicleBookingRental.user.dto.ResultStatisticDTO;
+import com.pbl6.VehicleBookingRental.user.dto.response.statistic.ResultStatisticDTO;
 import com.pbl6.VehicleBookingRental.user.service.statistic.OrderBusTripStatisticService;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
-import com.turkraft.springfilter.boot.Filter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

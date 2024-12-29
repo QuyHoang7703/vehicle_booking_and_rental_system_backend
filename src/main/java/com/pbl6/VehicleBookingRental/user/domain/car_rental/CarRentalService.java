@@ -19,6 +19,7 @@ public class CarRentalService {
     private int id;
     private double price;
     private int type;
+    private double ratingTotal;
 
     @ManyToOne
     @JsonIgnore

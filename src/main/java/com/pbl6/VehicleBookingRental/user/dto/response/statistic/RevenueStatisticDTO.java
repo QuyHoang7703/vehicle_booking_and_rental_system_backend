@@ -1,4 +1,4 @@
-package com.pbl6.VehicleBookingRental.user.dto;
+package com.pbl6.VehicleBookingRental.user.dto.response.statistic;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

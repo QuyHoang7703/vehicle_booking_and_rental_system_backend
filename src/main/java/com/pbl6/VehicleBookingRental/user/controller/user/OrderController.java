@@ -1,5 +1,6 @@
 package com.pbl6.VehicleBookingRental.user.controller.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.pbl6.VehicleBookingRental.user.domain.Orders;
 import com.pbl6.VehicleBookingRental.user.dto.ResponseInfo;
 import com.pbl6.VehicleBookingRental.user.dto.response.order.ResVnPayDTO;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
@@ -87,6 +89,23 @@ public class OrderController {
         // if different types
 
         return  ResponseEntity.status(HttpStatus.OK).body(null);
+    }
+
+    @PostMapping("orders/payment-from-mobile")
+    public ResponseEntity<Map<String, String>> handlePaymentFromMobile(@RequestParam("vnp_ResponseCode") String vnp_ResponseCode,
+                                                        @RequestParam("vnp_TxnRef") String vnp_TxnRef) throws ApplicationException, IdInvalidException, JsonProcessingException {
+        if(vnp_ResponseCode.equals("00")) {
+            Map<String, String> params = new LinkedHashMap<>();
+            String orderType = this.orderService.handlePaymentSuccess(vnp_TxnRef);
+            params.put("transactionCode: ", vnp_TxnRef);
+            params.put("orderType", orderType);
+            log.info("PAYMENT SUCCESSFULLY");
+            return ResponseEntity.status(HttpStatus.OK).body(params);
+        }else{
+            log.info("PAYMENT UNSUCCESSFULLY");
+            return ResponseEntity.status(HttpStatus.OK).body(null);
+        }
+
     }
 
 

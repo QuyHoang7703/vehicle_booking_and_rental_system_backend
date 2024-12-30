@@ -57,6 +57,7 @@ public class DropOffLocationServiceImpl implements DropOffLocationService {
     @Override
     public ResDropOffLocationDTO convertToResDropOffLocationDTO(DropOffLocation dropOffLocation) {
         ResDropOffLocationDTO res = ResDropOffLocationDTO.builder()
+                .id(dropOffLocation.getId())
                 .departureLocation(dropOffLocation.getBusTrip().getDepartureLocation())
                 .province(dropOffLocation.getProvince())
                 .journeyDuration(dropOffLocation.getJourneyDuration())

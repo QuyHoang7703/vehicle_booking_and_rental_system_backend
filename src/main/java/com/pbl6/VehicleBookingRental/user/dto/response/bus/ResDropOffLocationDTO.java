@@ -10,6 +10,7 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResDropOffLocationDTO {
+    private int id;
     private String departureLocation;
     private String province;
     private Duration journeyDuration;

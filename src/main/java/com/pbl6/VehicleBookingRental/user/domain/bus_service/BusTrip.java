@@ -37,6 +37,6 @@ public class BusTrip {
     @JsonIgnore
     private List<BusTripSchedule> busTripSchedules;
 
-    @OneToMany(mappedBy = "busTrip")
+    @OneToMany(mappedBy = "busTrip", cascade = CascadeType.ALL)
     private List<DropOffLocation> dropOffLocations;
 }

@@ -51,10 +51,10 @@ public class BusTripController {
         return ResponseEntity.status(HttpStatus.OK).body(this.busTripService.getAllBusTrips(spec, pageable));
     }
 
-    @DeleteMapping("busTrips")
+    @DeleteMapping("busTrips/{busTripId}")
     @ApiMessage("Deleted this bus trip")
-    public ResponseEntity<Void> deleteBusTripById(@RequestParam("idBusTrip") int idBusTrip) throws IdInvalidException, ApplicationException {
-        this.busTripService.deleteBusTrip(idBusTrip);
+    public ResponseEntity<Void> deleteBusTripById(@PathVariable("busTripId") int busTripId) throws IdInvalidException, ApplicationException {
+        this.busTripService.deleteBusTrip(busTripId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 

@@ -14,18 +14,16 @@ public interface OrdersRepo extends JpaRepository<Orders,String> {
     Optional<Orders> findByTransactionCode(String transactionCode);
 
     @Query("SELECT o FROM Orders o " +
-            "WHERE o.order_type = :orderType")
+            "WHERE o.order_type = :orderType " +
+            "AND o.cancelTime IS NULL")
     List<Orders> findByOrderType(@Param("orderType") String orderType);
 
-    @Query("SELECT o FROM Orders o " +
-            "JOIN o.orderBusTrip obt " +
-            "JOIN obt.busTripSchedule bts " +
-            "JOIN bts.busTrip bt " +
-            "JOIN bt.busPartner bp " +
-            "WHERE bp.id = :busPartnerId")
-    List<Orders> findOrdersByBusPartnerId(@Param("busPartnerId") int busPartnerId);
-
-//    @Query("SELECT ")
-//    List<Orders> findOrdersByCarRentalPartnerId(@Param("carRentalPartnerId") int carRentalPartnerId);
+//    @Query("SELECT o FROM Orders o " +
+//            "JOIN o.orderBusTrip obt " +
+//            "JOIN obt.busTripSchedule bts " +
+//            "JOIN bts.busTrip bt " +
+//            "JOIN bt.busPartner bp " +
+//            "WHERE bp.id = :busPartnerId")
+//    List<Orders> findOrdersByBusPartnerId(@Param("busPartnerId") int busPartnerId);
 
 }

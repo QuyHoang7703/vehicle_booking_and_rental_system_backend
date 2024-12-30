@@ -572,38 +572,43 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
         }
 
         // Find order bus trip in break days
-        List<OrderBusTrip> orderBusTrips = reqBreakDayDTO.getBreakDays().stream()
-                .flatMap(breakDay -> this.orderBusTripRepository.findOrderBusTripBetweenDates(
-                        businessPartner.getBusPartner().getId(),
-                        breakDay.getStartDay(),
-                        breakDay.getEndDay())
-                .stream())
-                .toList();
-        log.info("orderBusTrip length in break days: " + orderBusTrips.size());
-        // Update status of order
-        List<BreakDay> notAvailableBreakDays = new ArrayList<>();
-        if(!orderBusTrips.isEmpty()) {
-            for(OrderBusTrip orderBusTrip : orderBusTrips) {
-                orderBusTrip.setStatus(OrderStatusEnum.CANCELLED);
-                Orders order = orderBusTrip.getOrder();
-                //Update order
-                order.setCancelTime(Instant.now());
-                order.setCancelUserId(businessPartner.getId());
-                this.ordersRepo.save(order);
+        if(reqBreakDayDTO.getBreakDays() != null && !reqBreakDayDTO.getBreakDays().isEmpty()) {
+            List<OrderBusTrip> orderBusTrips = reqBreakDayDTO.getBreakDays().stream()
+                    .flatMap(breakDay -> this.orderBusTripRepository.findOrderBusTripBetweenDates(
+                                    businessPartner.getBusPartner().getId(),
+                                    breakDay.getStartDay(),
+                                    breakDay.getEndDay())
+                            .stream())
+                    .toList();
+            log.info("orderBusTrip length in break days: " + orderBusTrips.size());
+            // Update status of order
+            List<BreakDay> notAvailableBreakDays = new ArrayList<>();
+            if(!orderBusTrips.isEmpty()) {
+                for(OrderBusTrip orderBusTrip : orderBusTrips) {
+                    orderBusTrip.setStatus(OrderStatusEnum.CANCELLED);
+                    Orders order = orderBusTrip.getOrder();
+                    //Update order
+                    order.setCancelTime(Instant.now());
+                    order.setCancelUserId(businessPartner.getId());
+                    this.ordersRepo.save(order);
+                }
             }
+
+            for(BreakDay breakDay : reqBreakDayDTO.getBreakDays()) {
+                if(!this.breakDayRepository.existsByStartDayAndEndDayAndBusTripSchedule_Id(breakDay.getStartDay(), breakDay.getEndDay(), busTripSchedule.getId())) {
+                    breakDay.setBusTripSchedule(busTripSchedule);
+                    notAvailableBreakDays.add(breakDay);
+                }
+            }
+            this.breakDayRepository.saveAll(notAvailableBreakDays);
         }
 
-       for(BreakDay breakDay : reqBreakDayDTO.getBreakDays()) {
-           if(!this.breakDayRepository.existsByStartDayAndEndDayAndBusTripSchedule_Id(breakDay.getStartDay(), breakDay.getEndDay(), busTripSchedule.getId())) {
-               breakDay.setBusTripSchedule(busTripSchedule);
-               notAvailableBreakDays.add(breakDay);
-           }
-       }
-       this.breakDayRepository.saveAll(notAvailableBreakDays);
 
        // Update discount percentage for bus trip schedule
-        busTripSchedule.setDiscountPercentage(reqBreakDayDTO.getDiscountPercentage());
-        this.busTripScheduleRepository.save(busTripSchedule);
+        if(reqBreakDayDTO.getDiscountPercentage() != 0.0) {
+            busTripSchedule.setDiscountPercentage(reqBreakDayDTO.getDiscountPercentage());
+            this.busTripScheduleRepository.save(busTripSchedule);
+        }
     }
 
     @Override

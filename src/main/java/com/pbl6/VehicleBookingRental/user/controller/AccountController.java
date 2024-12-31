@@ -63,14 +63,14 @@ public class AccountController {
     @ApiMessage("fetch all account success")
     @Transactional
     public ResponseEntity<ResultPaginationDTO> getAllAccounts(@Filter Specification<Account> spec, Pageable pageable) {
-        Specification<Account> roleNotAdminSpec = (root, query, criteriaBuilder) ->{
-            Join<Account, AccountRole> accounRoleJoin = root.join("accountRole");
-            Join<AccountRole, Role> roleJoin = accounRoleJoin.join("role");
-            return criteriaBuilder.notEqual(roleJoin.get("name"), "ADMIN");
-        };
-
-        Specification<Account> finalSpec = spec.and(roleNotAdminSpec);
-        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts(finalSpec, pageable));
+//        Specification<Account> roleNotAdminSpec = (root, query, criteriaBuilder) ->{
+//            Join<Account, AccountRole> accounRoleJoin = root.join("accountRole");
+//            Join<AccountRole, Role> roleJoin = accounRoleJoin.join("role");
+//            return criteriaBuilder.notEqual(roleJoin.get("name"), "ADMIN");
+//        };
+//
+//        Specification<Account> finalSpec = spec.and(roleNotAdminSpec);
+        return ResponseEntity.status(HttpStatus.OK).body(this.accountService.fetchAllAccounts(spec, pageable));
     }
 
     @PutMapping("/accounts/activate")

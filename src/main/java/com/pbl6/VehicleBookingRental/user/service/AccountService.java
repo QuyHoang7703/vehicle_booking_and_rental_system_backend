@@ -22,6 +22,8 @@ import com.pbl6.VehicleBookingRental.user.util.SecurityUtil;
 import com.pbl6.VehicleBookingRental.user.util.constant.PartnerTypeEnum;
 import com.pbl6.VehicleBookingRental.user.util.error.ApplicationException;
 import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,16 +133,35 @@ public class AccountService {
     }
     
     public ResultPaginationDTO fetchAllAccounts(Specification<Account> spec, Pageable pageable) {
+        Specification<Account> roleNotAdminSpec = (root, query, criteriaBuilder) -> {
+            // Join the AccountRole and Role entities
+            Join<Account, AccountRole> accounRoleJoin = root.join("accountRole");
+            Join<AccountRole, Role> roleJoin = accounRoleJoin.join("role");
+
+            // Apply the "not equal" condition for the role name
+            Predicate userPredicate = criteriaBuilder.equal(roleJoin.get("name"), "USER");
+
+            return userPredicate;
+        };
+
+
+        Specification<Account> finalSpec = spec.and(roleNotAdminSpec);
+//        Specification<Account> finalSpec = (spec != null) ? spec.and(roleNotAdminSpec) : roleNotAdminSpec;
+
         Page<Account> pageAccount = this.accountRepository.findAll(spec, pageable);
         ResultPaginationDTO res = new ResultPaginationDTO();
         Meta meta = new Meta();
-        meta.setCurrentPage(pageable.getPageNumber()+1);
-        meta.setPageSize(pageable.getPageSize());
         meta.setPages(pageAccount.getTotalPages());
         meta.setTotal(pageAccount.getTotalElements());
+
+//        Page<Account> pageAccount = this.accountRepository.findAll(finalSpec, pageable);
+        meta.setCurrentPage(pageable.getPageNumber()+1);
+        meta.setPageSize(pageable.getPageSize());
         res.setMeta(meta);
 
-        List<ResAccountInfoDTO> resAccountInfoDTOList = pageAccount.getContent().stream().map(item -> convertToResAccountInfoDTO(item))
+        List<ResAccountInfoDTO> resAccountInfoDTOList = pageAccount.getContent().stream()
+
+                .map(item -> convertToResAccountInfoDTO(item))
                         .collect(Collectors.toList());
         res.setResult(resAccountInfoDTOList);
         return res;

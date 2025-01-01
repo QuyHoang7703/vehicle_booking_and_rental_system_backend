@@ -185,4 +185,16 @@ jobs:
           build-args: |
             PROFILE=dev
             APP_VERSION=1.1
-
+  deploy:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    steps:
+      - name: Set ENV variable and deploy
+        run: |
+          ssh ${{ secrets.VPS_USERNAME }}@${{ secrets.VPS_IP }} <<EOF
+          cd PBL6
+          docker compose -f docker-compose.ymal pull -q
+          docker compose -f docker-compose.ymal up -d
+          EOF
+  

@@ -50,6 +50,7 @@ public interface VehicleRentalOrderRepo extends JpaRepository<CarRentalOrders,St
             "JOIN cro.order o " +
             "WHERE crp.id = :carRentalPartnerId " +
             "AND (:month IS NULL OR MONTH(o.create_at) = :month) " +
-            "AND YEAR(o.create_at) = :year")
+            "AND YEAR(o.create_at) = :year " +
+            "AND cro.order.cancelTime IS NULL ")
     Page<CarRentalOrders> findCarRentalOrderByCarRentalPartner(@Param("carRentalPartnerId") int carRentalPartnerId, @Param("month") Integer month, @Param("year") Integer year, Pageable pageable);
 }

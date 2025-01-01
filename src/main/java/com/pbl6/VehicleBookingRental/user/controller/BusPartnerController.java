@@ -24,8 +24,6 @@ import java.util.List;
 @Slf4j
 public class BusPartnerController {
     private final BusPartnerService busPartnerService;
-    private final BusinessPartnerService businessPartnerService;
-
 
     @PostMapping(value ="/bus-partners")
     public ResponseEntity<ResBusinessPartnerDTO> registerBusinessPartner(@RequestPart("businessPartnerInfo") ReqBusPartnerDTO reqBusPartnerDTO,

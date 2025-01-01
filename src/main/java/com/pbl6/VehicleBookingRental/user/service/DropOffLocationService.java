@@ -11,4 +11,5 @@ public interface DropOffLocationService {
     void createDropOffLocation(ReqDropOffLocationDTO reqDropOffLocationDTO) throws IdInvalidException, ApplicationException;
     ResDropOffLocationDTO convertToResDropOffLocationDTO(DropOffLocation dropOffLocation);
     ResDropOffLocationDTO updateDropOffLocation(ReqUpdateDropOffLocationDTO req) throws ApplicationException, IdInvalidException;
+    void deleteDropOffLocation(int dropOffLocationId) throws IdInvalidException, ApplicationException;
 }

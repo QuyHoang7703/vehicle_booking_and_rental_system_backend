@@ -181,6 +181,9 @@ public class StatisticServiceImpl implements StatisticService {
         double sum = 0.0;
         for (CarRentalOrders carRentalOrder : carRentalOrders) {
             Orders order = carRentalOrder.getOrder();
+            if(order.getCancelTime() != null) {
+                continue;
+            }
             LocalDateTime orderDateTime = order.getCreate_at().atZone(ZoneId.systemDefault()).toLocalDateTime();
             if (month != null && year != null && orderDateTime.getMonthValue() == month && orderDateTime.getYear() == year) {
                 sum += carRentalOrder.getTotal() - carRentalOrder.getReservation_fee() - carRentalOrder.getCar_deposit();
@@ -252,10 +255,11 @@ public class StatisticServiceImpl implements StatisticService {
 
     private CustomerStatisticDTO convertToCustomerStatisticDTO(CarRentalOrders carRentalOrders) {
         Orders order = carRentalOrders.getOrder();
+        double totalPrice = carRentalOrders.getTotal() - carRentalOrders.getCar_deposit() - carRentalOrders.getReservation_fee();
         return CustomerStatisticDTO.builder()
                 .customerName(order.getCustomerName())
                 .customerPhoneNumber(order.getCustomerPhoneNumber())
-                .totalPrice(CurrencyFormatterUtil.formatToVND(carRentalOrders.getTotal()))
+                .totalPrice(CurrencyFormatterUtil.formatToVND(totalPrice))
                 .orderDate(order.getCreate_at())
                 .build();
     }

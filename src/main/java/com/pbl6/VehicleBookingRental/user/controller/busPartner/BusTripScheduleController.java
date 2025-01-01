@@ -100,8 +100,9 @@ public class BusTripScheduleController {
     }
 
     @DeleteMapping("busTripSchedule/breakDays/{breakDayId}")
+    @ApiMessage("Deleted this break day")
     public ResponseEntity<Void> deleteBreakDay(@PathVariable("breakDayId") int breakDayId) throws Exception {
-
+        this.busTripScheduleService.deleteBreakDay(breakDayId);
         return ResponseEntity.status(HttpStatus.OK).body(null);
     }
 

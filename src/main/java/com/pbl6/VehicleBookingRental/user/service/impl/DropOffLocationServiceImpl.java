@@ -101,4 +101,17 @@ public class DropOffLocationServiceImpl implements DropOffLocationService {
 
         return this.convertToResDropOffLocationDTO(this.dropOffLocationRepository.save(dropOffLocationDb));
     }
+
+    @Override
+    public void deleteDropOffLocation(int dropOffLocationId) throws IdInvalidException, ApplicationException {
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
+        DropOffLocation dropOffLocation = this.dropOffLocationRepository.findById(dropOffLocationId)
+                .orElseThrow(()-> new IdInvalidException("Drop off location not found"));
+
+        if(!dropOffLocation.getBusTrip().getBusPartner().equals(businessPartner.getBusPartner())) {
+            throw new ApplicationException("You don't have permission to delete drop off location");
+        }
+
+        this.dropOffLocationRepository.delete(dropOffLocation);
+    }
 }

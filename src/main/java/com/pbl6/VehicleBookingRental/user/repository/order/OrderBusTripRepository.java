@@ -25,7 +25,8 @@ public interface OrderBusTripRepository extends JpaRepository<OrderBusTrip, Stri
             "JOIN obt.busTripSchedule bts " +
             "JOIN bts.busTrip bt " +
             "JOIN bt.busPartner bp " +
-            "WHERE bp.id = :busPartnerId")
+            "WHERE bp.id = :busPartnerId " +
+            "AND obt.order.cancelTime IS NULL")
     List<OrderBusTrip> findOrderBusTripsOfBusPartner(@Param("busPartnerId") int busPartnerId);
 
     @Query("SELECT obt FROM OrderBusTrip obt " +
@@ -35,7 +36,8 @@ public interface OrderBusTripRepository extends JpaRepository<OrderBusTrip, Stri
             "JOIN obt.order o " +
             "WHERE bp.id = :busPartnerId " +
             "AND (:month IS NULL OR MONTH(o.create_at) = :month) " +
-            "AND YEAR(o.create_at) = :year")
+            "AND YEAR(o.create_at) = :year " +
+            "AND obt.order.cancelTime IS NULL")
     Page<OrderBusTrip> findOrderBusTripsOfBusPartner(@Param("busPartnerId") int busPartnerId, Integer month, Integer year, Pageable pageable);
 
 

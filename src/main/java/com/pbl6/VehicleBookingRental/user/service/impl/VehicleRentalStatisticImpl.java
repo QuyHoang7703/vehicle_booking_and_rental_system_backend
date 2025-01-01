@@ -320,6 +320,9 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
 
     private void getYearlyRevenue(Map<String, Double> statistics, List<CarRentalOrders> carRentalOrders) {
         for(CarRentalOrders order : carRentalOrders){
+            if(order.getOrder().getCancelTime() !=null) {
+                continue;
+            }
             double revenue = order.getTotal() - order.getReservation_fee() - order.getCar_deposit();
             // Tạo key theo năm của order
             String key = String.valueOf(order.getCreated_at().atZone(ZoneId.systemDefault()).toLocalDateTime().getYear());
@@ -338,12 +341,16 @@ public class VehicleRentalStatisticImpl implements VehicleRentalStatisticService
         }
 
         for (CarRentalOrders carRentalOrder : carRentalOrders) {
+            if(carRentalOrder.getOrder().getCancelTime() !=null) {
+                continue;
+            }
             LocalDateTime orderDateTime = carRentalOrder.getOrder().getCreate_at().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            if(orderDateTime.getYear() == year) {
+                int currentMonth = orderDateTime.getMonthValue();
 
-            int currentMonth = orderDateTime.getMonthValue();
-            String key = currentMonth + "-" +year;
-            statistics.put(key, statistics.get(key) + carRentalOrder.getTotal() - carRentalOrder.getReservation_fee() - carRentalOrder.getCar_deposit());
-
+                String key = currentMonth + "-" +year;
+                statistics.put(key, statistics.get(key) + carRentalOrder.getTotal() - carRentalOrder.getReservation_fee() - carRentalOrder.getCar_deposit());
+            }
         }
     }
 

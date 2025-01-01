@@ -55,4 +55,11 @@ public class DropOffLocationController {
 
         return ResponseEntity.status(HttpStatus.OK).body(this.dropOffLocationService.updateDropOffLocation(req));
     }
+
+    @DeleteMapping("dropOffLocations/{dropOffLocationId}")
+    @ApiMessage("Deleted this drop off location")
+    public ResponseEntity<Void> deleteDropOffLocation(@PathVariable("dropOffLocationId") int dropOffLocationId) throws Exception {
+        this.dropOffLocationService.deleteDropOffLocation(dropOffLocationId);
+        return ResponseEntity.status(HttpStatus.OK).body(null);
+    }
 }

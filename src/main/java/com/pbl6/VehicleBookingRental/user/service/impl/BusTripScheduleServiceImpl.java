@@ -420,7 +420,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
 
         if(isOperation == isBreakDay) {
             busTripSchedule.setOperation(!isBreakDay);
-            log.info("Change status operation: " + busTripSchedule.getId());
+            log.info("Change status operation of bus trip schedule: " + busTripSchedule.getId());
             return busTripSchedule;
         }
         return null;
@@ -594,6 +594,7 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 }
             }
 
+
             for(BreakDay breakDay : reqBreakDayDTO.getBreakDays()) {
                 if(!this.breakDayRepository.existsByStartDayAndEndDayAndBusTripSchedule_Id(breakDay.getStartDay(), breakDay.getEndDay(), busTripSchedule.getId())) {
                     breakDay.setBusTripSchedule(busTripSchedule);
@@ -601,6 +602,22 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
                 }
             }
             this.breakDayRepository.saveAll(notAvailableBreakDays);
+
+
+        }
+
+//        LocalDate today = LocalDate.now();
+//
+//        boolean isBreakDay = busTripSchedule.getBreakDays().stream()
+//                .anyMatch(breakDay -> !today.isBefore(breakDay.getStartDay()) && !today.isAfter(breakDay.getEndDay()));
+//
+//        if(busTripSchedule.isOperation() == isBreakDay) {
+//            busTripSchedule.setOperation(!isBreakDay);
+//
+//        }
+        if(this.updateOperationInDayOfBusTripSchedule(busTripSchedule, LocalDate.now()) != null) {
+            log.info("Change status operation of bus trip schedule: " + busTripSchedule.getId());
+            this.busTripScheduleRepository.save(busTripSchedule);
         }
 
 
@@ -609,14 +626,30 @@ public class BusTripScheduleServiceImpl implements BusTripScheduleService {
             busTripSchedule.setDiscountPercentage(reqBreakDayDTO.getDiscountPercentage());
             this.busTripScheduleRepository.save(busTripSchedule);
         }
+
+
     }
 
     @Override
-    public void deleteBreakDay(int breakDayId) throws IdInvalidException {
-//        BusinessPartner businessPartner = this.businessPartnerService
+    public void deleteBreakDay(int breakDayId) throws IdInvalidException, ApplicationException {
+        BusinessPartner businessPartner = this.businessPartnerService.getCurrentBusinessPartner(PartnerTypeEnum.BUS_PARTNER);
         BreakDay breakDay = this.breakDayRepository.findById(breakDayId)
                 .orElseThrow(() -> new IdInvalidException("Break day not found"));
+        if(breakDay.getBusTripSchedule().getBusTrip().getBusPartner() != businessPartner.getBusPartner()) {
+            throw new ApplicationException("You don't have permission to delete break days for this bus trip schedule");
+        }
 
+        LocalDate today = LocalDate.now();
+        if(!today.isBefore(breakDay.getStartDay()) && !today.isAfter(breakDay.getEndDay())) {
+            BusTripSchedule busTripSchedule = breakDay.getBusTripSchedule();
+            if(!busTripSchedule.isOperation()) {
+                busTripSchedule.setOperation(true);
+                this.busTripScheduleRepository.save(busTripSchedule);
+            }
+            this.breakDayRepository.delete(breakDay);
+        }else{
+            this.breakDayRepository.delete(breakDay);
+        }
     }
 
     @Override

@@ -23,7 +23,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class CarRentalPartnerController {
-    private final BusinessPartnerService businessPartnerService;
     private final CarRentalPartnerService carRentalPartnerService;
 
     @PostMapping(value ="/car-rental-partners")

@@ -29,7 +29,7 @@ public interface BusTripScheduleService {
     public ResultPaginationDTO getAllBusTripSchedules(Specification<BusTripSchedule> spec, Pageable pageable) throws ApplicationException;
 
     void addBreakDay(ReqBreakDayDTO reqBreakDayDTO) throws IdInvalidException, ApplicationException;
-    void deleteBreakDay(int breakDayId) throws IdInvalidException;
+    void deleteBreakDay(int breakDayId) throws IdInvalidException, ApplicationException;
     void updateStatusOfBusTripSchedule(int busTripScheduleId, boolean status) throws IdInvalidException, ApplicationException;
 
 }

@@ -79,6 +79,9 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
         // Calculate revenue for keys
         for(OrderBusTrip orderBusTrip : orderBusTrips) {
             Orders order = orderBusTrip.getOrder();
+            if(order.getCancelTime() != null) {
+                continue;
+            }
             LocalDateTime createdOrderAt = order.getCreate_at().atZone(ZoneId.systemDefault()).toLocalDateTime();
             if(createdOrderAt.getYear() == year) {
                 String key = createdOrderAt.getMonthValue() + "-" + createdOrderAt.getYear();
@@ -92,6 +95,9 @@ public class OrderBusTripStatisticServiceImpl implements OrderBusTripStatisticSe
     private void getRevenueByYear(Map<String, Double> statistics, List<OrderBusTrip> orderBusTrips) {
         for(OrderBusTrip orderBusTrip : orderBusTrips) {
             Orders order = orderBusTrip.getOrder();
+            if(order.getCancelTime() != null) {
+                continue;
+            }
             LocalDateTime createdOrderAt = order.getCreate_at().atZone(ZoneId.systemDefault()).toLocalDateTime();
             String key = String.valueOf(createdOrderAt.getYear());
             double revenue = orderBusTrip.getPriceTotal();

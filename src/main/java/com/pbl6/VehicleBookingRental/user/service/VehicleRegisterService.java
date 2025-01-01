@@ -101,7 +101,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
                 vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
                 vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
-                vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
+                vehicleRentalServiceDTO.setRating_total(i.getRatingTotal());
                 vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
                 vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                 vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
@@ -145,7 +145,6 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
             vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
             vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
-            vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
             vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
             vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
             vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
@@ -165,6 +164,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                     }
                     // Lấy type của dịch vụ đầu tiên nếu cần
                     vehicleRentalServiceDTO.setType(service.getType());
+                    vehicleRentalServiceDTO.setRating_total(service.getRatingTotal());
                 }
                 if(serviceList.size() > 1){
                     vehicleRentalServiceDTO.setType(2);
@@ -210,7 +210,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
             vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
             vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
             vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
-            vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
+            vehicleRentalServiceDTO.setRating_total(carRentalService.get().getRatingTotal());
             vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
             vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
             vehicleRentalServiceDTO.setVehicle_type_id(vehicleRegister.getVehicleType().getId());
@@ -387,7 +387,7 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                     vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
                     vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
                     vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
-                    vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
+                    vehicleRentalServiceDTO.setRating_total(carRentalService.getRatingTotal());
                     vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount() - amount);
                     vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());
                     vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
@@ -456,8 +456,10 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 for (CarRentalService rentalService : rentalServiceList) {
                         if (rentalService.getType() == 0) {
                             vehicleRentalServiceDTO.setSelfDriverPrice(rentalService.getPrice());
+                            vehicleRentalServiceDTO.setRating_total(rentalService.getRatingTotal());
                         } else {
                             vehicleRentalServiceDTO.setDriverPrice(rentalService.getPrice());
+                            vehicleRentalServiceDTO.setRating_total(rentalService.getRatingTotal());
                         }
                 }
 
@@ -473,7 +475,6 @@ public class VehicleRegisterService implements VehicleRegisterInterface {
                 vehicleRentalServiceDTO.setReservation_fees(vehicleRegister.getReservation_fees());
                 vehicleRentalServiceDTO.setUlties(vehicleRegister.getUlties());
                 vehicleRentalServiceDTO.setPolicy(vehicleRegister.getPolicy());
-                vehicleRentalServiceDTO.setRating_total(vehicleRegister.getRating_total());
                 vehicleRentalServiceDTO.setAmount(vehicleRegister.getAmount());
                 vehicleRentalServiceDTO.setLocation(vehicleRegister.getLocation());
                 vehicleRentalServiceDTO.setVehicle_register_id(vehicleRegister.getId());

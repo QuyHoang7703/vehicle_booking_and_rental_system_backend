@@ -63,13 +63,14 @@ public class OrderController {
             log.info("PAYMENT SUCCESSFULLY");
 
             return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-success?transactionCode=" + transactionCode + "&orderType=" + orderType)
+//                    .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-success?transactionCode=" + transactionCode + "&orderType=" + orderType)
+                    .header(HttpHeaders.LOCATION, "http://150.95.110.230:3000/payment-success?transactionCode=" + transactionCode + "&orderType=" + orderType)
                     .build();
 
         } else {
             log.info("PAYMENT UNSUCCESSFULLY");
             return ResponseEntity.status(HttpStatus.FOUND)
-                    .header(HttpHeaders.LOCATION, "http://localhost:3000/payment-failure?transactionCode=" + transactionCode)
+                    .header(HttpHeaders.LOCATION, "http://150.95.110.230:3000/payment-failure?transactionCode=" + transactionCode)
                     .build();
         }
     }

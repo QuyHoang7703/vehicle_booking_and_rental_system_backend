@@ -69,8 +69,8 @@ public class TokenServiceImpl implements TokenService{
         String subject = "Yêu cầu đặt lại mật khẩu";
 
         // Tạo liên kết chứa token để người dùng nhấn vào => chuyển đến fe xử lý
-        String resetPasswordLink = "http://localhost:3000/reset-password?token=" + token;
-
+//        String resetPasswordLink = "http://localhost:3000/reset-password?token=" + token;
+        String resetPasswordLink = "http://150.95.110.230:3000/reset-password?token=" + token;
         // Tạo nội dung email từ template HTML
         Context context = new Context();
         if(name==null) {

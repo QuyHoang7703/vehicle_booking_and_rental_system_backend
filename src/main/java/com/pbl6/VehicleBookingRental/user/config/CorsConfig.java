@@ -18,6 +18,8 @@ public class CorsConfig {
         configuration.setAllowedOrigins(
                 Arrays.asList("http://localhost:3000", "http://localhost:4173",
                         "http://localhost:5173", "https://vehicle-booking-and-rental-system.vercel.app",
+                        "https://safelytravel.online:443",
+                        "https://150.95.110.230:443",
                         "http://safelytravel.online:80",
                         "http://150.95.110.230:80",
                         "http://150.95.110.230:3000"));

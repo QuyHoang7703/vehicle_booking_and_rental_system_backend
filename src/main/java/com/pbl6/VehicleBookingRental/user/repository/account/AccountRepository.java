@@ -25,7 +25,9 @@ public interface AccountRepository  extends JpaRepository<Account, Integer>, Jpa
 
     Optional<Account> findByRefreshTokenAndEmail(String refreshToken, String email);
     Optional<Account> findByRefreshTokenAndPhoneNumber(String refreshToken, String phoneNumber);
-
+    @Query("SELECT a FROM Account a " +
+            "WHERE a.verified = false ")
+    List<Account> findAccountNotVerify();
 //    @Query("select a.name from Account a " +
 //            "JOIN a.accountRole ar " +
 //            "JOIN ar.role r " +

@@ -1,6 +1,8 @@
 package com.pbl6.VehicleBookingRental.user.service;
 
 import com.pbl6.VehicleBookingRental.user.domain.BusinessPartner;
+import com.pbl6.VehicleBookingRental.user.domain.Voucher.AccountVoucher;
+import com.pbl6.VehicleBookingRental.user.domain.Voucher.Voucher;
 import com.pbl6.VehicleBookingRental.user.domain.account.Account;
 import com.pbl6.VehicleBookingRental.user.domain.account.AccountRole;
 import com.pbl6.VehicleBookingRental.user.domain.account.Role;
@@ -30,13 +32,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.thymeleaf.context.Context;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -423,6 +428,15 @@ public class AccountService {
 
 
     }
+
+    @Transactional
+    @Scheduled(cron = "0 */1 * * * *")
+    public void deleteAccountNotVerify() {
+        List<Account> accounts = this.accountRepository.findAccountNotVerify();
+        this.accountRepository.deleteAll(accounts);
+        log.info("Deleted accounts not verified");
+    }
+
 
 
 

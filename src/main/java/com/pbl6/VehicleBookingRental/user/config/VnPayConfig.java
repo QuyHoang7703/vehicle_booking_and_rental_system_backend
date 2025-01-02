@@ -45,7 +45,7 @@ public class VnPayConfig {
         String vnpCreateDate = formatter.format(calendar.getTime());
         vnpParamsMap.put("vnp_CreateDate", vnpCreateDate);
         // Set limited time to make payment
-        calendar.add(Calendar.MINUTE, 2);
+        calendar.add(Calendar.MINUTE, 3);
         String vnp_ExpireDate = formatter.format(calendar.getTime());
         vnpParamsMap.put("vnp_ExpireDate", vnp_ExpireDate);
         return vnpParamsMap;

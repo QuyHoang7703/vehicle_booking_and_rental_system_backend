@@ -247,7 +247,7 @@ public class OrderBusTripServiceImpl implements OrderBusTripService {
                 orderBusTripRedis.setKey(redisKeyOrderBusTrip);
 
                 redisService.setHashSet(redisKeyOrderBusTrip, "order-detail", orderBusTripRedis);
-                redisService.setTimeToLive(redisKeyOrderBusTrip, 3);
+                redisService.setTimeToLive(redisKeyOrderBusTrip, 5);
                 int currentNumberOfTicketInRedis = numberOfSoldTicket+reqOrderBusTripDTO.getNumberOfTicket();
                 log.warn("Trường hợp bán được vé + số vé bán được: " + currentNumberOfTicketInRedis);
                 redisControlNumberOrderService.incrementHashValue(scheduleKey, String.valueOf(reqOrderBusTripDTO.getDepartureDate()), reqOrderBusTripDTO.getNumberOfTicket());

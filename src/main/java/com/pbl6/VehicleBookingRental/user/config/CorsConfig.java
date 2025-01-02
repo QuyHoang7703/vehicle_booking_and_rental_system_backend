@@ -22,6 +22,7 @@ public class CorsConfig {
                         "https://150.95.110.230:443",
                         "http://safelytravel.online:80",
                         "http://150.95.110.230:80",
+                        "http://150.95.110.230:3000",
                         "http://150.95.110.230:3000"));
 //        configuration.setAllowedOrigins(
 //                Arrays.asList("*"));

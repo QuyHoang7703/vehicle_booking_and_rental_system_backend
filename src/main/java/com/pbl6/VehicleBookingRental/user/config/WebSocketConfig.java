@@ -102,8 +102,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         "http://safelytravel.online",    // Domain HTTP (nếu cần)
                         "http://150.95.110.230:3000",         // Truy cập qua IP
                         "https://150.95.110.230:3000",        // Truy cập HTTPS qua IP
-                        "http://150.95.110.230",         // Truy cập qua IP
-                        "https://150.95.110.230",
+                        "http://150.95.110.230:80",         // Truy cập qua IP
+                        "https://150.95.110.230:443",
                         "http://localhost:3000",         // Local phát triển
                         "http://localhost:5173",         // Local khác (Vite dev server)
                         "http://localhost:4173"          // Local khác (Vite dev server)

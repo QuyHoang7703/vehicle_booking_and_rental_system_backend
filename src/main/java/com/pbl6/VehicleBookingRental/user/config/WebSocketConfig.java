@@ -98,15 +98,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOrigins(
+                        "https://safelytravel.online",   // Domain chính HTTPS
+                        "http://safelytravel.online",    // Domain HTTP (nếu cần)
+                        "http://150.95.110.230:3000",         // Truy cập qua IP
+                        "https://150.95.110.230:3000",        // Truy cập HTTPS qua IP
+                        "http://150.95.110.230:80",         // Truy cập qua IP
                         "https://150.95.110.230:443",
-                        "https://safelytravel",
-                        "http://safelytravel",
-                        "http://150.95.110.230:80",
-                        "http://150.95.110.230:3000",
-                        "http://safelytravel:3000"
+                        "http://localhost:3000",         // Local phát triển
+                        "http://localhost:5173",         // Local khác (Vite dev server)
+                        "http://localhost:4173"          // Local khác (Vite dev server)
                 )
                 .withSockJS();
     }
+
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {

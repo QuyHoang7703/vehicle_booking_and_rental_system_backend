@@ -101,7 +101,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         "https://150.95.110.230:443",
                         "https://safelytravel:443",
                         "http://safelytravel:80",
-                        "http://150.95.110.230:80"
+                        "http://150.95.110.230:80",
+                        "http://150.95.110.230:3000",
+                        "http://safelytravel:3000"
                 )
                 .withSockJS();
     }

@@ -97,8 +97,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins("http://safelytravel:80")
-                .setAllowedOrigins("http://150.95.110.230:80")
+                .setAllowedOrigins(
+                        "https://150.95.110.230:443",
+                        "https://safelytravel:443",
+                        "http://safelytravel:80",
+                        "http://150.95.110.230:80"
+                )
                 .withSockJS();
     }
 

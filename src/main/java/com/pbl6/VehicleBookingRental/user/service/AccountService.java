@@ -430,7 +430,7 @@ public class AccountService {
     }
 
     @Transactional
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "0 */30 * * * *")
     public void deleteAccountNotVerify() {
         List<Account> accounts = this.accountRepository.findAccountNotVerify();
         this.accountRepository.deleteAll(accounts);

@@ -69,6 +69,7 @@ public class OrderController {
 
         } else {
             log.info("PAYMENT UNSUCCESSFULLY");
+            this.orderService.handleFailurePayment(transactionCode);
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header(HttpHeaders.LOCATION, "http://150.95.110.230:3000/payment-failure?transactionCode=" + transactionCode)
                     .build();
@@ -104,6 +105,7 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.OK).body(params);
         }else{
             log.info("PAYMENT UNSUCCESSFULLY");
+            this.orderService.handleFailurePayment(vnp_TxnRef);
             return ResponseEntity.status(HttpStatus.OK).body(null);
         }
 

@@ -60,7 +60,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final NotificationService notificationService;
     private final AccountVoucherService accountVoucherService;
-
+    private final RedisService<String, String, Integer> redisControlNumberOrderService;
     @Override
     public ResVnPayDTO createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException {
 
@@ -116,6 +116,29 @@ public class OrderServiceImpl implements OrderService {
 
         return orderType;
     }
+    @Override
+    public void handleFailurePayment(String transactionCode){
+        String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
+        log.info("Key order in case failure: " + keyOrder);
+        if(keyOrder.contains("BUS_TRIP")) {
+            String[] parts = keyOrder.split("\\$");
+            String typeOfOrder = parts[1];
+            String busTripScheduleId = parts[3];
+            String numberOfTicket = parts[4];
+            String departureDate = parts[5];
+            String atomicRedisKey = "Bus trip schedule id: " + busTripScheduleId;
+            Integer currentNumberOrderBusTripInRedis = this.redisControlNumberOrderService.getHashValue(atomicRedisKey, departureDate);
+            if(currentNumberOrderBusTripInRedis > Integer.parseInt(numberOfTicket)){
+                redisControlNumberOrderService.incrementHashValue(atomicRedisKey, departureDate, - Integer.parseInt(numberOfTicket));
+            }
+            // Delete order-key in redis
+            redisService.deleteHashFile(transactionCode, "transactionCode");
+            redisService.deleteHashFile(keyOrder, "order-detail");
+        }
+
+        // Handle car rental order
+
+    }
 
     @Override
     public Orders findByTransactionCode(String transactionCode) throws ApplicationException {
@@ -123,7 +146,7 @@ public class OrderServiceImpl implements OrderService {
         if(email==null) {
             throw new ApplicationException("Access token not found or expired");
         }
-        Account account = this.accountService.handleGetAccountByUsername(email);
+//        Account account = this.accountService.handleGetAccountByUsername(email);
         Orders orders = this.ordersRepo.findByTransactionCode(transactionCode)
                 .orElseThrow(() -> new ApplicationException("Order not found"));
 

@@ -12,5 +12,5 @@ public interface OrderService {
     ResVnPayDTO createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException;
     String handlePaymentSuccess(String transactionCode) throws ApplicationException, IdInvalidException, JsonProcessingException;
     Orders findByTransactionCode(String transactionCode) throws ApplicationException;
-
+    void handleFailurePayment(String transactionCode) throws ApplicationException;
 }

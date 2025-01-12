@@ -63,7 +63,7 @@ public class RedisMessageListener implements MessageListener {
 //        this.busTripScheduleRepository.save(busTripSchedule);
         String atomicRedisKey = "Bus trip schedule id: " + busTripScheduleId;
         Integer currentNumberOrderBusTripInRedis = this.redisControlNumberOrderService.getHashValue(atomicRedisKey, departureDate);
-        if(currentNumberOrderBusTripInRedis > Integer.parseInt(numberOfTicket)){
+        if(currentNumberOrderBusTripInRedis >= Integer.parseInt(numberOfTicket)){
             redisControlNumberOrderService.incrementHashValue(atomicRedisKey, departureDate, - Integer.parseInt(numberOfTicket));
         }
         log.info("BusTripSchedule updated number of seats");

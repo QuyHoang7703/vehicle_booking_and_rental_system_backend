@@ -31,6 +31,8 @@ import com.pbl6.VehicleBookingRental.user.util.error.IdInvalidException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 
 import static com.pbl6.VehicleBookingRental.user.util.constant.NotificationTypeEnum.NEW_BOOKING;
@@ -61,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
     private final NotificationService notificationService;
     private final AccountVoucherService accountVoucherService;
     private final RedisService<String, String, Integer> redisControlNumberOrderService;
+    private final RedissonClient redissonClient;
     @Override
     public ResVnPayDTO createPayment(HttpServletRequest request) throws ApplicationException, IdInvalidException {
 
@@ -117,27 +121,70 @@ public class OrderServiceImpl implements OrderService {
         return orderType;
     }
     @Override
-    public void handleFailurePayment(String transactionCode){
-        String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
-        log.info("Key order in case failure: " + keyOrder);
-        if(keyOrder.contains("BUS_TRIP")) {
-            String[] parts = keyOrder.split("\\$");
-            String typeOfOrder = parts[1];
-            String busTripScheduleId = parts[3];
-            String numberOfTicket = parts[4];
-            String departureDate = parts[5];
-            String atomicRedisKey = "Bus trip schedule id: " + busTripScheduleId;
-            Integer currentNumberOrderBusTripInRedis = this.redisControlNumberOrderService.getHashValue(atomicRedisKey, departureDate);
-            if(currentNumberOrderBusTripInRedis > Integer.parseInt(numberOfTicket)){
-                redisControlNumberOrderService.incrementHashValue(atomicRedisKey, departureDate, - Integer.parseInt(numberOfTicket));
+//    public void handleFailurePayment(String transactionCode){
+//        String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
+//        log.info("Key order in case failure: " + keyOrder);
+//        if(keyOrder.contains("BUS_TRIP")) {
+//            String[] parts = keyOrder.split("\\$");
+//            String typeOfOrder = parts[1];
+//            String busTripScheduleId = parts[3];
+//            String numberOfTicket = parts[4];
+//            String departureDate = parts[5];
+//            String atomicRedisKey = "Bus trip schedule id: " + busTripScheduleId;
+//            Integer currentNumberOrderBusTripInRedis = this.redisControlNumberOrderService.getHashValue(atomicRedisKey, departureDate);
+//            if(currentNumberOrderBusTripInRedis >= Integer.parseInt(numberOfTicket)){
+//                redisControlNumberOrderService.incrementHashValue(atomicRedisKey, departureDate, - Integer.parseInt(numberOfTicket));
+//            }
+//            // Delete order-key in redis
+//            redisService.deleteHashFile(transactionCode, "transactionCode");
+//            redisService.deleteHashFile(keyOrder, "order-detail");
+//        }
+//
+//        // Handle car rental order
+//
+//    }
+    public void handleFailurePayment(String transactionCode) {
+        // Tạo key khóa dựa trên transactionCode
+        String lockKey = "lock:failurePayment:" + transactionCode;
+        RLock lock = redissonClient.getLock(lockKey);
+
+        try {
+            // Thử lấy lock, đợi tối đa 10 giây và giữ lock trong 30 giây
+            if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
+                // Logic xử lý khi thanh toán thất bại
+                String keyOrder = (String) redisService.getHashValue(transactionCode, "transactionCode");
+                log.info("Key order in case failure: " + keyOrder);
+                if (keyOrder.contains("BUS_TRIP")) {
+                    String[] parts = keyOrder.split("\\$");
+                    String typeOfOrder = parts[1];
+                    String busTripScheduleId = parts[3];
+                    String numberOfTicket = parts[4];
+                    String departureDate = parts[5];
+                    String atomicRedisKey = "Bus trip schedule id: " + busTripScheduleId;
+
+                    // Lấy số lượng vé hiện tại từ Redis
+                    Integer currentNumberOrderBusTripInRedis = this.redisControlNumberOrderService.getHashValue(atomicRedisKey, departureDate);
+
+                    // Kiểm tra và rollback số lượng vé nếu cần
+                    if (currentNumberOrderBusTripInRedis >= Integer.parseInt(numberOfTicket)) {
+                        redisControlNumberOrderService.incrementHashValue(atomicRedisKey, departureDate, -Integer.parseInt(numberOfTicket));
+                    }
+
+                    // Xóa order-key trong Redis
+                    redisService.deleteHashFile(transactionCode, "transactionCode");
+                    redisService.deleteHashFile(keyOrder, "order-detail");
+                }
+
+                // Handle car rental order
             }
-            // Delete order-key in redis
-            redisService.deleteHashFile(transactionCode, "transactionCode");
-            redisService.deleteHashFile(keyOrder, "order-detail");
+        } catch (InterruptedException e) {
+            log.error("Error acquiring lock for transactionCode: " + transactionCode, e);
+        } finally {
+            // Đảm bảo giải phóng lock
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
-
-        // Handle car rental order
-
     }
 
     @Override
